@@ -1,0 +1,263 @@
+{
+  "note": "scores recomputed with kit scoring/data of this version; model outputs unchanged",
+  "llm": {
+    "calls": 86,
+    "ok": 86,
+    "errors": 0,
+    "performance": {
+      "think_off": {
+        "n": 74,
+        "tokens_per_s_mean": 57.0274,
+        "prompt_tokens_per_s_mean": 9482.9108,
+        "ttft_s_p50": 0.352,
+        "ttfc_s_p50": 0.352,
+        "wall_s_p50": 1.3675,
+        "wall_s_p95": 17.2438,
+        "eval_tokens_mean": 176.527,
+        "thinking_chars_mean": 0.0,
+        "think_leak_rate": 0.0,
+        "truncated_rate": 0.0,
+        "empty_answer_after_thinking_rate": 0.0
+      },
+      "think_on": {
+        "n": 12,
+        "tokens_per_s_mean": 55.855,
+        "prompt_tokens_per_s_mean": 28605.7025,
+        "ttft_s_p50": 0.1725,
+        "ttfc_s_p50": 5.811,
+        "wall_s_p50": 7.63,
+        "wall_s_p95": 30.2718,
+        "eval_tokens_mean": 587.9167,
+        "thinking_chars_mean": 1932.6667,
+        "think_leak_rate": 0.0,
+        "truncated_rate": 0.083,
+        "empty_answer_after_thinking_rate": 0.083
+      }
+    },
+    "quality_think_off": {
+      "qa_mono_fa": {
+        "n": 20,
+        "fact_rate_mean": 0.95,
+        "all_facts_rate": 0.95,
+        "citation_ok_rate": 0.9,
+        "citation_precision_mean": 0.9,
+        "false_refusal_rate": 0.05
+      },
+      "qa_mono_en": {
+        "n": 10,
+        "fact_rate_mean": 1.0,
+        "all_facts_rate": 1.0,
+        "citation_ok_rate": 1.0,
+        "citation_precision_mean": 1.0,
+        "false_refusal_rate": 0.0
+      },
+      "qa_cross_fa": {
+        "n": 12,
+        "fact_rate_mean": 0.9167,
+        "all_facts_rate": 0.917,
+        "citation_ok_rate": 1.0,
+        "citation_precision_mean": 1.0,
+        "false_refusal_rate": 0.0
+      },
+      "refusal": {
+        "n": 4,
+        "correct_refusal_rate": 1.0,
+        "exact_token_rate": 1.0
+      },
+      "summary_executive": {
+        "n": 2,
+        "fact_rate_mean": 1.0,
+        "words_mean": 55.5,
+        "within_limit_rate": 1.0
+      },
+      "summary_technical": {
+        "n": 2,
+        "fact_rate_mean": 1.0,
+        "words_mean": 108.5,
+        "within_limit_rate": 1.0
+      },
+      "decompose_prompt_only": {
+        "n": 6,
+        "json_valid_rate": 0.833,
+        "schema_valid_rate": 0.833,
+        "domain_recall_mean": 0.8333,
+        "executor_match_mean": 0.8333,
+        "executor_coverage_mean": 0.8333,
+        "executor_name_exact_mean": 1.0,
+        "n_sub_issues_mean": 4.3333
+      },
+      "decompose_schema": {
+        "n": 6,
+        "json_valid_rate": 1.0,
+        "schema_valid_rate": 1.0,
+        "domain_recall_mean": 0.9445,
+        "executor_match_mean": 0.9445,
+        "executor_coverage_mean": 0.9445,
+        "executor_name_exact_mean": 1.0,
+        "n_sub_issues_mean": 5.6667
+      },
+      "judge": {
+        "n": 8,
+        "json_valid_rate": 1.0,
+        "schema_valid_rate": 1.0,
+        "sum_consistent_rate": 1.0,
+        "verdict_accuracy": 1.0,
+        "totals": {
+          "JDG-FA-GOOD-r0": 20,
+          "JDG-FA-GOOD-r1": 20,
+          "JDG-FA-BAD-r0": 7,
+          "JDG-FA-BAD-r1": 7,
+          "JDG-EN-GOOD-r0": 20,
+          "JDG-EN-GOOD-r1": 20,
+          "JDG-EN-BAD-r0": 4,
+          "JDG-EN-BAD-r1": 6
+        }
+      },
+      "judge_on_summaries": {
+        "SUM-fa-executive-r0": 20,
+        "SUM-fa-technical-r0": 20,
+        "SUM-en-executive-r0": 20,
+        "SUM-en-technical-r0": 20
+      }
+    },
+    "think_comparison": [
+      {
+        "task": "qa",
+        "case_id": "FA-09-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.533,
+        "wall_on_s": 4.711,
+        "tokens_off": 59,
+        "tokens_on": 254
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-18-mono",
+        "metric": "fact_rate",
+        "off": 0.0,
+        "on": 1.0,
+        "wall_off_s": 1.364,
+        "wall_on_s": 8.485,
+        "tokens_off": 50,
+        "tokens_on": 461
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-20-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.235,
+        "wall_on_s": 7.126,
+        "tokens_off": 41,
+        "tokens_on": 388
+      },
+      {
+        "task": "qa",
+        "case_id": "EN-03-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 0.984,
+        "wall_on_s": 3.306,
+        "tokens_off": 32,
+        "tokens_on": 178
+      },
+      {
+        "task": "qa",
+        "case_id": "EN-07-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 0.953,
+        "wall_on_s": 5.198,
+        "tokens_off": 34,
+        "tokens_on": 286
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-09-cross",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.429,
+        "wall_on_s": 5.848,
+        "tokens_off": 56,
+        "tokens_on": 321
+      },
+      {
+        "task": "refusal",
+        "case_id": "REF-FA-02",
+        "metric": "refused",
+        "off": true,
+        "on": true,
+        "wall_off_s": 0.906,
+        "wall_on_s": 5.03,
+        "tokens_off": 40,
+        "tokens_on": 275
+      },
+      {
+        "task": "summary",
+        "case_id": "fa-executive",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 4.317,
+        "wall_on_s": 10.006,
+        "tokens_off": 215,
+        "tokens_on": 554
+      },
+      {
+        "task": "decompose",
+        "case_id": "fa-prompt_only-r0",
+        "metric": "schema_valid",
+        "off": true,
+        "on": true,
+        "wall_off_s": 18.107,
+        "wall_on_s": 24.452,
+        "tokens_off": 977,
+        "tokens_on": 1339
+      },
+      {
+        "task": "decompose",
+        "case_id": "en-prompt_only-r0",
+        "metric": "schema_valid",
+        "off": true,
+        "on": false,
+        "wall_off_s": 9.75,
+        "wall_on_s": 37.385,
+        "tokens_off": 524,
+        "tokens_on": 2048
+      },
+      {
+        "task": "judge",
+        "case_id": "JDG-FA-BAD-r0",
+        "metric": "verdict_correct",
+        "off": true,
+        "on": true,
+        "wall_off_s": 1.599,
+        "wall_on_s": 9.031,
+        "tokens_off": 86,
+        "tokens_on": 497
+      },
+      {
+        "task": "judge",
+        "case_id": "JDG-EN-BAD-r0",
+        "metric": "verdict_correct",
+        "off": true,
+        "on": true,
+        "wall_off_s": 2.455,
+        "wall_on_s": 8.134,
+        "tokens_off": 138,
+        "tokens_on": 454
+      }
+    ]
+  },
+  "lvm": {
+    "score_mean": null,
+    "per_task": {}
+  },
+  "changed_cases": []
+}

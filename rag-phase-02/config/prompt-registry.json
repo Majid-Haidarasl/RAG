@@ -1,0 +1,261 @@
+{
+  "registry_version": "0.2.1",
+  "phase": 2,
+  "note": "Prompt registry draft (spec 8.3). Templates use {{var}} placeholders. Bump `version` on any wording change and re-run experiments/phase-02.",
+  "prompts": [
+    {
+      "id": "qa.grounded",
+      "version": "1.0.0",
+      "task_type": "question_answering",
+      "spec_category": "پرسش و پاسخ / Q&A",
+      "metrics": [
+        "MP-02",
+        "C-16",
+        "C-43"
+      ],
+      "output_format": "text with [chunk_id] citations or INSUFFICIENT_CONTEXT",
+      "system": "You are the offline knowledge assistant of ArmanRayan IT Co. Answer ONLY from the CONTEXT blocks. Every factual sentence must cite its source chunk id in square brackets exactly as written, e.g. [en-HR-005-c1]. Do not use outside knowledge and do not invent numbers. If the CONTEXT does not contain the answer, reply with the single token INSUFFICIENT_CONTEXT followed by one short sentence saying what is missing. Answer in {{answer_language}}. Be concise (max 3 sentences).",
+      "user": "CONTEXT:\n{{context}}\n\nQUESTION: {{question}}"
+    },
+    {
+      "id": "summary.transfer",
+      "version": "1.0.0",
+      "task_type": "transfer_summary",
+      "spec_category": "آماده‌سازی انتقال دانش / خلاصه‌سازی مدیریتی و فنی",
+      "metrics": [
+        "MP-03",
+        "C-24"
+      ],
+      "output_format": "markdown text",
+      "levels": {
+        "executive": "EXECUTIVE level for Layer 0-1 (board / CEO): at most 80 words, plain prose, only status, root cause, decision needed and risk. No step-by-step detail.",
+        "technical": "TECHNICAL level for Layer 3 teams: bullet list covering root cause, each sub-issue with its owner (executor), referenced documents (IDs) and next concrete steps. 120-250 words."
+      },
+      "system": "You prepare TransferPackage summaries for upward knowledge transfer in a hierarchical organization. Use ONLY the SOURCE. Keep every number, name and document ID exactly as in the SOURCE. Do not add facts. Write in {{answer_language}}.",
+      "user": "DETAIL LEVEL: {{level_instruction}}\n\nSOURCE:\n{{source}}\n\nWrite the summary now."
+    },
+    {
+      "id": "issue.decompose",
+      "version": "1.1.0",
+      "task_type": "issue_decomposition",
+      "spec_category": "تجزیه مسئله / Issue decomposition",
+      "metrics": [
+        "MP-04",
+        "MP-08",
+        "C-29"
+      ],
+      "output_format": "JSON object (schema: decompose_schema)",
+      "system": "You decompose organizational issues into actionable sub-issues. Output ONLY a JSON object, no prose, no markdown fences. Schema: {\"issue_id\": string, \"sub_issues\": [{\"id\": string, \"title\": string, \"domain\": one of [\"HW\",\"WIN\",\"WEB\",\"LEG\",\"FIN\",\"OTHER\"], \"suggested_executor\": string (exactly one or two names copied character-for-character from EXECUTORS), \"related_docs\": [document IDs], \"rationale\": string}]}. Domain meanings: HW = server/workstation hardware, components, assembly and hardware tests; WIN = Windows desktop client software (C#/.NET), its compatibility and installation; WEB = web modules and APIs; LEG = contract scope, non-conformity vs scope change, delay penalty, contract amendment; FIN = invoicing, cost centres, payments; OTHER = anything else. Create one sub-issue per distinct work stream; a hardware mismatch that affects a software client needs both an HW and a WIN sub-issue. Produce 2 to 6 sub-issues. Text values in {{answer_language}}; keep names and IDs exactly as given.",
+      "user": "ISSUE ID: {{issue_id}}\nISSUE:\n{{issue}}\n\nEXECUTORS:\n{{executors}}\n\nKNOWN DOCUMENTS:\n{{documents}}",
+      "recommended_format": "schema",
+      "recommended_think": false
+    },
+    {
+      "id": "judge.score",
+      "version": "1.0.0",
+      "task_type": "llm_as_judge",
+      "spec_category": "امتیازدهی LLM به‌عنوان داور",
+      "metrics": [
+        "MP-02",
+        "MP-08",
+        "C-41"
+      ],
+      "output_format": "JSON object",
+      "threshold": 18,
+      "system": "You are a strict evaluator. Score the ANSWER against the SOURCE and the QUESTION with four criteria, each an integer 0-5: faithfulness (no contradiction with SOURCE, no invented facts), completeness (answers what was asked), citation (cites the correct source id), clarity. total = sum (0-20). verdict = \"accept\" if total >= 18 else \"revise\". Output ONLY JSON: {\"scores\": {\"faithfulness\": int, \"completeness\": int, \"citation\": int, \"clarity\": int}, \"total\": int, \"verdict\": \"accept\"|\"revise\", \"issues\": [short strings]}.",
+      "user": "SOURCE (id={{source_id}}):\n{{source}}\n\nQUESTION: {{question}}\n\nANSWER:\n{{answer}}",
+      "schema": "judge_schema"
+    },
+    {
+      "id": "lvm.read",
+      "version": "1.0.0",
+      "task_type": "visual_interpretation",
+      "spec_category": "LVM — تفسیر چیدمان و تصویر",
+      "metrics": [
+        "C-08"
+      ],
+      "output_format": "text or JSON per task",
+      "system": "You read document images exactly. Transcribe numbers and names exactly as shown. Do not guess unreadable text; write [unreadable] instead.",
+      "user": "{{task_prompt}}"
+    },
+    {
+      "id": "judge.summary",
+      "version": "1.0.0",
+      "task_type": "llm_as_judge",
+      "spec_category": "امتیازدهی LLM به‌عنوان داور (خلاصه انتقال)",
+      "metrics": [
+        "MP-03",
+        "C-41"
+      ],
+      "output_format": "JSON object",
+      "threshold": 18,
+      "schema": "summary_judge_schema",
+      "system": "You are a strict evaluator of TransferPackage summaries. Compare the SUMMARY (given as ANSWER) with the SOURCE and the requested DETAIL LEVEL (given as QUESTION). Score four criteria, each an integer 0-5: faithfulness (every statement and number is supported by SOURCE; derived or invented claims lose points), coverage (keeps the essential facts for this level: status, root cause, owners or decisions as appropriate), level_fit (length and detail match the requested level), clarity (well-formed, no garbled words). Citations are NOT required. total = sum (0-20). verdict = \"accept\" if total >= 18 else \"revise\". Output ONLY JSON: {\"scores\": {\"faithfulness\": int, \"coverage\": int, \"level_fit\": int, \"clarity\": int}, \"total\": int, \"verdict\": \"accept\"|\"revise\", \"issues\": [short strings]}.",
+      "user": "SOURCE (id={{source_id}}):\n{{source}}\n\nQUESTION (requested detail level): {{question}}\n\nANSWER (summary to evaluate):\n{{answer}}"
+    }
+  ],
+  "schemas": {
+    "decompose_schema": {
+      "type": "object",
+      "required": [
+        "issue_id",
+        "sub_issues"
+      ],
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "sub_issues": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "domain",
+              "suggested_executor",
+              "related_docs",
+              "rationale"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "domain": {
+                "type": "string",
+                "enum": [
+                  "HW",
+                  "WIN",
+                  "WEB",
+                  "LEG",
+                  "FIN",
+                  "OTHER"
+                ]
+              },
+              "suggested_executor": {
+                "type": "string"
+              },
+              "related_docs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "judge_schema": {
+      "type": "object",
+      "required": [
+        "scores",
+        "total",
+        "verdict"
+      ],
+      "properties": {
+        "scores": {
+          "type": "object",
+          "required": [
+            "faithfulness",
+            "completeness",
+            "citation",
+            "clarity"
+          ],
+          "properties": {
+            "faithfulness": {
+              "type": "integer"
+            },
+            "completeness": {
+              "type": "integer"
+            },
+            "citation": {
+              "type": "integer"
+            },
+            "clarity": {
+              "type": "integer"
+            }
+          }
+        },
+        "total": {
+          "type": "integer"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "accept",
+            "revise"
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary_judge_schema": {
+      "type": "object",
+      "required": [
+        "scores",
+        "total",
+        "verdict"
+      ],
+      "properties": {
+        "scores": {
+          "type": "object",
+          "required": [
+            "faithfulness",
+            "coverage",
+            "level_fit",
+            "clarity"
+          ],
+          "properties": {
+            "faithfulness": {
+              "type": "integer"
+            },
+            "coverage": {
+              "type": "integer"
+            },
+            "level_fit": {
+              "type": "integer"
+            },
+            "clarity": {
+              "type": "integer"
+            }
+          }
+        },
+        "total": {
+          "type": "integer"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "accept",
+            "revise"
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    "0.2.1 (2026-11-09, after run 20261109-191910): no template text changed. issue.decompose now records recommended_format=schema (schema 1.00 valid / domain recall 0.94 vs prompt-only 0.83 / 0.83, which also had one malformed JSON) and recommended_think=false (think-on hit the token cap while still thinking).",
+    "0.2.0 (2026-11-09, after run 20261109-184242): issue.decompose 1.1.0 adds domain definitions (WIN vs HW, LEG vs FIN) because FA runs never produced WIN and labelled contract/penalty items FIN/OTHER; new judge.summary 1.0.0 because summaries were judged with the QA rubric (citation criterion) although the summary prompt asks for no citations.",
+    "0.1.0: initial Phase 2 prompts."
+  ]
+}

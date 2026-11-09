@@ -1,0 +1,551 @@
+{
+  "note": "scores recomputed with kit scoring/data of this version; model outputs unchanged",
+  "llm": {
+    "calls": 86,
+    "ok": 86,
+    "errors": 0,
+    "performance": {
+      "think_off": {
+        "n": 74,
+        "tokens_per_s_mean": 57.837,
+        "prompt_tokens_per_s_mean": 8888.1316,
+        "ttft_s_p50": 0.3405,
+        "ttfc_s_p50": 0.3405,
+        "wall_s_p50": 1.356,
+        "wall_s_p95": 13.4997,
+        "eval_tokens_mean": 161.4459,
+        "thinking_chars_mean": 0.0,
+        "think_leak_rate": 0.0,
+        "truncated_rate": 0.0,
+        "empty_answer_after_thinking_rate": 0.0
+      },
+      "think_on": {
+        "n": 12,
+        "tokens_per_s_mean": 56.6733,
+        "prompt_tokens_per_s_mean": 24315.9258,
+        "ttft_s_p50": 0.167,
+        "ttfc_s_p50": 5.9405,
+        "wall_s_p50": 7.5275,
+        "wall_s_p95": 20.9742,
+        "eval_tokens_mean": 505.5,
+        "thinking_chars_mean": 1404.9167,
+        "think_leak_rate": 0.0,
+        "truncated_rate": 0.0,
+        "empty_answer_after_thinking_rate": 0.0
+      }
+    },
+    "quality_think_off": {
+      "qa_mono_fa": {
+        "n": 20,
+        "fact_rate_mean": 0.95,
+        "all_facts_rate": 0.95,
+        "citation_ok_rate": 0.9,
+        "citation_precision_mean": 0.9,
+        "false_refusal_rate": 0.05
+      },
+      "qa_mono_en": {
+        "n": 10,
+        "fact_rate_mean": 0.9,
+        "all_facts_rate": 0.9,
+        "citation_ok_rate": 0.9,
+        "citation_precision_mean": 0.9,
+        "false_refusal_rate": 0.1
+      },
+      "qa_cross_fa": {
+        "n": 12,
+        "fact_rate_mean": 0.9167,
+        "all_facts_rate": 0.917,
+        "citation_ok_rate": 1.0,
+        "citation_precision_mean": 1.0,
+        "false_refusal_rate": 0.0
+      },
+      "refusal": {
+        "n": 4,
+        "correct_refusal_rate": 1.0,
+        "exact_token_rate": 1.0
+      },
+      "summary_executive": {
+        "n": 2,
+        "fact_rate_mean": 1.0,
+        "words_mean": 55.5,
+        "within_limit_rate": 1.0
+      },
+      "summary_technical": {
+        "n": 2,
+        "fact_rate_mean": 1.0,
+        "words_mean": 108.5,
+        "within_limit_rate": 1.0
+      },
+      "decompose_prompt_only": {
+        "n": 6,
+        "json_valid_rate": 1.0,
+        "schema_valid_rate": 1.0,
+        "domain_recall_mean": 0.7225,
+        "executor_match_mean": 0.7225,
+        "executor_coverage_mean": 0.8335,
+        "executor_name_exact_mean": 0.9667,
+        "n_sub_issues_mean": 5.0
+      },
+      "decompose_schema": {
+        "n": 6,
+        "json_valid_rate": 1.0,
+        "schema_valid_rate": 1.0,
+        "domain_recall_mean": 0.6668,
+        "executor_match_mean": 0.6668,
+        "executor_coverage_mean": 0.8335,
+        "executor_name_exact_mean": 0.9333,
+        "n_sub_issues_mean": 5.0
+      },
+      "judge": {
+        "n": 8,
+        "json_valid_rate": 1.0,
+        "schema_valid_rate": 1.0,
+        "sum_consistent_rate": 1.0,
+        "verdict_accuracy": 1.0,
+        "totals": {
+          "JDG-FA-GOOD-r0": 20,
+          "JDG-FA-GOOD-r1": 20,
+          "JDG-FA-BAD-r0": 7,
+          "JDG-FA-BAD-r1": 7,
+          "JDG-EN-GOOD-r0": 20,
+          "JDG-EN-GOOD-r1": 20,
+          "JDG-EN-BAD-r0": 4,
+          "JDG-EN-BAD-r1": 3
+        }
+      },
+      "judge_on_summaries": {
+        "SUM-fa-executive-r0": 15,
+        "SUM-fa-technical-r0": 20,
+        "SUM-en-executive-r0": 20,
+        "SUM-en-technical-r0": 20
+      }
+    },
+    "think_comparison": [
+      {
+        "task": "qa",
+        "case_id": "FA-09-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.506,
+        "wall_on_s": 5.948,
+        "tokens_off": 59,
+        "tokens_on": 254
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-18-mono",
+        "metric": "fact_rate",
+        "off": 0.0,
+        "on": 1.0,
+        "wall_off_s": 1.336,
+        "wall_on_s": 8.388,
+        "tokens_off": 50,
+        "tokens_on": 461
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-20-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.232,
+        "wall_on_s": 7.029,
+        "tokens_off": 41,
+        "tokens_on": 388
+      },
+      {
+        "task": "qa",
+        "case_id": "EN-03-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 0.97,
+        "wall_on_s": 3.272,
+        "tokens_off": 32,
+        "tokens_on": 178
+      },
+      {
+        "task": "qa",
+        "case_id": "EN-07-mono",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 0.951,
+        "wall_on_s": 5.152,
+        "tokens_off": 34,
+        "tokens_on": 286
+      },
+      {
+        "task": "qa",
+        "case_id": "FA-09-cross",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 1.402,
+        "wall_on_s": 5.779,
+        "tokens_off": 56,
+        "tokens_on": 321
+      },
+      {
+        "task": "refusal",
+        "case_id": "REF-FA-02",
+        "metric": "refused",
+        "off": true,
+        "on": true,
+        "wall_off_s": 0.895,
+        "wall_on_s": 4.919,
+        "tokens_off": 40,
+        "tokens_on": 275
+      },
+      {
+        "task": "summary",
+        "case_id": "fa-executive",
+        "metric": "fact_rate",
+        "off": 1.0,
+        "on": 1.0,
+        "wall_off_s": 4.263,
+        "wall_on_s": 9.857,
+        "tokens_off": 215,
+        "tokens_on": 554
+      },
+      {
+        "task": "decompose",
+        "case_id": "fa-prompt_only-r0",
+        "metric": "schema_valid",
+        "off": true,
+        "on": true,
+        "wall_off_s": 13.137,
+        "wall_on_s": 25.977,
+        "tokens_off": 719,
+        "tokens_on": 1448
+      },
+      {
+        "task": "decompose",
+        "case_id": "en-prompt_only-r0",
+        "metric": "schema_valid",
+        "off": true,
+        "on": true,
+        "wall_off_s": 9.907,
+        "wall_on_s": 16.881,
+        "tokens_off": 549,
+        "tokens_on": 950
+      },
+      {
+        "task": "judge",
+        "case_id": "JDG-FA-BAD-r0",
+        "metric": "verdict_correct",
+        "off": true,
+        "on": true,
+        "wall_off_s": 1.581,
+        "wall_on_s": 8.881,
+        "tokens_off": 86,
+        "tokens_on": 497
+      },
+      {
+        "task": "judge",
+        "case_id": "JDG-EN-BAD-r0",
+        "metric": "verdict_correct",
+        "off": true,
+        "on": true,
+        "wall_off_s": 2.422,
+        "wall_on_s": 8.026,
+        "tokens_off": 138,
+        "tokens_on": 454
+      }
+    ]
+  },
+  "lvm": {
+    "score_mean": 0.9166,
+    "per_task": {
+      "org-extract": 1.0,
+      "org-reporting": 1.0,
+      "org-fa-question": 1.0,
+      "table-extract": 1.0,
+      "table-qa": 1.0,
+      "scan-ocr": 0.916,
+      "scan-qa": 0.5
+    }
+  },
+  "changed_cases": [
+    {
+      "task": "qa",
+      "case_id": "FA-20-mono",
+      "think": false,
+      "metric": "fact_rate",
+      "as_run": 0.5,
+      "rescored": 1.0
+    },
+    {
+      "task": "qa",
+      "case_id": "FA-10-cross",
+      "think": false,
+      "metric": "fact_rate",
+      "as_run": 0.0,
+      "rescored": 1.0
+    },
+    {
+      "task": "qa",
+      "case_id": "FA-18-cross",
+      "think": false,
+      "metric": "fact_rate",
+      "as_run": 0.5,
+      "rescored": 1.0
+    },
+    {
+      "task": "qa",
+      "case_id": "FA-20-mono",
+      "think": true,
+      "metric": "fact_rate",
+      "as_run": 0.5,
+      "rescored": 1.0
+    },
+    {
+      "task": "qa",
+      "case_id": "FA-09-cross",
+      "think": true,
+      "metric": "fact_rate",
+      "as_run": 0.0,
+      "rescored": 1.0
+    },
+    {
+      "task": "summary",
+      "case_id": "en-executive",
+      "think": false,
+      "metric": "fact_rate",
+      "as_run": 0.667,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r0",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r0",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 0.8
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r1",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r1",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r2",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r2",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r0",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r0",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 0.8
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r1",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r1",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r2",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-schema-r2",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 0.8
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r0",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r0",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r1",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r1",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r2",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r2",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r0",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r0",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r1",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r1",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r2",
+      "think": false,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-schema-r2",
+      "think": false,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r0",
+      "think": true,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 0.667
+    },
+    {
+      "task": "decompose",
+      "case_id": "fa-prompt_only-r0",
+      "think": true,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r0",
+      "think": true,
+      "metric": "executor_coverage",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "decompose",
+      "case_id": "en-prompt_only-r0",
+      "think": true,
+      "metric": "executor_name_exact_rate",
+      "as_run": null,
+      "rescored": 1.0
+    },
+    {
+      "task": "lvm",
+      "case_id": "org-reporting",
+      "metric": "score",
+      "as_run": 0.5,
+      "rescored": 1.0
+    }
+  ]
+}

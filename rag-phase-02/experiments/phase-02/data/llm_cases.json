@@ -1,0 +1,242 @@
+{
+  "refusal": [
+    {
+      "case_id": "REF-FA-01",
+      "lang": "fa",
+      "question": "آدرس ایمیل رسمی واحد منابع انسانی آرمان‌رایان چیست؟",
+      "context_chunks": [
+        "fa-HR-005-c1",
+        "fa-HR-004-c1"
+      ]
+    },
+    {
+      "case_id": "REF-FA-02",
+      "lang": "fa",
+      "question": "حقوق ماهانه مهندس آرش مرادی چقدر است؟",
+      "context_chunks": [
+        "fa-LEG-009-c1",
+        "fa-HW-014-c1"
+      ]
+    },
+    {
+      "case_id": "REF-EN-01",
+      "lang": "en",
+      "question": "Which server brand and model was ordered for the Azarpakhsh project?",
+      "context_chunks": [
+        "en-ISS-024-c1",
+        "en-HW-012-c1"
+      ]
+    },
+    {
+      "case_id": "REF-EN-02",
+      "lang": "en",
+      "question": "How many employees work in the legal unit?",
+      "context_chunks": [
+        "en-LEG-009-c1",
+        "en-SW-022-c1"
+      ]
+    }
+  ],
+  "decompose": {
+    "issue_id": "AR-ISS-024",
+    "expected_domains": [
+      "HW",
+      "WIN",
+      "LEG"
+    ],
+    "optional_domains": [
+      "WEB"
+    ],
+    "expected_executors": {
+      "HW": [
+        [
+          "akbari",
+          "اکبری"
+        ],
+        [
+          "javadi",
+          "جوادی"
+        ]
+      ],
+      "WIN": [
+        [
+          "mohseni",
+          "محسنی"
+        ]
+      ],
+      "LEG": [
+        [
+          "jalali",
+          "جلالی"
+        ]
+      ]
+    },
+    "fa": {
+      "issue": "پروژه سامانه انبار آذرپخش (قرارداد AR-CNT-1402-118 به مبلغ ۲٬۱۸۰ میلیون تومان) از تاریخ تحویل برنامه‌ای ۱۵ مرداد ۱۴۰۳ عقب افتاده و پیشرفت واقعی پایان شهریور ۶۲٪ است. نشانه اصلی، ناهماهنگی مشخصات کنترلر RAID و ظرفیت حافظه سرور تهیه‌شده با نیاز کلاینت ویندوزی برای سرویس همزمان چند ایستگاه است. ماژول گزارش‌گیری وب هم تأخیر دارد. مشخص نیست تعویض قطعه رفع عدم تطابق تعهد است یا تغییر محدوده، و خطر جریمه تأخیر و نیاز به الحاقیه وجود دارد.",
+      "executors": "- سعید اکبری: تکنسین ارشد تعمیرات سخت‌افزار (عیب‌یابی سرور و ایستگاه)\n- فرزانه جوادی: مشاور خرید تجهیزات (مقایسه سرور و قطعات)\n- روزبه محسنی: برنامه‌نویس ویندوز C#/.NET (کلاینت دسکتاپ انبار، نصب شبکه مشتری)\n- مهسا جلالی: کارشناس حقوقی و قراردادها\n- نازنین فراهانی: رهبر فنی تیم وب (Django، API انبار، ماژول گزارش)\n- نیلوفر احمدی: کارشناس پشتیبانی نرم‌افزار (SLA)",
+      "documents": "AR-HW-012 تعمیرات؛ AR-HW-013 مشاوره خرید؛ AR-HW-015 اسمبل و تست؛ AR-SW-016 استاندارد مهندسی؛ AR-SW-019 نرم‌افزار ویندوز؛ AR-LEG-009 رویه حقوقی؛ AR-FIN-010 حسابداری پروژه؛ AR-SW-022 SLA"
+    },
+    "en": {
+      "issue": "The Azarpakhsh warehouse system project (contract AR-CNT-1402-118, 2,180 million toman) has slipped past its planned delivery date of 15 Mordad 1403; actual progress at the end of Shahrivar is 62%. The principal symptom is a mismatch between the purchased RAID controller and server memory capacity and the Windows client requirements for serving several stations concurrently. The web reporting module is also delayed. It is unclear whether replacing the component cures a non-conformity or changes the scope, and there is a risk of a delay penalty and a need for a contract amendment.",
+      "executors": "- Saeed Akbari: senior hardware repair technician (server and workstation troubleshooting)\n- Farzaneh Javadi: equipment procurement advisor (server and component comparison)\n- Rouzbeh Mohseni: Windows developer, C#/.NET (warehouse desktop client, customer network installation)\n- Mahsa Jalali: legal and contracts specialist\n- Nazanin Farahani: web team tech lead (Django, warehouse API, reporting module)\n- Niloufar Ahmadi: software support specialist (SLA)",
+      "documents": "AR-HW-012 repair; AR-HW-013 procurement advisory; AR-HW-015 assembly & test; AR-SW-016 engineering standards; AR-SW-019 Windows software; AR-LEG-009 legal procedure; AR-FIN-010 project accounting; AR-SW-022 SLA"
+    },
+    "allowed_executors": {
+      "fa": [
+        "سعید اکبری",
+        "فرزانه جوادی",
+        "روزبه محسنی",
+        "مهسا جلالی",
+        "نازنین فراهانی",
+        "نیلوفر احمدی"
+      ],
+      "en": [
+        "Saeed Akbari",
+        "Farzaneh Javadi",
+        "Rouzbeh Mohseni",
+        "Mahsa Jalali",
+        "Nazanin Farahani",
+        "Niloufar Ahmadi"
+      ]
+    }
+  },
+  "summary": {
+    "source_chunks": {
+      "fa": [
+        "fa-ISS-024-c1"
+      ],
+      "en": [
+        "en-ISS-024-c1"
+      ]
+    },
+    "source_prefix": {
+      "fa": "پرونده مسئله AR-ISS-024 — سامانه انبار آذرپخش، قرارداد AR-CNT-1402-118، مبلغ ۲٬۱۸۰ میلیون تومان، پیشرفت واقعی پایان شهریور ۱۴۰۳: ۶۲٪، تحویل برنامه‌ای ۱۵ مرداد ۱۴۰۳، تحویل بازنگری‌شده پیشنهادی ۲۰ مهر ۱۴۰۳.",
+      "en": "Issue file AR-ISS-024 — Azarpakhsh warehouse system, contract AR-CNT-1402-118, value 2,180 million toman, actual progress at end of Shahrivar 1403: 62%, planned delivery 15 Mordad 1403, proposed revised delivery 20 Mehr 1403."
+    },
+    "expected_facts": {
+      "executive": {
+        "fa": [
+          [
+            "raid"
+          ],
+          [
+            "ram",
+            "حافظه",
+            "memory"
+          ],
+          [
+            "62"
+          ]
+        ],
+        "en": [
+          [
+            "raid"
+          ],
+          [
+            "ram",
+            "حافظه",
+            "memory"
+          ],
+          [
+            "62"
+          ]
+        ]
+      },
+      "technical": {
+        "fa": [
+          [
+            "raid"
+          ],
+          [
+            "ram",
+            "حافظه",
+            "memory"
+          ],
+          [
+            "اکبری"
+          ],
+          [
+            "محسنی"
+          ],
+          [
+            "جلالی"
+          ],
+          [
+            "ar-hw-012",
+            "ar-hw-013",
+            "ar-hw-015"
+          ],
+          [
+            "ar-leg-009"
+          ]
+        ],
+        "en": [
+          [
+            "raid"
+          ],
+          [
+            "ram",
+            "حافظه",
+            "memory"
+          ],
+          [
+            "akbari"
+          ],
+          [
+            "mohseni"
+          ],
+          [
+            "jalali"
+          ],
+          [
+            "ar-hw-012",
+            "ar-hw-013",
+            "ar-hw-015"
+          ],
+          [
+            "ar-leg-009"
+          ]
+        ]
+      }
+    },
+    "max_words": {
+      "executive": 120,
+      "technical": 320
+    }
+  },
+  "judge": [
+    {
+      "case_id": "JDG-FA-GOOD",
+      "lang": "fa",
+      "source_chunk": "fa-FIN-008-c1",
+      "question": "جمع درآمد و سود عملیاتی تابستان ۱۴۰۳ چقدر بود؟",
+      "answer": "جمع درآمد تابستان ۱۴۰۳ برابر ۸٬۴۷۰ میلیون تومان و سود عملیاتی ۱٬۱۷۰ میلیون تومان (۱۳٫۸ درصد درآمد) بود [fa-FIN-008-c1].",
+      "expected": "accept"
+    },
+    {
+      "case_id": "JDG-FA-BAD",
+      "lang": "fa",
+      "source_chunk": "fa-FIN-008-c1",
+      "question": "جمع درآمد و سود عملیاتی تابستان ۱۴۰۳ چقدر بود؟",
+      "answer": "جمع درآمد تابستان ۱۴۰۳ حدود ۹٬۲۰۰ میلیون تومان و سود عملیاتی ۲٬۶۵۰ میلیون تومان بود که رشد خوبی نسبت به سال قبل نشان می‌دهد.",
+      "expected": "revise"
+    },
+    {
+      "case_id": "JDG-EN-GOOD",
+      "lang": "en",
+      "source_chunk": "en-SW-022-c1",
+      "question": "What are the Priority 1 response and temporary restoration targets?",
+      "answer": "For a Priority 1 (complete outage) incident the response target is 30 minutes and temporary restoration is due within 4 hours [en-SW-022-c1].",
+      "expected": "accept"
+    },
+    {
+      "case_id": "JDG-EN-BAD",
+      "lang": "en",
+      "source_chunk": "en-SW-022-c1",
+      "question": "What are the Priority 1 response and temporary restoration targets?",
+      "answer": "Priority 1 incidents get an automated reply within 2 hours and must be fully resolved within 16 business hours.",
+      "expected": "revise"
+    }
+  ],
+  "data_version": "1.1"
+}

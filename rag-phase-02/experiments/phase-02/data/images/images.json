@@ -1,0 +1,151 @@
+{
+  "images": [
+    {
+      "file": "org_chart.png",
+      "kind": "org_chart",
+      "lang": "fa+en",
+      "source": "AR-ORG-002 / shared facts",
+      "tasks": [
+        {
+          "task_id": "org-extract",
+          "prompt": "List every person name and role shown in this organization chart. Output one line per box: role - name.",
+          "expected_facts": [
+            [
+              "nima yazdani",
+              "نیما یزدانی"
+            ],
+            [
+              "arash moradi",
+              "آرش مرادی"
+            ],
+            [
+              "maryam nouri",
+              "مریم نوری"
+            ],
+            [
+              "behrouz karimi",
+              "بهروز کریمی"
+            ],
+            [
+              "shahab amini",
+              "شهاب امینی"
+            ]
+          ]
+        },
+        {
+          "task_id": "org-reporting",
+          "prompt": "In this organization chart, who do the three vice presidents report to, and who chairs the board? Answer briefly.",
+          "expected_facts": [
+            [
+              "arash moradi",
+              "آرش مرادی",
+              "chief executive officer",
+              "ceo",
+              "مدیرعامل"
+            ],
+            [
+              "nima yazdani",
+              "نیما یزدانی"
+            ]
+          ]
+        },
+        {
+          "task_id": "org-fa-question",
+          "prompt": "در این نمودار سازمانی، معاون سخت‌افزار کیست؟ کوتاه و به فارسی پاسخ بده.",
+          "expected_facts": [
+            [
+              "بهروز کریمی",
+              "behrouz karimi"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "revenue_table.png",
+      "kind": "table",
+      "lang": "fa+en",
+      "source": "AR-FIN-008",
+      "tasks": [
+        {
+          "task_id": "table-extract",
+          "prompt": "Extract every row of this table as JSON: a list of objects {\"item\": English item name, \"amount\": number}. Output JSON only.",
+          "json": true,
+          "expected_numbers": [
+            "4120",
+            "730",
+            "4850",
+            "2940",
+            "680",
+            "3620",
+            "8470",
+            "2650",
+            "1170"
+          ]
+        },
+        {
+          "task_id": "table-qa",
+          "prompt": "According to the table, what is the total revenue and the operating profit (million toman)?",
+          "expected_facts": [
+            [
+              "8470"
+            ],
+            [
+              "1170"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scanned_sla_fa.png",
+      "kind": "scanned_fa_table",
+      "lang": "fa",
+      "source": "AR-SW-022",
+      "tasks": [
+        {
+          "task_id": "scan-ocr",
+          "prompt": "متن کامل این تصویر اسکن‌شده را همان‌طور که هست به فارسی بازنویسی کن (OCR). اعداد را دقیق بنویس.",
+          "expected_numbers": [
+            "30",
+            "4",
+            "2",
+            "16",
+            "8",
+            "5"
+          ],
+          "expected_facts": [
+            [
+              "پاسخ"
+            ],
+            [
+              "اولویت"
+            ],
+            [
+              "نیلوفر احمدی"
+            ]
+          ]
+        },
+        {
+          "task_id": "scan-qa",
+          "prompt": "According to this scanned table, what are the response time and the temporary-fix time for priority 1? Answer in English.",
+          "expected_facts": [
+            [
+              "30 min",
+              "30-min",
+              "30 دقیقه",
+              "thirty min"
+            ],
+            [
+              "4 hour",
+              "4-hour",
+              "four hour",
+              "4 ساعت"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "data_version": "1.1"
+}

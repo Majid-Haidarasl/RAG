@@ -1,0 +1,5 @@
+# Phase 2 test kit — runtime needs ONLY the Python standard library (3.9+).
+# Nothing here is required; the lines below are optional helpers for later phases.
+# numpy>=1.24        # optional: faster vector math in later phases
+# python-docx>=1.1   # optional: re-extract chunks from the ArmanRayan DOCX corpus
+# pytest>=8          # optional: run experiments/phase-02/tests with pytest instead of unittest

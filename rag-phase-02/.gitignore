@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+experiments/phase-02/results/*
+!experiments/phase-02/results/.gitkeep
+!experiments/phase-02/results/20261109-184242/
+!experiments/phase-02/results/20261109-191910/
+!experiments/phase-02/results/round2-console-notes.md

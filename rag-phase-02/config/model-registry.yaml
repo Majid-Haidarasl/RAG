@@ -1,0 +1,164 @@
+# Model registry — Phase 2 (spec 8.2, metric C-18).
+# Status flow: candidate -> selected (baseline) | rejected. Measured values come from
+# run 20261109-184242 (experiments/phase-02/results/20261109-184242/results.json);
+# values marked "rescored" come from rescored.json (same model outputs, fixed kit scoring).
+# Round 2 (confirmation): 20261109-190709 offline LLM, 20261109-191910 kit 0.2.0 --only llm,
+# 20261109-192721 kit 0.2.0 --only vram. See offline-model-baseline.md section 11.
+registry_version: 0.3.0
+updated: 2026-11-09
+baseline_run: 20261109-184242
+confirmation_runs: [20261109-190709, 20261109-191910, 20261109-192721]
+runtime:
+  engine: ollama
+  engine_version: 0.40.2
+  endpoint: http://localhost:11434
+  offline: true                 # C-17 passed for the LLM stage: run 20261109-190709 with internet disconnected, 86/86 ok
+  target_hardware:
+    cpu: Intel Core i5-12400F
+    ram_gb: 16
+    gpu: NVIDIA GeForce RTX 3060
+    vram_gb: 12
+    driver: "595.99.02 (CUDA 13.2)"
+    os: Ubuntu 24.04.5 LTS
+  residency_plan:
+    resident: [emb-bge-m3, llm-qwen3-8b]      # measured 7496 MiB nvidia-smi incl. 587 MiB desktop, fully on GPU (run 192721)
+    on_demand: [lvm-qwen2.5vl-3b]             # batch visual ingestion, keep_alive 0 afterwards
+    measured_vram_mib:                         # run 20261109-192721, kit 0.2.0 --only vram
+      empty_gpu: 587
+      embed_plus_llm: 7496                     # qwen3 6004 MB + bge-m3 633 MB, no offload
+      embed_plus_llm_plus_lvm: 11347           # peak 11351; qwen2.5vl:3b partly offloaded to CPU -> do not co-load all three
+    ollama_env: {OLLAMA_MAX_LOADED_MODELS: 2, OLLAMA_KEEP_ALIVE: 30m}
+models:
+  - id: emb-bge-m3
+    role: embedding
+    task_types: [knowledge_indexing, semantic_retrieval, duplicate_overlap_detection, issue_comparison]
+    ollama_name: bge-m3:latest
+    ollama_id: "790764642607"
+    family: XLM-RoBERTa (BGE-M3)
+    parameters: 566.70M             # measured (check_env)
+    quantization: F16               # measured
+    disk_size_gb: 1.16
+    max_input_tokens: 8192
+    num_ctx_used: 8192              # kit 0.2.0 sets it; run 20261109-184242 used Ollama default 4096
+    embedding_dim: 1024             # measured
+    languages: [fa, en, multilingual]
+    default_params: {keep_alive: 30m, num_ctx: 8192}
+    status: selected-baseline
+    evaluation:
+      metrics: [MP-01, C-14]
+      recall_at_1_mixed: 0.867
+      recall_at_5_mixed: 0.967
+      mrr_mixed: 0.911
+      recall_at_5_fa: 0.95
+      recall_at_5_en: 1.00
+      recall_at_5_fa_to_en: 0.95
+      recall_at_5_en_to_fa: 1.00
+      fa_en_parallel_cosine_gap: 0.366
+      cold_load_s: 11.2
+      latency_ms_per_text_single: {mean: 13.1, p50: 10.9, p95: 19.8}
+      latency_ms_per_text_batch: 283.6   # anomalous, re-measure (kit 0.2.0 adds a warm batch)
+      vram_mb_ollama_ps: 633
+      vram_mib_nvidia_smi_delta: 832
+      meets_targets: "MP-01 pass in all modes (indicative: 24-chunk index)"
+    notes: Dense vectors only via Ollama /api/embed. Top-1 misses come from company-name pull (ORG-001) and long mixed narrative+table chunks (ISS-024).
+
+  - id: llm-qwen3-8b
+    role: llm
+    task_types: [question_answering, technical_summary, managerial_summary, issue_decomposition,
+                 subissue_comparison, executor_analysis, research_gap, transfer_preparation,
+                 rfp_generation, proposal_evaluation, feedback_generation, llm_as_judge]
+    ollama_name: qwen3:8b
+    ollama_id: 500a1f067a9f
+    family: Qwen3
+    parameters: 8.2B                # measured
+    quantization: Q4_K_M            # measured
+    disk_size_gb: 5.23
+    context_window_max: 40960
+    num_ctx_used: 8192
+    thinking_mode: supported        # `think` API field works on Ollama 0.40.2
+    default_params: {temperature: 0.2, top_p: 0.9, seed: 42, num_ctx: 8192, num_predict: 1024, think: false, keep_alive: 30m}
+    think_on_params: {num_predict: 4096}     # 2048 truncated one think-on decomposition while still thinking (run 191910)
+    structured_output_default: {format: json_schema, prompt: issue.decompose@1.1.0}   # round 2: schema 1.00 valid, domain recall 0.94 vs prompt-only 0.83/0.83
+    think_policy: "off by default; retry with think=true (num_predict>=4096) only if the answer is INSUFFICIENT_CONTEXT while retrieval top score is high (FA-18 pattern). For JSON validation failures retry with think=false + schema format; if think-on stops in thinking (done_reason=length, empty answer) fall back to think=false + schema. Not for decomposition."
+    status: selected-baseline
+    conditions:
+      - post-generation validation of person names, document IDs and numbers against source/registry
+      - human review of decompositions (MP-04) and of judge decisions until C-41 agreement study (Phase 10)
+    evaluation:
+      metrics: [MP-02, MP-03, MP-04, MP-08, C-16, C-41]
+      tokens_per_s_think_off: 57.8
+      tokens_per_s_think_on: 56.7
+      ttft_s_p50_think_off: 0.34
+      first_answer_token_s_p50_think_on: 5.94
+      wall_s_p50_think_off: 1.36
+      wall_s_p95_think_off: 13.50
+      wall_s_p50_think_on: 7.53
+      qa_fact_rate_fa: {as_run: 0.93, rescored: 0.95}
+      qa_fact_rate_en: 0.90          # only miss = gold defect EN-08
+      qa_fact_rate_cross_fa_q_en_ctx: {as_run: 0.79, rescored: 0.917}
+      citation_ok_rate: {fa: 0.90, en: 0.90, cross: 1.00}
+      false_refusal_rate: {fa: 0.05, en: 0.10}
+      refusal_correct_rate: 1.00
+      json_schema_valid_rate_prompt_only: 1.00
+      json_schema_valid_rate_with_format: 1.00
+      decomposition_domain_recall: {prompt_only: 0.72, schema: 0.67}
+      decomposition_executor_coverage: {fa: 0.667, en: 1.00}     # rescored
+      decomposition_executor_name_exact: {prompt_only: 0.967, schema: 0.933}   # rescored; Persian name corruption
+      judge_verdict_accuracy: 1.00   # 8 calls, good=20/20, bad=3-7/20
+      judge_on_summaries: "round 1 invalid (QA rubric). Round 2 judge.summary 1.0.0: 20,20,20,20 (>=18) but judge-reported only; it gave 20/20 to a FA summary with an unsupported '۲ ماه' claim; MP-03 needs human check (C-41)"
+      round2_20261109_191910:
+        tokens_per_s_think_off: 57.0
+        tokens_per_s_think_on: 55.9
+        ttft_s_p50_think_off: 0.35
+        first_answer_token_s_p50_think_on: 5.81
+        wall_s_p50_p95_think_off: [1.37, 17.24]
+        wall_s_p50_p95_think_on: [7.63, 30.27]
+        think_on_truncated_rate: 0.08      # 1/12: en decompose prompt-only, 2048 tokens of thinking, empty answer
+        qa_fa: {fact: 0.95, citation_ok: 0.90, false_refusal: 0.05}
+        qa_en: {fact: 1.00, citation_ok: 1.00, false_refusal: 0.00}
+        qa_cross_fa: {fact: 0.92, citation_ok: 1.00}
+        refusal_correct_rate: 1.00
+        summary_fact_rate: 1.00
+        decompose_prompt_only: {json_valid: 0.83, schema_valid: 0.83, domain_recall: 0.83, executor_name_exact: 1.00, n_sub: 4.33}   # json_valid 1.00 as-run; 0.83 with kit 0.2.1 parser (1 malformed reply)
+        decompose_schema: {json_valid: 1.00, schema_valid: 1.00, domain_recall: 0.94, executor_name_exact: 1.00, n_sub: 5.67}
+        judge_verdict_accuracy: 1.00
+        repeated_model_errors: [FA-18 false refusal (think off), FA-19 wrong citation, FA-15-cross "دجANGO"]
+      offline_run_20261109_190709: {calls_ok: "86/86", tokens_per_s: 57.4, scores: identical to 20261109-184242, network: disconnected}
+      vram_mb_ollama_ps: 6004
+      vram_mib_nvidia_smi_peak_alone: 6711   # 6763 in run 191910
+    notes: Persian outputs occasionally corrupt tokens (e.g. "دجANGO", "سation", "فرزانه جوتادی").
+
+  - id: lvm-qwen2.5vl-3b
+    role: lvm
+    task_types: [layout_interpretation, table_extraction, image_text_reading]
+    ollama_name: qwen2.5vl:3b
+    ollama_id: fb90415cde1e
+    family: Qwen2.5-VL
+    parameters: 3.8B                # measured
+    quantization: Q4_K_M            # measured
+    disk_size_gb: 3.2
+    context_window_max: 128000
+    num_ctx_used: 8192
+    default_params: {temperature: 0.1, seed: 42, num_ctx: 8192, num_predict: 1024, keep_alive: 0}
+    status: selected-baseline-limited
+    scope: "rendered charts/tables (FA+EN labels); NOT trusted for numbers on scanned Persian pages"
+    evaluation:
+      metrics: [C-08]
+      score_mean: {as_run: 0.845, rescored: 0.917}
+      org_chart_score: {as_run: 0.833, rescored: 1.00}
+      table_number_recall: 1.00
+      scanned_fa_ocr_score: 0.916    # read ۳۰ as 20
+      scanned_fa_qa_score: 0.50
+      load_s: 11.5
+      latency_s_p50: 2.5
+      tokens_per_s: 107.4
+      prompt_tokens_per_image: 1360
+      vram_mb_ollama_ps: 2997
+      vram_mb_ollama_ps_coresident: 2429   # run 192721, with qwen3+bge-m3 loaded: partly offloaded to CPU
+      vram_note: "run 184242 listed two runners (kit bug). Co-loading with qwen3+bge-m3 gives 11347 MiB and CPU offload of the LVM (run 192721): load on demand only"
+
+selection_rule: >
+  A model is "selected-baseline" for a task type if it meets the Phase 1 targets
+  (evaluation-baseline.md, MP-xx / C-xx) on the Phase 2 set and fits in VRAM with the
+  embedding model. Conditions attached to a selection are mandatory implementation
+  requirements. Final selection is re-confirmed in Phase 14 on the larger evaluation set.
