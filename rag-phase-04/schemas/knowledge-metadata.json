@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://armanrayan.example/schemas/knowledge-metadata.json",
+  "title": "ArmanRayan KnowledgeItem metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "language",
+    "owning_node",
+    "doc_type",
+    "version",
+    "file_name",
+    "file_sha256",
+    "file_format",
+    "byte_size",
+    "is_scanned",
+    "ingested_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^AR-[A-Z]{2,5}-[0-9]{3}$",
+      "description": "Stable document identifier with Latin digits (AR-ORG-001)."
+    },
+    "language": {
+      "type": ["string", "null"],
+      "enum": ["fa", "en", null]
+    },
+    "owning_node": {
+      "type": ["string", "null"],
+      "pattern": "^N-[A-Z0-9]+(?:-[A-Z0-9]+)*$",
+      "description": "Primary organizational node that owns the knowledge item."
+    },
+    "additional_nodes": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^N-[A-Z0-9]+(?:-[A-Z0-9]+)*$" }
+    },
+    "doc_type": {
+      "type": "string",
+      "description": "Knowledge class such as hr_policy, issue_file, team_guide."
+    },
+    "title_fa": { "type": ["string", "null"] },
+    "title_en": { "type": ["string", "null"] },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "version_status": {
+      "type": "string",
+      "enum": ["Approved", "Draft", "Archived", "Superseded"]
+    },
+    "date_jalali": {
+      "type": ["string", "null"],
+      "description": "Document date in Solar Hijri, YYYY-MM (Mehr 1403 → 1403-07)."
+    },
+    "date_gregorian": {
+      "type": ["string", "null"],
+      "description": "Document date in Gregorian, YYYY-MM."
+    },
+    "confidentiality": {
+      "type": "string",
+      "enum": ["restricted", "internal", "per_item", "public"]
+    },
+    "file_name": { "type": "string", "minLength": 1 },
+    "source_path": { "type": "string" },
+    "file_format": {
+      "type": "string",
+      "enum": ["docx", "doc", "pdf"]
+    },
+    "file_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "byte_size": { "type": "integer", "minimum": 0 },
+    "page_count": { "type": ["integer", "null"], "minimum": 0 },
+    "char_count": { "type": "integer", "minimum": 0 },
+    "chunk_count": { "type": "integer", "minimum": 0 },
+    "is_scanned": {
+      "type": "boolean",
+      "description": "True when one or more PDF pages look image-only. OCR/LVM is deferred."
+    },
+    "bilingual_pair": {
+      "type": ["object", "null"],
+      "required": ["language", "file_name"],
+      "additionalProperties": false,
+      "properties": {
+        "language": { "type": "string", "enum": ["fa", "en"] },
+        "file_name": { "type": "string" }
+      }
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
