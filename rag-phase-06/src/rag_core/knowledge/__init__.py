@@ -1,0 +1,1 @@
+"""Knowledge Management bounded context."""
