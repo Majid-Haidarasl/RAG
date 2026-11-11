@@ -10,7 +10,7 @@ from rag_core.ingestion.domain.errors import ParseFailedError, UnsupportedFormat
 from rag_core.ingestion.domain.model import ContentBlock, FileFormat
 from rag_core.ingestion.infrastructure.parser_doc import parse_doc
 from rag_core.ingestion.infrastructure.parser_docx import parse_docx
-from rag_core.ingestion.infrastructure.parser_pdf import parse_pdf
+from rag_core.ingestion.infrastructure.parser_pdf import parse_pdf_detailed
 from rag_core.knowledge.domain.ports import DocumentParserPort, ParsedDocument
 from rag_core.shared_kernel.language import LanguageCode
 
@@ -24,6 +24,9 @@ class ParsedWithBlocks(ParsedDocument):
     is_scanned: bool = False
     scanned_pages: tuple[int, ...] = ()
     converted_from: str | None = None
+    extraction_engine: str = ""
+    text_quality: dict[str, object] | None = None
+    warnings: tuple[str, ...] = ()
 
 
 def _join_text(blocks: list[ContentBlock]) -> str:
@@ -47,17 +50,26 @@ class CompositeDocumentParser:
         scanned: tuple[int, ...] = ()
         page_count = 0
         file_format: FileFormat
+        engine = ""
+        quality: dict[str, object] | None = None
+        warnings: tuple[str, ...] = ()
 
         if suffix == ".docx":
             file_format = FileFormat.DOCX
             blocks = parse_docx(path)
+            engine = "python-docx"
         elif suffix == ".doc":
             file_format = FileFormat.DOC
             blocks, converted = parse_doc(path)
             converted_from = str(converted)
+            engine = "libreoffice+python-docx"
         elif suffix == ".pdf":
             file_format = FileFormat.PDF
-            blocks, scanned, page_count = parse_pdf(path)
+            result = parse_pdf_detailed(path)
+            blocks, scanned, page_count = result.blocks, result.scanned_pages, result.page_count
+            engine = result.engine
+            quality = result.quality.to_dict()
+            warnings = result.warnings
         else:
             raise UnsupportedFormatError(suffix or path.name)
 
@@ -75,6 +87,9 @@ class CompositeDocumentParser:
             is_scanned=bool(scanned),
             scanned_pages=scanned,
             converted_from=converted_from,
+            extraction_engine=engine,
+            text_quality=quality,
+            warnings=warnings,
         )
 
 

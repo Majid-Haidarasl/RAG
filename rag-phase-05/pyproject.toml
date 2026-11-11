@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rag-core"
-version = "0.5.0"
+version = "0.5.1"
 description = "Offline hierarchical RAG core for ArmanRayan — Phase 4 ingestion foundation"
 readme = "README-phase-05.md"
 requires-python = ">=3.12"

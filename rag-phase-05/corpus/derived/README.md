@@ -15,3 +15,5 @@ Re-generate locally (optional, requires LibreOffice):
 ```bash
 # see scripts in the Phase 4 kit; the checked-in files are already generated
 ```
+
+Note (0.5.1): the Persian PDFs here are a useful hard case. LibreOffice positions Noto Naskh dots as separate glyphs, so naive extraction gives cid placeholders (pdfplumber) or split words (`pdftotext -layout`). The ingestion adapter rebuilds the text from `pdftotext -bbox`; see `docs/phase-05/pdf-text-extraction.md`.

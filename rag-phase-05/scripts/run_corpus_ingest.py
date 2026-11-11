@@ -8,6 +8,7 @@ import json
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+import shutil
 import sys
 
 # Allow running without installation when needed.
@@ -75,6 +76,8 @@ def main() -> int:
     scanned_pages_total = 0
     norm = Counter()
     id_fix_docs: list[str] = []
+    engines: Counter[str] = Counter()
+    quality: Counter[str] = Counter()
 
     for path in files:
         suffix = path.suffix.lower().lstrip(".")
@@ -93,6 +96,9 @@ def main() -> int:
             continue
         assert isinstance(doc, IngestedDocument)
         chunks_total += len(doc.chunks)
+        if doc.file_format.value == "pdf":
+            engines[doc.extraction_engine or "unknown"] += 1
+            quality[(doc.text_quality or {}).get("verdict", "unknown")] += 1
         if doc.is_scanned:
             scanned_docs += 1
             scanned_pages_total += len(doc.scanned_pages)
@@ -110,7 +116,7 @@ def main() -> int:
         )
 
     payload = {
-        "kit": "rag-core 0.5.0 (phase 5)",
+        "kit": "rag-core 0.5.1 (phase 5)",
         "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "corpus": str(corpus),
         "files_found": len(files),
@@ -123,6 +129,9 @@ def main() -> int:
         "normalization": dict(norm),
         "id_digit_fixes_documents": sorted(set(id_fix_docs)),
         "expected_persian_digit_id_docs": sorted(PERSIAN_DIGIT_ID_DOCUMENTS),
+        "pdf_engines": dict(engines),
+        "pdf_text_quality": dict(quality),
+        "pdftotext": shutil.which("pdftotext"),
         "failures": failures,
         "documents": success,
         "pytest": {
@@ -140,7 +149,7 @@ def main() -> int:
     print()
     print(SEPARATOR_START)
     print(f"status: {status}")
-    print("kit: rag-core 0.5.0 (phase 5)")
+    print("kit: rag-core 0.5.1 (phase 5)")
     if args.python_version:
         print(f"python: {args.python_version}")
     if args.pytest_exit is not None:
@@ -164,6 +173,11 @@ def main() -> int:
     print(f"normalization_id_digits: {norm.get('id_digits', 0)}")
     print(f"normalization_arabic_indic: {norm.get('arabic_indic', 0)}")
     print(f"id_digit_fix_docs: {','.join(sorted(set(id_fix_docs))) or '(none)'}")
+    print(f"pdftotext: {shutil.which('pdftotext') or 'MISSING (sudo apt install -y poppler-utils)'}")
+    print(f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(engines.items())) or 'none'}")
+    print(f"pdf_text_quality: {', '.join(f'{k}={v}' for k, v in sorted(quality.items())) or 'none'}")
+    garbled_fail = sum(1 for f in failures if f.get("error_type") == "GarbledTextError")
+    print(f"pdf_garbled_failures: {garbled_fail}")
     print(f"results_json: {out_json}")
     if failures:
         print("failures:")

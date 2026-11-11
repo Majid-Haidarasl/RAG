@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Phase 5 — create a local virtualenv, install rag_core, run unit tests, ingest the corpus,
+# Phase 5 (0.5.1) — create a local virtualenv, install rag_core, run unit tests, ingest the corpus,
 # then run the knowledge lifecycle + duplicate detection over it.
 # Ubuntu 24.04 / Python 3.12. The first pip install needs internet. Tests and ingest
 # do not call Ollama, the GPU or the public internet.
@@ -10,6 +10,7 @@ cd "$ROOT"
 
 VENV_HINT="sudo apt install -y python3.12-venv"
 SOFFICE_HINT="sudo apt install -y libreoffice-writer --no-install-recommends"
+POPPLER_HINT="sudo apt install -y poppler-utils"
 
 separator_start="======== PHASE 5 SUMMARY (paste this block) ========"
 separator_end="======== END PHASE 5 SUMMARY ========"
@@ -49,6 +50,17 @@ else
   echo "Legacy .doc conversion will fail and the DOC unit test will be skipped."
   echo "Install it with:"
   echo "  $SOFFICE_HINT"
+fi
+
+# poppler's pdftotext is the primary PDF text engine (correct Persian order).
+# Without it the adapter falls back to pdfplumber and Persian PDFs fail as garbled.
+if command -v pdftotext >/dev/null 2>&1; then
+  echo "pdftotext: $(pdftotext -v 2>&1 | head -n 1)"
+else
+  echo "NOTE: poppler (pdftotext) is not installed."
+  echo "Persian PDF text will be rejected as garbled and the pdftotext unit tests will be skipped."
+  echo "Install it with:"
+  echo "  $POPPLER_HINT"
 fi
 
 VENV="$ROOT/.venv"

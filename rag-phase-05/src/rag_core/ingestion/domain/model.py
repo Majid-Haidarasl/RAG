@@ -156,6 +156,8 @@ class IngestedDocument:
     chunks: tuple[TextChunk, ...] = ()
     warnings: list[str] = field(default_factory=list)
     converted_from: str | None = None
+    extraction_engine: str = ""
+    text_quality: dict[str, object] | None = None
 
     def to_summary(self) -> dict[str, object]:
         return {
@@ -173,4 +175,6 @@ class IngestedDocument:
             "normalization": self.normalization.to_dict(),
             "warnings": list(self.warnings),
             "converted_from": self.converted_from,
+            "extraction_engine": self.extraction_engine,
+            "text_quality": self.text_quality,
         }

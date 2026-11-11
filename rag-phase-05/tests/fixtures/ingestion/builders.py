@@ -130,3 +130,23 @@ def write_scanned_pdf(path: Path) -> Path:
     # Build a single-image PDF with Pillow.
     image.save(path, "PDF", resolution=72.0)
     return path
+
+
+PERSIAN_PARAGRAPHS = (
+    "این سیاست تصمیم مرخصی و حضور را قابل ردیابی می‌کند و همزمان تداوم خدمت و حریم خصوصی کارکنان را حفظ می‌کند.",
+    "مدیر مستقیم پوشش کار را برنامه‌ریزی می‌کند و حسابداری نتیجه مجاز حضور را برای حقوق استفاده می‌کند.",
+    "درخواست مرخصی باید پیش از شروع در سامانه ثبت شود و تأیید مدیر با تاریخ و ساعت نگهداری شود.",
+    "شناسه سند AR-HR-005 است و نسخه ۱.۰ از مهر ۱۴۰۳ اعتبار دارد.",
+)
+
+
+def write_persian_docx(path: Path) -> Path:
+    """Right-to-left Persian paragraphs (rendered to PDF by LibreOffice in tests)."""
+    doc = Document()
+    for text in PERSIAN_PARAGRAPHS:
+        paragraph = doc.add_paragraph(text)
+        pPr = paragraph._p.get_or_add_pPr()
+        pPr.append(OxmlElement("w:bidi"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(str(path))
+    return path

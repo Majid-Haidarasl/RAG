@@ -111,7 +111,7 @@ def ingest_file(
             "file_sha256": file_hash,
             "metadata_error": f"schema not found: {exc}",
         }
-    warnings: list[str] = []
+    warnings: list[str] = list(getattr(parsed, "warnings", ()) or ())
     if parsed.is_scanned:
         warnings.append(
             "scanned or image-only PDF pages detected; LVM OCR is deferred "
@@ -135,6 +135,8 @@ def ingest_file(
         chunks=tuple(chunks),
         warnings=warnings,
         converted_from=parsed.converted_from,
+        extraction_engine=getattr(parsed, "extraction_engine", ""),
+        text_quality=getattr(parsed, "text_quality", None),
     )
 
 

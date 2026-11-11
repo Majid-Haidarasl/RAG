@@ -110,3 +110,24 @@ def test_report_serializes_to_plain_dict() -> None:
     d = DuplicateFinder().find([record("a", LOREM_EN, doc="AR-A-001"), record("b", LOREM_EN, doc="AR-B-002")]).to_dict()
     assert d["exact_group_count"] == 1 and d["by_scope"]["exact_groups"]["cross_document"] == 1
     assert set(d["timings_s"]) >= {"exact", "near_minhash_lsh", "overlap_index", "total"}
+
+
+def test_char_mode_matches_renditions_despite_spurious_spaces() -> None:
+    from tests.fixtures.knowledge.factories import LOREM_FA
+
+    split = LOREM_FA.replace("تعمیرات", "ت عمیرات").replace("تکنسین", "ت کنسین").replace("دستمزد", "دست مزد")
+    split = split.replace("خرابی", "خ رابی").replace("ثبت", "ث بت")
+    a = record("docx", LOREM_FA, doc="AR-HW-012", lang="fa", source="a.docx")
+    b = record("pdf", split, doc="AR-HW-012", lang="fa", source="a.pdf")
+    word = DuplicateFinder(DedupConfig(exhaustive=True)).find([a, b])
+    char = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find([a, b])
+    assert char.exact_groups and char.exact_groups[0].scope == "rendition"  # spaces ignored by normalized hash
+    assert word.exact_groups  # same normalized hash in both modes
+    c = record("pdf2", split + " بند افزوده", doc="AR-HW-012", lang="fa", source="b.pdf")
+    near = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find([a, c])
+    assert len(near.near_pairs) == 1 and near.near_pairs[0].jaccard >= 0.8
+
+
+def test_unknown_shingle_mode_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        DuplicateFinder(DedupConfig(shingle_mode="bytes")).find([record("a", "x")])

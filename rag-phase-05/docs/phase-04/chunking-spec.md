@@ -41,3 +41,11 @@ No Hugging Face tokenizer is added to the core (offline, no extra model files). 
 - Token-accurate splitting with the bge-m3 tokenizer.
 - Semantic / embedding-based chunk boundaries (needs the model; unit tests must stay offline).
 - Near-duplicate merging (Phase 5+).
+
+## Note — PDF text source changed in 0.5.1
+
+PDF paragraphs now come from poppler `pdftotext -bbox` with RTL line
+reconstruction (one paragraph per vertical gap), not from pdfplumber page text.
+Chunking rules are unchanged, but PDF chunk counts changed (ingest total 1402 →
+1356). Garbled text is rejected before chunking. See
+`docs/phase-05/pdf-text-extraction.md`.

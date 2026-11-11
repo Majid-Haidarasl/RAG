@@ -1,12 +1,12 @@
 # Phase 5 — Versioning, chunk lifecycle and duplicate detection
 
-Status: implemented in `rag-core 0.5.0`. Context: **Knowledge Management**.
+Status: implemented in `rag-core 0.5.0`; PDF fix and document-level char mode in `0.5.1`. Context: **Knowledge Management**.
 Pure standard library; no new dependencies.
 
 | Concern | Code |
 |---|---|
 | Lifecycle (aggregate) | `src/rag_core/knowledge/domain/model.py` |
-| Fingerprints (normalize, shingles, MinHash, LSH) | `src/rag_core/knowledge/domain/fingerprint.py` |
+| Fingerprints (normalize, word/char shingles, MinHash, LSH) | `src/rag_core/knowledge/domain/fingerprint.py` |
 | Duplicate / near-duplicate / overlap rules | `src/rag_core/knowledge/domain/dedup.py` |
 | Ingestion → lifecycle mapping | `src/rag_core/knowledge/application/lifecycle.py` |
 | Corpus run + PHASE 5 SUMMARY | `scripts/run_corpus_dedup.py` |
@@ -110,45 +110,55 @@ Every finding has a **scope**:
 LSH quality is measured on every run. The overlap index also computes exact
 Jaccard for its candidates; `lsh_recall = near_pairs / reference_near_pairs`.
 
-## 5. Corpus results (box, Debian 13, Python 3.13.5; 2026-11-11)
+## 5. Corpus results (box, Debian 13, Python 3.13.5, poppler 25.03; 0.5.1, 2026-11-12)
 
-| Metric | Value |
-|---|---|
-| Files | 52 official (26 FA + 26 EN) + 8 derived |
-| Knowledge items / bilingual items | 26 / 26 |
-| Versions | 53 (52 active, 1 superseded) |
-| Chunks | 1219 active, 0 stale, 23 retired |
-| Update simulation (AR-HW-012 FA) | unchanged re-ingest → `unchanged`; modified copy → `1.1`, chain `1.1 ← 1.0`, 23 chunks retired, EN stays 1.0 |
-| Chunk records | 1402 |
-| Exact groups | 51 (22 rendition, 29 cross-document) |
-| Near-dup pairs | 7 (1 rendition, 6 cross-document) |
-| Overlap pairs | 404 (58 rendition, 346 cross-document) |
-| Bilingual exclusions | 0 would-flag; 223 bilingual candidates skipped |
-| LSH candidates / recall | 988 / 1.000 |
-| Document level | 2 exact rendition groups (DOC ↔ DOCX), 3 near renditions (PDF/DOC ↔ DOCX, J ≈ 0.97) |
-| Time | ingest ≈ 6.5 s, lifecycle 0.2 s, chunk dedup ≈ 2.2 s, document dedup ≈ 1.9 s |
+Two passes run per corpus:
+
+* **chunk level**: word 3-shingles, MinHash/LSH (§4.2);
+* **document level** (rendition matching): whitespace-insensitive **char 5-grams** of the
+  normalized text, all pairs compared exactly (`exhaustive=True`, 59 documents),
+  near ≥ 0.80, containment ≥ **0.80**. Char grams ignore the spurious spaces
+  in Arabic-script PDF text. Containment is raised to 0.80 because, at 0.60,
+  English documents of one family overlapped by shared vocabulary alone
+  (0.60–0.63), while renditions score ≥ 0.86.
+
+| Metric | 0.5.0 | 0.5.1 |
+|---|---|---|
+| Tests | 129 | 149 |
+| Ingest chunks (all 60 files) | 1402 | 1356 (PDF paragraphs now from poppler) |
+| PDF engine | pdfplumber | pdftotext ×6 |
+| PDF text quality | not checked | ok 2, fragmented 3, empty 1 (scan), garbled 0 |
+| Knowledge items / versions | 26 / 53 (52 active, 1 superseded) | same |
+| Chunks active / retired | 1219 / 23 | same |
+| Update simulation AR-HW-012 FA | unchanged → no-op; changed → 1.1, 23 retired | same |
+| Exact groups (chunk) | 51 (22 rendition, 29 cross-doc) | 52 (23 / 29) |
+| Near pairs (chunk) | 7 (1 / 6) | 26 (14 / 12) |
+| Overlap pairs (chunk) | 404 (58 / 346) | 433 (69 / 364) |
+| Bilingual would-flag / candidates skipped | 0 / 223 | 0 / 222 |
+| LSH recall | 1.000 | 1.000 |
+| Doc-level near (renditions) | 3 (EN only) | **7**: all DOC/PDF renditions incl. 3 Persian PDFs (J 0.86 FIN-008, 0.97 HR-005, 0.96 SW-022) |
+| Doc-level cross-document | 0 | 0 |
+| `garbled_pdf_text` | 3 | **0** |
+| Time (ingest / chunk dedup / doc dedup) | 6.5 / 2.2 / 1.9 s | 6.4 / 1.9 / 2.6 s |
 
 ### Findings
 
-* **F5-1 — Persian PDF text is garbled.** The three Persian PDF renditions
-  (AR-FIN-008, AR-HR-005, AR-SW-022 FA) extract with pdfplumber as `(cid:NN)`
-  glyph ids in visual order (LibreOffice embeds Noto Naskh as Type 3 /
-  contextual-form glyphs). Phase 4 counted them as "success" because parsing
-  did not fail. Dedup cannot match them to their DOCX (Jaccard ≈ 0.001).
-  The summary now reports `garbled_pdf_text: 3`. `pdftotext` (poppler) returns
-  Persian in logical order (with some split-glyph artifacts), so it is the
-  candidate fix for a later phase. English PDFs are fine (J ≈ 0.97).
-* **F5-2 — templated paragraphs across policies.** Seven governance documents
+* **F5-1: Persian PDF text was garbled. Fixed in 0.5.1.** pdfplumber returned
+  `(cid:NN)` placeholders in visual order and Phase 4 counted the files as success.
+  Now poppler `pdftotext -bbox` is the primary engine, with RTL line rebuilding,
+  and a quality check rejects garbled text as a failure. The three Persian PDFs
+  are readable and in logical order but marked `fragmented` (some two-letter
+  splits remain, e.g. `مرخ صی`). Details: `pdf-text-extraction.md`.
+* **F5-2: templated paragraphs across policies.** Seven governance documents
   (AR-BRD-003, AR-HR-004…007, AR-ORG-001, AR-ORG-002) repeat the same
   "کنترل مرز / کنترل شاهد / کنترل اجرا" (FA) and "Output and responsibility /
   apparent conflict" (EN) paragraphs word for word. These are the 29
   cross-document exact groups and most cross-document overlaps. Retrieval
   should de-duplicate them at answer time (Phase 6+), or the corpus generator
   should vary them.
-* **F5-3 — header blocks.** 88 overlap pairs involve `c0001` header chunks
-  (document ID, class, owner, version lines) of same-family documents. They
-  are reported, not suppressed. Lowering `boilerplate_source_fraction` would
-  hide them if desired.
+* **F5-3: header blocks.** Overlap pairs on `c0001` header chunks (document
+  ID, class, owner, version lines) of same-family documents are reported, not
+  suppressed.
 
 ## 6. Decisions
 

@@ -59,6 +59,20 @@ def shingles(text: str, k: int = 3) -> frozenset[str]:
     return frozenset(" ".join(toks[i : i + k]) for i in range(len(toks) - k + 1))
 
 
+def char_shingles(text: str, k: int = 5) -> frozenset[str]:
+    """Whitespace-insensitive character k-grams of the hash-normalized text.
+
+    Robust to spurious or missing spaces (Arabic-script PDF extraction), so it
+    is used for document-level rendition matching.
+    """
+    norm = normalize_for_hash(text)
+    if not norm:
+        return frozenset()
+    if len(norm) < k:
+        return frozenset({norm})
+    return frozenset(norm[i : i + k] for i in range(len(norm) - k + 1))
+
+
 def jaccard(a: frozenset[str] | set[str], b: frozenset[str] | set[str]) -> float:
     if not a and not b:
         return 1.0

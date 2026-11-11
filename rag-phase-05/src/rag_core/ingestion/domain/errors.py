@@ -5,6 +5,7 @@ from __future__ import annotations
 from rag_core.shared_kernel.errors import DomainError
 
 LIBREOFFICE_INSTALL = "sudo apt install -y libreoffice-writer --no-install-recommends"
+POPPLER_INSTALL = "sudo apt install -y poppler-utils"
 
 
 class IngestionError(DomainError):
@@ -33,3 +34,15 @@ class ParseFailedError(IngestionError):
         super().__init__(f"failed to parse {path}: {reason}")
         self.path = path
         self.reason = reason
+
+
+class GarbledTextError(ParseFailedError):
+    """Text was extracted but is not usable (cid glyphs, reversed order, ...)."""
+
+    def __init__(self, path: str, reasons: tuple[str, ...], engine: str, hint: str = "") -> None:
+        reason = f"garbled text from {engine}: " + "; ".join(reasons)
+        if hint:
+            reason += f". {hint}"
+        super().__init__(path, reason)
+        self.reasons = reasons
+        self.engine = engine

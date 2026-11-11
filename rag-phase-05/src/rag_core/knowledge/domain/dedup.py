@@ -24,6 +24,7 @@ import time
 
 from rag_core.knowledge.domain.fingerprint import (
     MinHasher,
+    char_shingles,
     containment,
     jaccard,
     lsh_buckets,
@@ -58,6 +59,9 @@ class DedupConfig:
     boilerplate_source_fraction: float = 0.25
     boilerplate_min_sources: int = 5
     seed: int = 1405
+    shingle_mode: str = "word"  # "word" (k words) or "char" (char_k chars, spaces ignored)
+    char_k: int = 5
+    exhaustive: bool = False  # compare all pairs exactly (small record sets, e.g. documents)
 
 
 @dataclass
@@ -176,7 +180,12 @@ class DuplicateFinder:
             raise ValueError("record keys must be unique")
         norm = {r.key: normalize_for_hash(r.text) for r in records}
         hashes = {r.key: normalized_hash(r.text) for r in records}
-        sh = {r.key: shingles(r.text, cfg.shingle_k) for r in records}
+        if cfg.shingle_mode == "char":
+            sh = {r.key: char_shingles(r.text, cfg.char_k) for r in records}
+        elif cfg.shingle_mode == "word":
+            sh = {r.key: shingles(r.text, cfg.shingle_k) for r in records}
+        else:
+            raise ValueError(f"unknown shingle_mode {cfg.shingle_mode!r}")
         report.timings_s["fingerprint"] = time.perf_counter() - t0
 
         bilingual_candidates: set[tuple[str, str]] = set()
@@ -224,17 +233,20 @@ class DuplicateFinder:
 
         # ---------------- near (MinHash + LSH, verified)
         t2 = time.perf_counter()
-        sigs = {r.key: self._hasher.signature(sh[r.key]) for r in eligible}
-        buckets: dict[tuple[int, tuple[int, ...]], list[str]] = defaultdict(list)
-        for r in eligible:
-            for bucket in lsh_buckets(sigs[r.key], cfg.bands):
-                buckets[bucket].append(r.key)
         candidates: set[tuple[str, str]] = set()
-        for keys in buckets.values():
-            if len(keys) < 2:
-                continue
-            for a, b in combinations(sorted(set(keys)), 2):
-                candidates.add((a, b))
+        if cfg.exhaustive:
+            candidates = {_pair(a.key, b.key) for a, b in combinations(eligible, 2)}
+        else:
+            sigs = {r.key: self._hasher.signature(sh[r.key]) for r in eligible}
+            buckets: dict[tuple[int, tuple[int, ...]], list[str]] = defaultdict(list)
+            for r in eligible:
+                for bucket in lsh_buckets(sigs[r.key], cfg.bands):
+                    buckets[bucket].append(r.key)
+            for keys in buckets.values():
+                if len(keys) < 2:
+                    continue
+                for a, b in combinations(sorted(set(keys)), 2):
+                    candidates.add((a, b))
         report.lsh_candidates = len(candidates)
         near_set: set[tuple[str, str]] = set()
         for a_key, b_key in sorted(candidates):
@@ -263,10 +275,14 @@ class DuplicateFinder:
         sources = {r.source for r in records}
         max_sources = max(cfg.boilerplate_min_sources, int(cfg.boilerplate_source_fraction * len(sources)))
         postings: dict[str, list[str]] = defaultdict(list)
-        for r in eligible:
-            for s in sh[r.key]:
-                postings[s].append(r.key)
         shared: dict[tuple[str, str], int] = defaultdict(int)
+        if cfg.exhaustive:
+            for a, b in combinations(eligible, 2):
+                shared[_pair(a.key, b.key)] = 1
+        else:
+            for r in eligible:
+                for s in sh[r.key]:
+                    postings[s].append(r.key)
         for s, keys in postings.items():
             if len(keys) < 2:
                 continue

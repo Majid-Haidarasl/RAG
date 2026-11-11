@@ -36,7 +36,7 @@ from rag_core.knowledge.domain.fingerprint import guess_language  # noqa: E402
 from rag_core.knowledge.domain.model import ChunkStatus, VersionStatus  # noqa: E402
 from rag_core.shared_kernel.identifiers import DocumentId  # noqa: E402
 
-KIT = "rag-core 0.5.0 (phase 5)"
+KIT = "rag-core 0.5.1 (phase 5)"
 FORMATS = (".docx", ".doc", ".pdf")
 SEPARATOR_START = "======== PHASE 5 SUMMARY (paste this block) ========"
 SEPARATOR_END = "======== END PHASE 5 SUMMARY ========"
@@ -86,21 +86,26 @@ def to_records(docs: list[IngestedDocument], root: Path) -> tuple[list[TextRecor
     return chunk_records, doc_records
 
 
-def garbled_pdfs(docs: list[IngestedDocument], root: Path) -> list[dict[str, object]]:
-    """PDFs whose extracted text is mostly broken glyph ids, e.g. ``(cid:11)``.
+def pdf_quality(docs: list[IngestedDocument], failures: list[dict[str, str]], root: Path) -> dict[str, object]:
+    """PDF text-quality tally (finding F5-1 and its 0.5.1 fix).
 
-    LibreOffice exports Persian with Type 3 / contextual-form glyphs; pdfplumber
-    then returns cid placeholders in visual order, so such renditions cannot be
-    matched to their DOCX original (finding F5-1, see docs/phase-05).
+    ``garbled`` = PDFs whose text was rejected (GarbledTextError) or still
+    contains cid placeholders; ``fragmented`` = readable PDFs with spurious
+    intra-word spaces (warning only).
     """
-    out = []
+    garbled: list[str] = [f["path"] for f in failures if f.get("error_type") == "GarbledTextError"]
+    fragmented: list[str] = []
+    engines: Counter[str] = Counter()
     for doc in docs:
-        if doc.file_format.value != "pdf" or not doc.text:
+        if doc.file_format.value != "pdf":
             continue
-        cids = doc.text.count("(cid:")
-        if cids >= 20:
-            out.append({"path": rel(doc.path, root), "cid_glyphs": cids, "chars": len(doc.text)})
-    return out
+        engines[doc.extraction_engine or "unknown"] += 1
+        verdict = (doc.text_quality or {}).get("verdict")
+        if verdict == "garbled" or doc.text.count("(cid:") >= 20:
+            garbled.append(rel(doc.path, root))
+        elif verdict == "fragmented":
+            fragmented.append(rel(doc.path, root))
+    return {"garbled": sorted(garbled), "fragmented": sorted(fragmented), "engines": dict(engines)}
 
 
 def doc_pair_counts(report: DedupReport) -> list[dict[str, object]]:
@@ -217,7 +222,7 @@ def main() -> int:
             try:
                 bucket.append(ingest_file(path, repo_root=root))
             except Exception as exc:  # noqa: BLE001
-                failures.append({"path": rel(path, root), "reason": str(exc)})
+                failures.append({"path": rel(path, root), "reason": str(exc), "error_type": type(exc).__name__})
     timings["ingest"] = time.perf_counter() - t
 
     t = time.perf_counter()
@@ -239,11 +244,12 @@ def main() -> int:
     t = time.perf_counter()
     chunk_report = finder.find(chunk_records)
     timings["dedup_chunks"] = time.perf_counter() - t
+    doc_config = DedupConfig(shingle_mode="char", char_k=5, exhaustive=True, containment_threshold=0.80)
     t = time.perf_counter()
-    doc_report = finder.find(doc_records)
+    doc_report = DuplicateFinder(doc_config).find(doc_records)
     timings["dedup_documents"] = time.perf_counter() - t
     timings["total"] = sum(timings.values())
-    broken_pdfs = garbled_pdfs(official + derived, root)
+    pdfq = pdf_quality(official + derived, failures, root)
 
     scope = chunk_report.count_by_scope()
     doc_scope = doc_report.count_by_scope()
@@ -271,7 +277,8 @@ def main() -> int:
         "chunk_level": chunk_report.to_dict(),
         "chunk_level_document_pairs": doc_pair_counts(chunk_report),
         "document_level": doc_report.to_dict(),
-        "garbled_pdf_text": broken_pdfs,
+        "doc_level_config": doc_config.__dict__,
+        "pdf_text_quality": pdfq,
         "timings_s": {k: round(v, 3) for k, v in timings.items()},
         "pytest": {
             "passed": args.pytest_passed, "failed": args.pytest_failed, "errors": args.pytest_errors,
@@ -333,9 +340,14 @@ def main() -> int:
     print(f"doc_level_overlap_pairs: {len(doc_report.overlap_pairs)} "
           f"(rendition {doc_scope['overlap_pairs']['rendition']}, cross_document {doc_scope['overlap_pairs']['cross_document']})")
     print(f"doc_level_bilingual_excluded: {doc_report.bilingual_pairs_excluded}")
-    print(f"garbled_pdf_text: {len(broken_pdfs)} "
-          f"({', '.join(Path(str(b['path'])).name for b in broken_pdfs) or 'none'})")
-    print(f"thresholds: near_jaccard>={config.near_threshold} containment>={config.containment_threshold} "
+    print(f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(pdfq['engines'].items())) or 'none'}")
+    print(f"garbled_pdf_text: {len(pdfq['garbled'])} "
+          f"({', '.join(Path(p).name for p in pdfq['garbled']) or 'none'})")
+    print(f"fragmented_pdf_text: {len(pdfq['fragmented'])} "
+          f"({', '.join(Path(p).name for p in pdfq['fragmented']) or 'none'})")
+    print(f"doc_level_mode: char{doc_config.char_k} exhaustive near>={doc_config.near_threshold} "
+          f"containment>={doc_config.containment_threshold}")
+    print(f"chunk_thresholds: near_jaccard>={config.near_threshold} containment>={config.containment_threshold} "
           f"k={config.shingle_k} perms={config.num_perm} bands={config.bands} "
           f"min_exact_chars={config.min_exact_chars} min_shingles={config.min_shingles}")
     print("timings_s: " + " ".join(f"{k}={v:.2f}" for k, v in timings.items()))
