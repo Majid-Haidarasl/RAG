@@ -157,6 +157,9 @@ is the node passed to `ScopeResolver.resolve`; wiring it into retrieval comes la
 
 ## 9. Coverage report (shipped data)
 
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB (GPU not used by the tests); project at `~/Desktop/RAG`. `setup_and_test.sh` passed there with 240 tests.
+
+
 * Documents mapped 26/26, unmapped 0. Links: 26 owner, 27 co_owner, 15 described_in.
 * Nodes owning documents: 17 of 21.
 * Leaves without owned documents: **N-ADM-SRV, N-ADM-SEC** (only `described_in` links

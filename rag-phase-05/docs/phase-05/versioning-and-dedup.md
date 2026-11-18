@@ -110,7 +110,9 @@ Every finding has a **scope**:
 LSH quality is measured on every run. The overlap index also computes exact
 Jaccard for its candidates; `lsh_recall = near_pairs / reference_near_pairs`.
 
-## 5. Corpus results (box, Debian 13, Python 3.13.5, poppler 25.03; 0.5.1, 2026-11-12)
+## 5. Corpus results (0.5.1)
+
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB (GPU not used by the tests); project at `~/Desktop/RAG`.
 
 Two passes run per corpus:
 
@@ -139,7 +141,6 @@ Two passes run per corpus:
 | Doc-level near (renditions) | 3 (EN only) | **7**: all DOC/PDF renditions incl. 3 Persian PDFs (J 0.86 FIN-008, 0.97 HR-005, 0.96 SW-022) |
 | Doc-level cross-document | 0 | 0 |
 | `garbled_pdf_text` | 3 | **0** |
-| Time (ingest / chunk dedup / doc dedup) | 6.5 / 2.2 / 1.9 s | 6.4 / 1.9 / 2.6 s |
 
 ### Findings
 

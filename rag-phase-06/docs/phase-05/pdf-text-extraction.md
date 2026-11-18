@@ -14,7 +14,7 @@ as "success". Side effect: the Persian-digit ID normalizer "fixed" 72 bogus IDs 
 the garbled FIN-008 text (ingest `id_digits` 460 → 391 after the fix; the 52
 DOCX files are unchanged at 388).
 
-## What we tried (box, poppler 25.03)
+## What we tried
 
 | Option | Persian result | Why |
 |---|---|---|
@@ -40,7 +40,7 @@ wide as real spaces (`داخ|لی` 2.47 pt vs a real space of 2.43 pt).
    consecutive LTR boxes (Latin/digits) keep left-to-right order.
 5. Spaces: between two Arabic runs, the gap is normalized by box height. The
    typical inter-word gap is the **mode** of these gaps in [0.07, 0.35]
-   (box: 0.11 for LibreOffice PDFs, 0.13 for Chrome). Gaps < **0.6 × mode** are
+   (measured: 0.11 for LibreOffice PDFs, 0.13 for Chrome). Gaps < **0.6 × mode** are
    joined. A ground-truth check against the DOCX found zero real spaces below
    this threshold. With fewer than 30 gaps the default is 0.06.
 6. `repair_single_letters`: Persian has no one-letter words except `و`, so a
