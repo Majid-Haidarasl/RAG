@@ -71,4 +71,3 @@ python scripts/run_hierarchy_check.py
 | `tests/unit/hierarchy/` | تست‌های فاز ۶ |
 | `scripts/run_hierarchy_check.py` | بلوک خلاصه و فایل JSON نتایج |
 | `docs/phase-06/hierarchy-workflows.md` | درخت mermaid، قواعد، گردش‌کارها و پرسش‌های باز |
-| `گزارش-فاز-۶.docx` | گزارش کوتاه فارسی |

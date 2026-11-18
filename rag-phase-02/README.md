@@ -57,7 +57,6 @@ README.md  setup.sh  requirements.txt
 config/model-registry.yaml          # 3 candidate models (Phase 2 output)
 config/prompt-registry.json         # versioned prompt templates + JSON schemas (registry 0.2.1; decompose uses schema format by default)
 docs/phase-02/offline-model-baseline.md   # baseline report (filled from run 20261109-184242)
-گزارش-فاز-۲.docx                    # Persian completion report
 docs/phase-02/model-usage-guide.md
 docs/phase-02/prompt-test-plan.md
 experiments/phase-02/               # scripts, data, tests, tools/mock_ollama.py

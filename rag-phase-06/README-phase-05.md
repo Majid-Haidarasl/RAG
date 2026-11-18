@@ -62,7 +62,6 @@ python scripts/run_corpus_dedup.py
 | `src/rag_core/ingestion/domain/text_quality.py` | تشخیص متن به‌هم‌ریخته یا تکه‌تکه |
 | `tests/unit/knowledge/` | تست‌های نسخه، قطعه و تکرار |
 | `scripts/run_corpus_dedup.py` | اجرا روی پیکرهٔ واقعی و بلوک خلاصه |
-| `گزارش-فاز-۵.docx` | گزارش کوتاه فارسی |
 
 ## اصلاح ۰.۵.۱: متن PDF فارسی
 

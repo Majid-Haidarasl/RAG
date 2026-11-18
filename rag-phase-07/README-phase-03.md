@@ -43,7 +43,6 @@ pytest --strict-markers --tb=short
 | `src/rag_core/` | اسکلت پایتون ۳.۱۲، بدون وابستگی اجرایی |
 | `tests/` | تست واحد خالص (بدون مدل و شبکه) |
 | `scripts/setup_and_test.sh` | ساخت venv + اجرای pytest + بلوک خلاصه |
-| `گزارش-فاز-۳.docx` | گزارش کوتاه فارسی |
 
 ## تصمیم‌های اصلی
 

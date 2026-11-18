@@ -94,4 +94,3 @@ python scripts/run_issue_check.py
 | `tests/unit/issues/` | تست‌های فاز ۷ |
 | `scripts/run_issue_check.py` | بلوک خلاصهٔ فاز ۷ و فایل JSON نتایج |
 | `docs/phase-07/issue-model.md` | مدل، وضعیت‌ها، الگوریتم مقایسه و قواعد تجزیه |
-| `گزارش-فاز-۷.docx` | گزارش کوتاه فارسی |

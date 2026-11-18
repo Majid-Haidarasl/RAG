@@ -20,7 +20,6 @@ Case study: **ArmanRayan IT** — fictional Tehran company, ~85 staff, 5 layers,
 | `data/registry/README.md` | Column dictionary and validation rules |
 | `corpus/README.md` | Corpus description and known data-quality issues |
 | `corpus/fa/`, `corpus/en/`, `corpus/manifest.md` | 26 FA + 26 EN DOCX documents and manifest |
-| `گزارش-فاز-۱.docx` | Persian completion report |
 
 ## Phase-1 checklist (GitHub issue #1)
 
