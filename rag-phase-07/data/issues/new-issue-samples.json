@@ -1,0 +1,71 @@
+{
+  "note": "New incoming issues used by scripts/run_issue_check.py; expected labels are regression expectations.",
+  "samples": [
+    {
+      "id": "AR-ISS-041",
+      "language": "fa",
+      "title": "تأخیر تحویل سامانه انبار آذرپخش و ناهماهنگی کنترلر RAID و حافظه سرور با کلاینت ویندوزی",
+      "description": "ایستگاه‌های انبار آذرپخش هنگام کار همزمان کند می‌شوند. ظرفیت حافظه سرور و کنترلر RAID با نیاز کلاینت ویندوزی سازگار نیست، درایور باید بررسی شود و تأخیر تحویل قرارداد بیشتر شده است.",
+      "owner_node": "N-SW-SUP",
+      "affected_nodes": [
+        "N-HW-REP",
+        "N-SW-WIN"
+      ],
+      "related_documents": [
+        "AR-ISS-024"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "delivery_delay",
+      "expected_label": "duplicate",
+      "expected_best": "AR-ISS-024"
+    },
+    {
+      "id": "AR-ISS-042",
+      "language": "en",
+      "title": "Windows warehouse client driver fails multi-station test after RAM change",
+      "description": "After the server RAM change the C#/.NET Windows client installation shows a driver version mismatch and the multi-station test fails.",
+      "owner_node": "N-SW-WIN",
+      "affected_nodes": [],
+      "related_documents": [
+        "AR-SW-019",
+        "AR-HW-015"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "software",
+      "expected_label": "related",
+      "expected_best": "AR-ISS-024/WIN"
+    },
+    {
+      "id": "AR-ISS-043",
+      "language": "en",
+      "title": "DashtPakhsh visitor app Flutter session recovery slips the schedule",
+      "description": "Flutter session recovery in the DashtPakhsh visitor mobile application is late and depends on the web API; the schedule slips further.",
+      "owner_node": "N-SW-MOB",
+      "affected_nodes": [
+        "N-SW-WEB"
+      ],
+      "related_documents": [
+        "AR-SW-018"
+      ],
+      "contract_ref": null,
+      "category": "schedule",
+      "expected_label": "duplicate",
+      "expected_best": "AR-ISS-031"
+    },
+    {
+      "id": "AR-ISS-044",
+      "language": "fa",
+      "title": "درخواست طراحی لوگوی تازه برای غرفه نمایشگاه",
+      "description": "تیم بازاریابی نسخه تازه لوگو و راهنمای رنگ برای غرفه نمایشگاه می‌خواهد.",
+      "owner_node": "N-SW-VIS",
+      "affected_nodes": [],
+      "related_documents": [
+        "AR-SW-021"
+      ],
+      "contract_ref": null,
+      "category": "design",
+      "expected_label": "new",
+      "expected_best": null
+    }
+  ]
+}
