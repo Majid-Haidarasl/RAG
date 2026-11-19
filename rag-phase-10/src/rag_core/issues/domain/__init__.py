@@ -1,0 +1,41 @@
+from rag_core.issues.domain.model import (
+    ContractRef,
+    Issue,
+    IssueCategory,
+    IssueScope,
+    Priority,
+    PriorityScore,
+    ProgressPercentage,
+    ProjectRecord,
+    RelativePosition,
+    Severity,
+    SubIssue,
+    approval_authority,
+    rank_issues,
+)
+from rag_core.issues.domain.ports import IssueDecomposer, OrgDirectory, OrgNodeView, OrgRoute, TextEmbedder
+from rag_core.issues.domain.status import IssueStatus, Resolution, StatusCategory
+
+__all__ = [
+    "ContractRef",
+    "Issue",
+    "IssueCategory",
+    "IssueDecomposer",
+    "IssueScope",
+    "IssueStatus",
+    "OrgDirectory",
+    "OrgNodeView",
+    "OrgRoute",
+    "Priority",
+    "PriorityScore",
+    "ProgressPercentage",
+    "ProjectRecord",
+    "RelativePosition",
+    "Resolution",
+    "Severity",
+    "StatusCategory",
+    "SubIssue",
+    "TextEmbedder",
+    "approval_authority",
+    "rank_issues",
+]
