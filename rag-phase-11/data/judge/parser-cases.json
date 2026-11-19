@@ -1,0 +1,256 @@
+{
+ "version": "1.0.0",
+ "note": "Phase 10 parser fixtures: raw judge replies and the expected parse.",
+ "cases": [
+  {
+   "id": "PC-01",
+   "note": "plain JSON",
+   "raw": "{\"scores\": {\"grounding\": 5, \"correctness\": 5, \"citation\": 4, \"completeness\": 3, \"clarity\": 3}, \"issues\": []}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 5,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json"
+   }
+  },
+  {
+   "id": "PC-02",
+   "note": "score objects with reasons",
+   "raw": "{\"scores\": {\"grounding\": {\"score\": 4, \"reason\": \"one detail\"}, \"correctness\": {\"score\": 5}, \"citation\": {\"score\": 3}, \"completeness\": {\"score\": 2}, \"clarity\": {\"score\": 3}}}",
+   "expect": {
+    "scores": {
+     "grounding": 4,
+     "correctness": 5,
+     "citation": 3,
+     "completeness": 2,
+     "clarity": 3
+    },
+    "mode": "json"
+   }
+  },
+  {
+   "id": "PC-03",
+   "note": "code fence and prose",
+   "raw": "Here is my evaluation:\n```json\n{\"scores\": {\"grounding\": 5, \"correctness\": 4, \"citation\": 4, \"completeness\": 3, \"clarity\": 3}}\n```\nThanks.",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 4,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json_extracted"
+   }
+  },
+  {
+   "id": "PC-04",
+   "note": "think block and alias keys",
+   "raw": "<think>Let me check {the numbers}.</think>{\"groundedness\": 5, \"accuracy\": 5, \"citations\": 4, \"coverage\": 3, \"language\": 3, \"total\": 20}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 5,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json"
+   }
+  },
+  {
+   "id": "PC-05",
+   "note": "single quotes and a trailing comma",
+   "raw": "{'grounding': 4, 'correctness': 4, 'citation': 3, 'completeness': 2, 'clarity': 2,}",
+   "expect": {
+    "scores": {
+     "grounding": 4,
+     "correctness": 4,
+     "citation": 3,
+     "completeness": 2,
+     "clarity": 2
+    },
+    "mode": "json_repaired"
+   }
+  },
+  {
+   "id": "PC-06",
+   "note": "unquoted keys",
+   "raw": "{grounding: 5, correctness: 5, citation: 4, completeness: 3, clarity: 2}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 5,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 2
+    },
+    "mode": "json_repaired"
+   }
+  },
+  {
+   "id": "PC-07",
+   "note": "plain key: value lines",
+   "raw": "Grounding: 4/5\nCorrectness: 5/5\nCitation: 3/4\nCompleteness: 3/3\nClarity: 3/3\nTotal: 18/20",
+   "expect": {
+    "scores": {
+     "grounding": 4,
+     "correctness": 5,
+     "citation": 3,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "key_value"
+   }
+  },
+  {
+   "id": "PC-08",
+   "note": "Persian digits as strings",
+   "raw": "{\"scores\": {\"grounding\": \"۵\", \"correctness\": \"۴\", \"citation\": \"۴\", \"completeness\": \"۳\", \"clarity\": \"۳\"}}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 4,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json"
+   }
+  },
+  {
+   "id": "PC-09",
+   "note": "clamping, rescaling and rounding",
+   "raw": "{\"scores\": {\"grounding\": 7, \"correctness\": -1, \"citation\": \"3/5\", \"completeness\": 2.5, \"clarity\": 3}}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 0,
+     "citation": 2,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json",
+    "warnings_contain": [
+     "clamped:grounding",
+     "clamped:correctness",
+     "rescaled:citation"
+    ]
+   }
+  },
+  {
+   "id": "PC-10",
+   "note": "a missing criterion",
+   "raw": "{\"scores\": {\"grounding\": 5, \"correctness\": 5, \"citation\": 4, \"completeness\": 3}}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 5,
+     "citation": 4,
+     "completeness": 3
+    },
+    "mode": "json",
+    "missing": [
+     "clarity"
+    ]
+   }
+  },
+  {
+   "id": "PC-11",
+   "note": "list of criterion objects",
+   "raw": "{\"scores\": [{\"criterion\": \"grounding\", \"score\": 5}, {\"criterion\": \"correctness\", \"score\": 5}, {\"name\": \"citation\", \"points\": 4}, {\"criterion\": \"completeness\", \"score\": 3}, {\"criterion\": \"clarity\", \"score\": 3}]}",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 5,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json"
+   }
+  },
+  {
+   "id": "PC-12",
+   "note": "reply cut off by the token limit",
+   "raw": "{\"scores\": {\"grounding\": 5, \"correctness\": 4, \"citation\": 4, \"completeness\": 3, \"clarity\": 3}, \"issues\": [\"the answer is cut",
+   "expect": {
+    "scores": {
+     "grounding": 5,
+     "correctness": 4,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json_extracted"
+   }
+  },
+  {
+   "id": "PC-13",
+   "note": "old single-score format has no criteria",
+   "raw": "{\"verdict\": \"good\", \"score\": 18}",
+   "expect": {
+    "error": true
+   }
+  },
+  {
+   "id": "PC-14",
+   "note": "empty reply",
+   "raw": "",
+   "expect": {
+    "error": true
+   }
+  },
+  {
+   "id": "PC-15",
+   "note": "prose without scores",
+   "raw": "The answer looks fine to me.",
+   "expect": {
+    "error": true
+   }
+  },
+  {
+   "id": "PC-16",
+   "note": "written total disagrees",
+   "raw": "{\"scores\": {\"grounding\": 4, \"correctness\": 4, \"citation\": 4, \"completeness\": 3, \"clarity\": 3}, \"total\": 20}",
+   "expect": {
+    "scores": {
+     "grounding": 4,
+     "correctness": 4,
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json",
+    "warnings_contain": [
+     "total_mismatch"
+    ]
+   }
+  },
+  {
+   "id": "PC-17",
+   "note": "boolean and word values",
+   "raw": "{\"scores\": {\"grounding\": true, \"correctness\": \"high\", \"citation\": 4, \"completeness\": 3, \"clarity\": 3}}",
+   "expect": {
+    "scores": {
+     "citation": 4,
+     "completeness": 3,
+     "clarity": 3
+    },
+    "mode": "json",
+    "missing": [
+     "grounding",
+     "correctness"
+    ],
+    "warnings_contain": [
+     "non_numeric:grounding",
+     "non_numeric:correctness"
+    ]
+   }
+  }
+ ]
+}

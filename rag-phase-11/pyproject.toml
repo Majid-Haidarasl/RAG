@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-core"
+version = "0.11.0"
+description = "Offline hierarchical RAG core for ArmanRayan — Phase 11 cyclic node processing and upward knowledge transfer"
+readme = "README-phase-11.md"
+requires-python = ">=3.12"
+license = {text = "Proprietary — student project"}
+authors = [{name = "Majid Haidarasl"}]
+dependencies = [
+    "python-docx>=1.1",
+    "pdfplumber>=0.11",
+    "jsonschema>=4.20",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+markers = [
+    "hierarchy: Organizational Hierarchy context",
+    "knowledge: Knowledge Management context",
+    "rag: RAG Core context",
+    "issues: Issue Management context",
+    "executors: Executor Management context",
+    "ike: IKE context",
+    "transfer: Knowledge Transfer context",
+    "judging: Evaluation & Judging context",
+    "rfp: RFP & Proposal context",
+    "models: Model & Prompt Management context",
+    "shared_kernel: shared kernel value objects",
+    "ingestion: document ingestion, chunking and metadata",
+    "lifecycle: Phase 5 version and chunk lifecycle",
+    "dedup: Phase 5 duplicate, near-duplicate and overlap detection",
+    "registry: Phase 6 layer / node registry, workflows and retrieval scope",
+    "issue_model: Phase 7 issue / sub-issue model, comparison and decomposition",
+    "retrieval: Phase 8 hybrid retrieval, index and context assembly",
+    "qa: Phase 8 node-scoped Q&A, citations and fact check",
+    "matching: Phase 9 executor profiles, expertise metadata, capacity and matching",
+    "ike_model: Phase 9 IKE relations, issue-knowledge comparison and summaries",
+    "judge: Phase 10 judge rubric, score parser, thresholds, rule judge and LLM judge",
+    "processing: Phase 11 cyclic node processing (cycle, bottom-up plan, cycle runner)",
+    "transfer_pkg: Phase 11 TransferPackage generation, detail levels, review, suggestions and storage",
+    "slow: reads the real corpus (a few seconds)",
+]
+
+[tool.coverage.run]
+source = ["rag_core"]
+omit = ["*/infrastructure/ollama_*", "*/infrastructure/parsers*"]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
