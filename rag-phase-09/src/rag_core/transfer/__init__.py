@@ -1,0 +1,1 @@
+"""Knowledge Transfer bounded context."""

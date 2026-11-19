@@ -1,0 +1,13 @@
+# Fixed replies when the model is not called or refuses (Phase 8).
+id: qa.messages
+version: 1.0.0
+messages:
+  not_found:
+    fa: "در دامنهٔ دانش گره ${node} سندی برای پاسخ به این پرسش پیدا نشد."
+    en: "No document in the knowledge scope of node ${node} answers this question."
+  insufficient:
+    fa: "اسناد بازیابی‌شده در دامنهٔ گره ${node} برای پاسخ مطمئن کافی نیستند."
+    en: "The documents retrieved in the scope of node ${node} are not enough for a reliable answer."
+  out_of_scope:
+    fa: "پاسخ این پرسش در دامنهٔ دانش گره ${node} نیست. پیشنهاد: پرسش به ${target} ارجاع شود (${reason})."
+    en: "The answer lies outside the knowledge scope of node ${node}. Suggested escalation: ${target} (${reason})."
