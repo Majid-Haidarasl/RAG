@@ -9,8 +9,8 @@
 ## سیستم هدف
 
 - Ubuntu 24.04.5 LTS، پایتون 3.12.3؛
-- پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM؛
-- کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه (فقط مرحلهٔ زندهٔ Ollama از GPU استفاده می‌کند)؛
+- دست‌کم ۱۶ گیگابایت RAM؛
+- کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه (فقط مرحلهٔ زندهٔ Ollama از GPU استفاده می‌کند)؛
 - Ollama 0.40.2 با مدل‌های `bge-m3:latest` و `qwen3:8b`؛
 - مسیر پروژه `~/Desktop/RAG`.
 
@@ -26,7 +26,7 @@ ollama list
 
 ## اجرا روی اوبونتو
 
-فرض: zip در `~/Downloads/rag-phase-09.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-09.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -93,7 +93,7 @@ checks: pytest=ok prior_steps=ok executor_registry_valid=ok seed_executors_resol
 
 ## نتیجه روی داده‌ها
 
-سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3، پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM، کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛ مسیر پروژه `~/Desktop/RAG`. Ollama 0.40.2، مدل embedding `bge-m3:latest` و مدل تولید `qwen3:8b` (حالت تفکر خاموش).
+سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3؛ مسیر پروژه `~/Desktop/RAG`. Ollama 0.40.2، مدل embedding `bge-m3:latest` و مدل تولید `qwen3:8b` (حالت تفکر خاموش).
 
 زمان اجرا: ۲۸ آبان ۱۴۰۵، ساعت ۰۳:۳۱ به وقت تهران (2026-11-19 00:01:13 UTC). خلاصهٔ فاز ۹: `status: PASS`. فایل نتیجه: `results/phase-09/ike-check-20261119T000113Z.json`.
 

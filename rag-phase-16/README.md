@@ -65,8 +65,8 @@ bash scripts/setup_and_test.sh
 
 ## سیستم اندازه‌گیری
 
-عددهای گزارش روی سیستم توسعه‌دهنده اندازه‌گیری شده‌اند: Python 3.15.2، Ollama 0.40.17، پردازندهٔ i5-12400F،
-۱۶ گیگابایت حافظه و کارت RTX 3060 با ۱۲ گیگابایت حافظه. نصب و اجرا روی Ubuntu و Windows 11 (با WSL 2) در
+عددهای گزارش روی سیستم مرجع اندازه‌گیری شده‌اند (Fedora Linux، Python 3.15.2، Ollama 0.40.17)؛ مشخصات کامل
+آن در بخش ۲ [`docs/final-report.md`](docs/final-report.md) آمده است. نصب و اجرا روی Ubuntu و Windows 11 (با WSL 2) در
 [`docs/user-guide.md`](docs/user-guide.md) آمده است.
 
 ## دربارهٔ داده‌ها

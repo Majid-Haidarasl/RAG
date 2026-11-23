@@ -306,7 +306,9 @@ def main() -> int:
             print(f"  {row['id']}: {row['status']} ok={row['status_ok']} cites={row['citations']} facts={row['facts']} "
                   f"flags={row['fact_flags']}" + (f" escalate->{row['escalation']}" if row["escalation"] else ""))
     print("checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items()))
-    print(f"results_json: {out_json}")
+    shown = out_json.resolve()
+    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    print(f"results_json: {shown}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1
 

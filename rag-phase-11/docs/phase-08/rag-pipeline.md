@@ -105,7 +105,7 @@ The Persian and English copies of the same chunk are not collapsed: they support
 - orders the selected blocks by the best rank of their document, then by chunk order, so text from one document reads in sequence;
 - puts a header on every block: `[AR-HR-005 §12] AR-HR-005 v1.0 (fa) · §12 · ¶41 · ۵. مرخصی ساعتی` (page `p.N` for PDF, `table N` for tables). When the Persian and English copies of one section are both present the labels get `/fa` and `/en`.
 
-3,500 tokens of context plus the prompt and a 1,024-token answer fit in `num_ctx = 8192`, which qwen3:8b runs comfortably on the RTX 3060 (12 GB).
+3,500 tokens of context plus the prompt and a 1,024-token answer fit in `num_ctx = 8192`, which qwen3:8b runs comfortably on a 12 GB GPU.
 
 ## 3. Q&A
 
@@ -161,7 +161,7 @@ Flags are reported, not used to rewrite the answer.
 | Key | Value | Why |
 |---|---|---|
 | `ollama.base_url` | `http://localhost:11434` | only local hosts are accepted |
-| `ollama.*_timeout_s` | connect 3, embed 120, generate 240 | first model load on the RTX 3060 can take tens of seconds |
+| `ollama.*_timeout_s` | connect 3, embed 120, generate 240 | first model load on a 12 GB GPU can take tens of seconds |
 | `ollama.keep_alive` | `30m` | keep both models loaded during the demo |
 | `embedding.model` / `dim` | `bge-m3:latest` / 1024 | Phase 2 decision |
 | `embedding.batch_size` | 16 | fits 12 GB VRAM next to qwen3:8b |
@@ -226,7 +226,7 @@ PASS/FAIL depends on pytest, the earlier steps and the offline checks. The live 
 
 ## 7. Reference run
 
-Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB; project at `~/Desktop/RAG`. Ollama 0.40.2, embedding `bge-m3:latest`, generation `qwen3:8b` (think off, temperature 0.2).
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3; project at `~/Desktop/RAG`. Ollama 0.40.2, embedding `bge-m3:latest`, generation `qwen3:8b` (think off, temperature 0.2).
 
 - Run: 2026-11-18 23:28:09 UTC (2026-11-19 02:58 Tehran time).
 - Result: `status: PASS`, 658 passed, 0 failed, 0 errors, 0 skipped; earlier steps ingest, dedup, hierarchy and issues all exited 0.

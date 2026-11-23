@@ -38,8 +38,8 @@
 ## سیستم هدف
 
 - Ubuntu 24.04.5 LTS، پایتون 3.12.3؛
-- پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM؛
-- کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛
+- دست‌کم ۱۶ گیگابایت RAM؛
+- کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه؛
 - Ollama 0.40.2 با `qwen3:8b`؛
 - مسیر پروژه `~/Desktop/RAG`.
 
@@ -68,7 +68,7 @@ ollama list
 
 ## اجرا روی اوبونتو
 
-فرض: zip در `~/Downloads/rag-phase-11.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-11.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -111,7 +111,7 @@ python scripts/run_transfer_check.py --no-live  # فقط بخش آفلاین
 
 ## نتیجه روی داده‌ها
 
-سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3، پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM، کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛ مسیر پروژه `~/Desktop/RAG`؛ Ollama 0.40.2 با `qwen3:8b`.
+سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3؛ مسیر پروژه `~/Desktop/RAG`؛ Ollama 0.40.2 با `qwen3:8b`.
 
 زمان اجرا: ۲۸ آبان ۱۴۰۵، ساعت ۱۸:۱۰ به وقت تهران (Asia/Tehran)، برابر با 2026-11-19 14:40:11 UTC. خلاصهٔ فاز ۱۱: `status: PASS`. فایل نتیجه: `results/phase-11/transfer-check-20261119T144011Z.json`.
 

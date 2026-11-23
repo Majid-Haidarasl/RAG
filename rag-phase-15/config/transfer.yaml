@@ -3,7 +3,7 @@
 # Shahrivar 1403, the reporting cutoff of AR-TRN-026 and AR-FIN-008.
 # The Ollama endpoint, timeouts and retries come from config/rag.yaml (Phase 8);
 # the judge (rubric, thresholds, judge model) comes from config/judge.yaml (Phase 10).
-# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model,
+# Sized for a 12 GB NVIDIA GPU: one 8B model,
 # num_ctx 8192, no embedding model needed in this phase.
 config_version: 0.11.0
 case: AR-ISS-024

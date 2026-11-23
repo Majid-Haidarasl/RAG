@@ -112,7 +112,7 @@ Jaccard for its candidates; `lsh_recall = near_pairs / reference_near_pairs`.
 
 ## 5. Corpus results (0.5.1)
 
-Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB (GPU not used by the tests); project at `~/Desktop/RAG`.
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3 (GPU not used by the tests); project at `~/Desktop/RAG`.
 
 Two passes run per corpus:
 

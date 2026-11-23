@@ -125,7 +125,7 @@ Checks: `pytest`, `prior_steps`, `executor_registry_valid`, `seed_executors_reso
 
 ## 8. Reference run
 
-Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB; project at `~/Desktop/RAG`. Ollama 0.40.2, embedding `bge-m3:latest`, generation `qwen3:8b` (think off).
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3; project at `~/Desktop/RAG`. Ollama 0.40.2, embedding `bge-m3:latest`, generation `qwen3:8b` (think off).
 
 - Run: 2026-11-19 00:01:13 UTC (2026-11-19 03:31 Tehran time).
 - Result: `status: PASS`, 788 passed, 0 failed, 0 errors, 0 skipped (29.32 s); earlier steps ingest, dedup, hierarchy, issues and rag all exited 0.

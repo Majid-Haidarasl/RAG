@@ -5,7 +5,7 @@ These two runs were reported by the user as console summary blocks only. The num
 ## 20261109-190709: offline LLM run (C-17)
 
 - Kit 0.1.0, LLM stage only (EMB and LVM not run)
-- Run on the same PC (Ubuntu 24.04.5, RTX 3060 12 GB, Ollama 0.40.2) with the **internet disconnected**
+- Run on the same PC (Ubuntu 24.04.5, 12 GB GPU, Ollama 0.40.2) with the **internet disconnected**
 - LLM calls 86/86 ok, 0 errors, 57.4 tok/s
 - Quality scores identical to run 20261109-184242
 - Verdict: C-17 (offline operation) passes for the LLM stage

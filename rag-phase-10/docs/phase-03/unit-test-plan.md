@@ -48,12 +48,12 @@ Additional tests (not numbered in the policy): shared-kernel numerals and identi
 
 ## 3. Definition of done for this phase
 
-- `pytest -q` is green offline on the student's Ubuntu machine.
+- `pytest -q` is green offline on a local Ubuntu machine.
 - Each invariant that is already encoded in an aggregate has a passing and a failing-input example (or a rejected construction).
 - Model ports are only used through fakes.
 - No test reads `corpus/` or opens a socket.
 
-Coverage of the current skeleton was 83% of `rag_core` on the author's machine (Protocol-only modules pull the figure down; domain models sit roughly 86–95%). The 80% target in the policy remains the target for *finished* domain and application modules, not a gate on empty ports.
+Coverage of the current skeleton was 83% of `rag_core` on the local test machine (Protocol-only modules pull the figure down; domain models sit roughly 86–95%). The 80% target in the policy remains the target for *finished* domain and application modules, not a gate on empty ports.
 
 ## 4. Out of scope (reminded)
 

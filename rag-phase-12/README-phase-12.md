@@ -43,8 +43,8 @@
 ## سیستم هدف
 
 - Fedora Linux، پایتون 3.15.2؛
-- پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM؛
-- کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛
+- دست‌کم ۱۶ گیگابایت RAM؛
+- کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه؛
 - LibreOffice 26.8.3.1 و pdftotext 26.08.0 (برای خواندن اسناد در فازهای قبل)؛
 - Ollama با `qwen3:8b` (فقط برای مرحلهٔ زندهٔ اختیاری)؛
 - مسیر پروژه `~/Desktop/RAG`.
@@ -94,7 +94,7 @@ ollama list
 
 ## اجرا روی لینوکس (Fedora)
 
-فرض: zip در `~/Downloads/rag-phase-12.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-12.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -133,9 +133,9 @@ python scripts/run_project_check.py --no-live  # فقط بخش آفلاین
 - `live: skipped` (بدون Ollama) یا `live: ok` با دو خط `live_brief` و `live_judge`.
 - `checks:` همه `ok` و `status: PASS`.
 
-## نتیجهٔ اجرا روی سیستم من
+## نتیجهٔ اجرا روی سیستم آزمون
 
-اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۲:۲۷ به وقت تهران، روی Fedora Linux با پایتون 3.15.2 (همان سخت‌افزار: i5-12400F، ۱۶ گیگابایت RAM، RTX 3060 با ۱۲ گیگابایت). نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
+اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۲:۲۷ به وقت تهران، روی Fedora Linux با پایتون 3.15.2. نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
 
 ```text
 ======== PHASE 12 SUMMARY ========
@@ -189,7 +189,7 @@ live_judge: ai rule=0/2 llm=1/2 combined=0/2 templates llm=2/2
   brief en: rejected order=AR-ISS-024,AR-ISS-031,AR-ISS-035 mentioned=3 rule=18 llm=18
 live_timings: brief_avg_s=4.039 judge_avg_s=2.029 tokens_avg=1006+202 total_s=16.2
 checks: pytest=ok prior_steps=ok registry_loaded=ok records_built=ok registry_valid=ok evidence_grounded=ok research_gaps_tracked=ok gaps_detected=ok ranking_complete=ok key_issues_selected=ok ranking_stable=ok brief_accepted=ok negative_controls_rejected=ok csv_round_trip=ok
-results_json: /home/mdhdl/Desktop/RAG/results/phase-12/project-check-20261123T185733Z.json
+results_json: results/phase-12/project-check-20261123T185733Z.json
 ======== END PHASE 12 SUMMARY ========
 ```
 

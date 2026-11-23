@@ -352,7 +352,9 @@ def main() -> int:
           f"k={config.shingle_k} perms={config.num_perm} bands={config.bands} "
           f"min_exact_chars={config.min_exact_chars} min_shingles={config.min_shingles}")
     print("timings_s: " + " ".join(f"{k}={v:.2f}" for k, v in timings.items()))
-    print(f"results_json: {out_json}")
+    shown = out_json.resolve()
+    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    print(f"results_json: {shown}")
     if failures:
         print("failures:")
         for f in failures:

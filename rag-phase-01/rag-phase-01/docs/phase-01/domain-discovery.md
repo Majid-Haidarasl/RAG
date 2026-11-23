@@ -2,7 +2,7 @@
 
 Project: offline hierarchical RAG core for organizational knowledge management, issue management and managerial knowledge transfer
 Phase: 1 — Project kickoff and domain discovery
-Version: 0.1 (for supervisor review) · Date: 9 November 2026 (18 Aban 1405)
+Version: 0.1 (reviewed; historical Phase 1 baseline) · Date: 9 November 2026 (18 Aban 1405)
 Inputs: project specification (Persian, sections 1–26) · ArmanRayan IT corpus (`corpus/`, 26 FA + 26 EN DOCX + manifest)
 
 ---
@@ -269,7 +269,7 @@ This one case touches every bounded context and will be the main end-to-end scen
 | Create shared DDD vocabulary | Done (initial, 98 terms) | `glossary.md`, `bounded-contexts-draft.md` |
 | Collect initial sample documents | Done (52 DOCX + manifest) | `corpus/`, section 6 |
 | Initial identification of layers and nodes | Done (5 layers, 21 nodes) | Section 7, `data/registry/` |
-| Define initial evaluation metrics with the supervisor | Drafted; supervisor review pending | `evaluation-baseline.md` |
+| Define initial evaluation metrics with the supervisor | Drafted and reviewed; superseded by later metrics documents | `evaluation-baseline.md` |
 | Define unit-test approach | Done | `unit-test-policy.md` |
 
 ## 14. Next step — phase 2

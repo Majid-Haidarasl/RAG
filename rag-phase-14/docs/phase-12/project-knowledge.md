@@ -4,7 +4,7 @@ Kit version 0.12.0 (GitHub issue #12). Phase 12 adds a **project tracking regist
 
 There are no new dependencies. Unit tests never need Ollama, the GPU or the internet.
 
-Target system: Fedora Linux, Python 3.15.2, LibreOffice 26.8.3.1, pdftotext 26.08.0, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB, project at `~/Desktop/RAG`.
+Target system: Fedora Linux, Python 3.15.2, LibreOffice 26.8.3.1, pdftotext 26.08.0, project at `~/Desktop/RAG`.
 
 ## 1. Where things live
 
@@ -104,7 +104,7 @@ Live step (optional): `qwen3:8b`, think off, JSON format, `num_predict` 768. The
 
 ## 7. Results on my system
 
-Run on 2 Azar 1405 at about 22:27 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, i5-12400F, 16 GB RAM, RTX 3060 12 GB, Ollama with `qwen3:8b`. Status **PASS**, all 14 checks ok.
+Run on 2 Azar 1405 at about 22:27 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, Ollama with `qwen3:8b`. Status **PASS**, all 14 checks ok.
 
 ```text
 ======== PHASE 12 SUMMARY ========
@@ -158,7 +158,7 @@ live_judge: ai rule=0/2 llm=1/2 combined=0/2 templates llm=2/2
   brief en: rejected order=AR-ISS-024,AR-ISS-031,AR-ISS-035 mentioned=3 rule=18 llm=18
 live_timings: brief_avg_s=4.039 judge_avg_s=2.029 tokens_avg=1006+202 total_s=16.2
 checks: pytest=ok prior_steps=ok registry_loaded=ok records_built=ok registry_valid=ok evidence_grounded=ok research_gaps_tracked=ok gaps_detected=ok ranking_complete=ok key_issues_selected=ok ranking_stable=ok brief_accepted=ok negative_controls_rejected=ok csv_round_trip=ok
-results_json: /home/mdhdl/Desktop/RAG/results/phase-12/project-check-20261123T185733Z.json
+results_json: results/phase-12/project-check-20261123T185733Z.json
 ======== END PHASE 12 SUMMARY ========
 ```
 

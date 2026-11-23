@@ -4,7 +4,7 @@ Kit version 0.10.0. Phase 10 adds a judge that scores the key outputs of the sys
 
 There are no new dependencies. Unit tests use fakes and never need Ollama, the GPU or the internet. The live judge is `qwen3:8b` on the local Ollama (think off, temperature 0, JSON format).
 
-Target system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB, Ollama 0.40.2, project at `~/Desktop/RAG`.
+Target system: Ubuntu 24.04.5 LTS, Python 3.12.3, Ollama 0.40.2, project at `~/Desktop/RAG`.
 
 ## 1. Where things live
 
@@ -72,7 +72,7 @@ The fixtures in `data/judge/parser-cases.json` (17 cases: json 9, json_extracted
 
 It is blind to meaning. Two correct numbers in swapped places look fine to it (calibration case `CAL-N06`, tag `rule_blind_spot`).
 
-**LLM judge** (`LlmJudge`): renders the prompt for the output kind and sends system + user to `qwen3:8b` with Ollama `format: json`, temperature 0, seed 42, `num_ctx` 8192, `num_predict` 512 and a 180 s timeout. It parses the reply and applies the same policy. An unreadable or incomplete reply is asked again once with `retry_note`. A model failure becomes an `error` result, and `judge_all` stops after more than 2 consecutive failures. One 8B model at 8k context fits the RTX 3060 12 GB, and no embedding model is loaded.
+**LLM judge** (`LlmJudge`): renders the prompt for the output kind and sends system + user to `qwen3:8b` with Ollama `format: json`, temperature 0, seed 42, `num_ctx` 8192, `num_predict` 512 and a 180 s timeout. It parses the reply and applies the same policy. An unreadable or incomplete reply is asked again once with `retry_note`. A model failure becomes an `error` result, and `judge_all` stops after more than 2 consecutive failures. One 8B model at 8k context fits a 12 GB GPU, and no embedding model is loaded.
 
 ## 6. Self-judging bias
 
@@ -101,7 +101,7 @@ Summary lines: `rubric`, `prompts`, `parser_cases`, `calibration_rule`, `negativ
 
 ## 8. Reference run
 
-Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB; project at `~/Desktop/RAG`. Ollama 0.40.2, judge `qwen3:8b` (think off, temperature 0, JSON format).
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3; project at `~/Desktop/RAG`. Ollama 0.40.2, judge `qwen3:8b` (think off, temperature 0, JSON format).
 
 - Run: 2026-11-19 12:14:02 UTC (2026-11-19 15:44 Tehran time, Asia/Tehran).
 - Result: `status: PASS`, 937 passed, 0 failed, 0 errors, 0 skipped; earlier steps ingest, dedup, hierarchy, issues, rag and ike all exited 0.

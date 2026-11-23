@@ -14,9 +14,8 @@ runtime:
   endpoint: http://localhost:11434
   offline: true                 # C-17 passed for the LLM stage: run 20261109-190709 with internet disconnected, 86/86 ok
   target_hardware:
-    cpu: Intel Core i5-12400F
     ram_gb: 16
-    gpu: NVIDIA GeForce RTX 3060
+    gpu: NVIDIA
     vram_gb: 12
     driver: "595.99.02 (CUDA 13.2)"
     os: Ubuntu 24.04.5 LTS

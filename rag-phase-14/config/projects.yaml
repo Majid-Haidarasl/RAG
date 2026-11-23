@@ -2,7 +2,7 @@
 # The registry (data/projects/project-registry.json) holds the 1403 projects, achievements,
 # challenges, research gaps, unsolved issues and the interim knowledge scorecard of AR-TRN-026.
 # The Ollama endpoint comes from config/rag.yaml (Phase 8); the judge from config/judge.yaml (Phase 10).
-# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model, num_ctx 8192.
+# Sized for a 12 GB NVIDIA GPU: one 8B model, num_ctx 8192.
 config_version: 0.12.0
 case: AR-ISS-024               # the issue with the IKE graph (Phase 9)
 

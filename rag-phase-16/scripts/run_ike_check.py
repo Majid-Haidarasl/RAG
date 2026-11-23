@@ -392,7 +392,9 @@ def main() -> int:  # noqa: C901 - one linear report
                   f"tokens={s['prompt_tokens']}+{s['completion_tokens']}")
         print(f"live_timings: total_s={round(total_s, 1)}")
     print("checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items()))
-    print(f"results_json: {out_json}")
+    shown = out_json.resolve()
+    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    print(f"results_json: {shown}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1
 

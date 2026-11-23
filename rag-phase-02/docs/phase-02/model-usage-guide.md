@@ -5,7 +5,7 @@ Values marked *measured* come from these runs. No projections remain.
 
 ## 1. Runtime
 
-All models run locally through **Ollama** on the target PC: Ubuntu, i5-12400F, 16 GB RAM, RTX 3060 12 GB.
+All models run locally through **Ollama** on a local Ubuntu PC with 16 GB RAM and a 12 GB NVIDIA GPU.
 
 | Item | Value |
 |---|---|
@@ -71,7 +71,7 @@ curl -s localhost:11434/api/ps
 - Do not use think on for decomposition.
 - Measured decode speed: 57.8 tok/s with think off, 56.7 tok/s with think on.
 
-## 5. VRAM budget (RTX 3060 12 GB)
+## 5. VRAM budget (12 GB GPU)
 
 | Item | Value | Source |
 |---|---|---|

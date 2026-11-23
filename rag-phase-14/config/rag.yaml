@@ -1,7 +1,7 @@
 # Phase 8 — RAG retrieval core & Q&A runtime settings.
 # Models and endpoint follow the Phase 2 registry (config/model-registry.yaml 0.3.0
 # in the Phase 2 kit): bge-m3 for embeddings, qwen3:8b for answers, think off.
-# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB
+# Sized for a 12 GB NVIDIA GPU
 # (bge-m3 + qwen3:8b resident together ≈ 7.5 GB VRAM, measured in Phase 2).
 config_version: 0.8.0
 

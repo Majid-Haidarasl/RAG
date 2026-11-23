@@ -38,7 +38,7 @@ if [[ "$PY_OK" != "yes" ]]; then
 fi
 
 if [[ ! -f "$ROOT/pyproject.toml" ]]; then
-  fail_summary "pyproject.toml not found. Extract the zip into the repo root (e.g. ~/Desktop/RAG) and run this script from there."
+  fail_summary "pyproject.toml not found. Extract the zip into the repo root (the folder you cloned into, e.g. ~/Desktop/RAG) and run this script from there."
 fi
 
 # LibreOffice is optional for unit tests (the .doc test is skipped) but required

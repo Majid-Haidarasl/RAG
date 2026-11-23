@@ -11,7 +11,7 @@ Case study: **ArmanRayan IT** — fictional Tehran company, ~85 staff, 5 layers,
 | `docs/phase-01/domain-discovery.md` | Goals, scope, assumptions, stakeholders, document inventory, layers and nodes, Azarpakhsh case, use cases, data-quality findings, risks, supervisor questions |
 | `docs/phase-01/glossary.md` | Bilingual ubiquitous language: 98 terms (EN, FA, definition, context, ArmanRayan example) |
 | `docs/phase-01/bounded-contexts-draft.md` | 10 bounded contexts, candidate aggregates, context map, use-case mapping |
-| `docs/phase-01/evaluation-baseline.md` | 44 component metrics + 8 model/prompt metrics + judge rubric; initial targets pending supervisor review |
+| `docs/phase-01/evaluation-baseline.md` | 44 component metrics + 8 model/prompt metrics + judge rubric; initial targets, reviewed and accepted as the Phase 1 baseline (later metrics documents supersede them) |
 | `docs/phase-01/unit-test-policy.md` | Unit-test scope, pytest tooling, deterministic fakes, naming, coverage target |
 | `data/registry/layer-registry.template.csv` | Layer registry header |
 | `data/registry/layer-registry.sample.csv` | ArmanRayan L0–L4 |
@@ -32,7 +32,7 @@ Case study: **ArmanRayan IT** — fictional Tehran company, ~85 staff, 5 layers,
 - [x] `docs/phase-01/unit-test-policy.md`
 - [x] `corpus/README.md`
 
-Pending outside this package: supervisor review of metric targets and open questions Q1–Q8 (`domain-discovery.md` section 12).
+Review status: reviewed and accepted as the historical Phase 1 baseline. The metric targets and open questions Q1–Q8 (`domain-discovery.md` section 12) were settled in later phases, and later metrics documents supersede these targets.
 
 ## Next: phase 2
 

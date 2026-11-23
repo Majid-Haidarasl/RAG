@@ -10,7 +10,7 @@ Kit version 0.14.0 (GitHub issue #14). Phase 14 adds a **bilingual gold set** of
 
 There are no new dependencies. Unit tests never need Ollama, the GPU or the internet. The code runs on Python 3.12 to 3.15.
 
-Target system: Fedora Linux, Python 3.15.2, Ollama 0.40.17, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB, project at `~/Desktop/RAG`.
+Target system: Fedora Linux, Python 3.15.2, Ollama 0.40.17, project at `~/Desktop/RAG`.
 
 ## 1. Where things live
 

@@ -1,7 +1,7 @@
 # Phase 13 — RFP generation & proposal management.
 # The RFP text is built from templates (deterministic); qwen3:8b only writes an
 # optional advisory summary and bidder feedback, which are fact-checked and judged.
-# Sized for Fedora Linux · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model, num_ctx 8192.
+# Sized for a 12 GB NVIDIA GPU: one 8B model, num_ctx 8192.
 config_version: 0.13.0
 
 cycle:                         # same cycle as Phase 12 (the key issues come from it)

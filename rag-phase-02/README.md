@@ -29,7 +29,7 @@ python3 experiments/phase-02/run_all.py --only vram   # فقط سنجش VRAM ه�
 unzip rag-phase-02-kit.zip && cd rag-phase-02
 bash setup.sh
 python3 experiments/phase-02/run_all.py --quick   # smoke run, ~3-5 min
-python3 experiments/phase-02/run_all.py           # full baseline, ~8-10 min on RTX 3060 12 GB (measured 7.2)
+python3 experiments/phase-02/run_all.py           # full baseline, ~8-10 min on a 12 GB GPU (measured 7.2)
 python3 experiments/phase-02/run_all.py --only vram   # co-residency VRAM check, ~1 min
 ```
 

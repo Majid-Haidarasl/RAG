@@ -4,7 +4,7 @@ Kit version 0.11.0 (GitHub issue #11). Once per **processing cycle** every node 
 
 There are no new dependencies. Unit tests never need Ollama, the GPU or the internet. The optional live step uses `qwen3:8b` (think off, JSON) on the local Ollama.
 
-Target system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB, Ollama 0.40.2, project at `~/Desktop/RAG`.
+Target system: Ubuntu 24.04.5 LTS, Python 3.12.3, Ollama 0.40.2, project at `~/Desktop/RAG`.
 
 ## 1. Where things live
 
@@ -103,7 +103,7 @@ Checks (all must be ok for PASS): `pytest`, `prior_steps` (ingest, dedup, hierar
 
 ## 9. Reference run
 
-Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB; project at `~/Desktop/RAG`. Ollama 0.40.2, `qwen3:8b` (think off, JSON format).
+Test system: Ubuntu 24.04.5 LTS, Python 3.12.3; project at `~/Desktop/RAG`. Ollama 0.40.2, `qwen3:8b` (think off, JSON format).
 
 - Run: 2026-11-19 14:40:11 UTC (2026-11-19 18:10 Tehran time, Asia/Tehran).
 - Result: `status: PASS`, 1061 passed, 0 failed, 0 errors, 0 skipped; earlier steps ingest, dedup, hierarchy, issues, rag, ike and judge all exited 0.

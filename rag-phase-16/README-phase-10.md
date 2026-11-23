@@ -35,8 +35,8 @@
 ## سیستم هدف
 
 - Ubuntu 24.04.5 LTS، پایتون 3.12.3؛
-- پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM؛
-- کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛
+- دست‌کم ۱۶ گیگابایت RAM؛
+- کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه؛
 - Ollama 0.40.2 با مدل `qwen3:8b` (داور)؛
 - مسیر پروژه `~/Desktop/RAG`.
 
@@ -64,7 +64,7 @@ ollama list
 
 ## اجرا روی اوبونتو
 
-فرض: zip در `~/Downloads/rag-phase-10.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-10.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -109,7 +109,7 @@ python scripts/run_judge_check.py --no-live  # فقط بررسی آفلاین (�
 
 ## نتیجه روی داده‌ها
 
-سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3، پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM، کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛ مسیر پروژه `~/Desktop/RAG`. Ollama 0.40.2، داور `qwen3:8b` (حالت تفکر خاموش، دمای ۰، قالب JSON).
+سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3؛ مسیر پروژه `~/Desktop/RAG`. Ollama 0.40.2، داور `qwen3:8b` (حالت تفکر خاموش، دمای ۰، قالب JSON).
 
 زمان اجرا: ۲۸ آبان ۱۴۰۵، ساعت ۱۵:۴۴ به وقت تهران (Asia/Tehran)، برابر با 2026-11-19 12:14:02 UTC. خلاصهٔ فاز ۱۰: `status: PASS`. فایل نتیجه: `results/phase-10/judge-check-20261119T121402Z.json`.
 

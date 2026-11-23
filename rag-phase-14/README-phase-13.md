@@ -42,8 +42,8 @@
 ## سیستم هدف
 
 - Fedora Linux، پایتون 3.15.2 (اسکریپت همان `python3` سیستم را برمی‌دارد)؛
-- پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM؛
-- کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه؛
+- دست‌کم ۱۶ گیگابایت RAM؛
+- کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه؛
 - Ollama با `qwen3:8b` (فقط برای مرحلهٔ زندهٔ اختیاری)؛
 - مسیر پروژه `~/Desktop/RAG`.
 
@@ -93,7 +93,7 @@ ollama list
 
 ## اجرا روی لینوکس (Fedora)
 
-فرض: zip در `~/Downloads/rag-phase-13.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-13.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -135,9 +135,9 @@ python scripts/run_rfp_check.py --no-live  # فقط بخش آفلاین
 - `live: skipped` (بدون Ollama) یا `live: ok` با خط‌های `live_ai` و `live_judge`.
 - `checks:` همه `ok` (۱۴ بررسی) و `status: PASS`.
 
-## نتیجهٔ اجرا روی سیستم من
+## نتیجهٔ اجرا روی سیستم آزمون
 
-اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۳:۱۹ به وقت تهران، روی Fedora Linux با پایتون 3.15.2، LibreOffice 26.8.3.1، pdftotext 26.08.0 و Ollama 0.40.17 با مدل `qwen3:8b` (همان سخت‌افزار: i5-12400F، ۱۶ گیگابایت RAM، RTX 3060 با ۱۲ گیگابایت). نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
+اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۳:۱۹ به وقت تهران، روی Fedora Linux با پایتون 3.15.2، LibreOffice 26.8.3.1، pdftotext 26.08.0 و Ollama 0.40.17 با مدل `qwen3:8b`. نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
 
 ```text
 ======== PHASE 13 SUMMARY ========
@@ -176,7 +176,7 @@ live_judge: ai rule=2/4 llm=3/4 combined=2/4 feedback_templates llm=2/2
   feedback PRP-B en: rejected mentioned=1/2 rule=15 llm=20
 live_timings: generate_avg_s=5.175 tokens_avg=1226+260 total_s=31.5
 checks: pytest=ok prior_steps=ok inputs_loaded=ok blueprint_valid=ok evidence_grounded=ok rfp_generated=ok rfp_accepted=ok proposals_valid=ok evaluation_matches_published=ok decision_consistent=ok feedback_accepted=ok knowledge_linked=ok negative_controls_rejected=ok csv_round_trip=ok
-results_json: /home/mdhdl/Desktop/RAG/results/phase-13/rfp-check-20261123T194948Z.json
+results_json: results/phase-13/rfp-check-20261123T194948Z.json
 ======== END PHASE 13 SUMMARY ========
 ```
 

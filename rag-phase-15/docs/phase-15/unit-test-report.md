@@ -4,8 +4,8 @@ Kit version 0.15.0 (GitHub issue #15, "Unit-test completion & hardening"). This 
 how the unit tests are measured, which tests were added, which defects they found, and what the
 first run on the target system printed.
 
-Target system: Fedora Linux, Python 3.15.2, Ollama 0.40.17, Intel Core i5-12400F, 16 GB RAM,
-NVIDIA RTX 3060 12 GB, project at `~/Desktop/RAG`.
+Target system: Fedora Linux, Python 3.15.2, Ollama 0.40.17,
+project at `~/Desktop/RAG`.
 
 ## 1. What Phase 15 adds
 

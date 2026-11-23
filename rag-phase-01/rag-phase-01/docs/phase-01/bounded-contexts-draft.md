@@ -1,6 +1,6 @@
 # Phase 1 — Bounded Contexts (Draft)
 
-Status: draft 0.1 for supervisor review. The final context map, aggregates and invariants are fixed in **phase 3** (DDD architecture and core domain model). This draft only fixes names and responsibilities so phases 2–3 start from one vocabulary (see `glossary.md`).
+Status: draft 0.1, reviewed (historical Phase 1 baseline). The final context map, aggregates and invariants are fixed in **phase 3** (DDD architecture and core domain model). This draft only fixes names and responsibilities so phases 2–3 start from one vocabulary (see `glossary.md`).
 
 Source: project specification section 5.1 (ten proposed contexts), 5.2 (entities), 5.3 (value objects), mapped onto the ArmanRayan IT corpus.
 

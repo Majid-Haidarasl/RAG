@@ -4,7 +4,7 @@ Kit version 0.13.0 (GitHub issue #13). Phase 13 turns the Phase 12 key issues an
 
 There are no new dependencies. Unit tests never need Ollama, the GPU or the internet. The code runs on Python 3.12 to 3.15.
 
-Target system: Fedora Linux, Python 3.15.2, LibreOffice 26.8.3.1, pdftotext 26.08.0, Ollama 0.40.17, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB, project at `~/Desktop/RAG`.
+Target system: Fedora Linux, Python 3.15.2, LibreOffice 26.8.3.1, pdftotext 26.08.0, Ollama 0.40.17, project at `~/Desktop/RAG`.
 
 ## 1. Where things live
 
@@ -158,7 +158,7 @@ With Ollama and `qwen3:8b`: an RFP summary (`summary` + up to 3 `questions`) and
 
 ## 11. Results on my system
 
-Run on 2 Azar 1405 at about 23:19 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, i5-12400F, 16 GB RAM, RTX 3060 12 GB, Ollama 0.40.17 with `qwen3:8b`. Status **PASS**, all 14 checks ok.
+Run on 2 Azar 1405 at about 23:19 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, Ollama 0.40.17 with `qwen3:8b`. Status **PASS**, all 14 checks ok.
 
 ```text
 ======== PHASE 13 SUMMARY ========
@@ -197,7 +197,7 @@ live_judge: ai rule=2/4 llm=3/4 combined=2/4 feedback_templates llm=2/2
   feedback PRP-B en: rejected mentioned=1/2 rule=15 llm=20
 live_timings: generate_avg_s=5.175 tokens_avg=1226+260 total_s=31.5
 checks: pytest=ok prior_steps=ok inputs_loaded=ok blueprint_valid=ok evidence_grounded=ok rfp_generated=ok rfp_accepted=ok proposals_valid=ok evaluation_matches_published=ok decision_consistent=ok feedback_accepted=ok knowledge_linked=ok negative_controls_rejected=ok csv_round_trip=ok
-results_json: /home/mdhdl/Desktop/RAG/results/phase-13/rfp-check-20261123T194948Z.json
+results_json: results/phase-13/rfp-check-20261123T194948Z.json
 ======== END PHASE 13 SUMMARY ========
 ```
 

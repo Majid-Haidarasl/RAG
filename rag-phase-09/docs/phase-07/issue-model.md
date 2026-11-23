@@ -236,7 +236,7 @@ It also writes `results/phase-07/issue-check-<UTC>.json`.
 
 ### Reference run
 
-* Test system: Ubuntu 24.04.5 LTS, Python 3.12.3, Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB (GPU not used by the tests); project at `~/Desktop/RAG`.
+* Test system: Ubuntu 24.04.5 LTS, Python 3.12.3 (GPU not used by the tests); project at `~/Desktop/RAG`.
 * Run: 2026-11-18 20:47:50 UTC (2026-11-19 00:17 Tehran time).
 * Result: `status: PASS`, 474 passed, 0 failed, 0 skipped; earlier steps ingest, dedup and hierarchy all exited 0; 7 issues and 4 sub-issues, 0 validation errors or warnings; all six checks ok.
 * Results file: `results/phase-07/issue-check-20261118T204750Z.json`.

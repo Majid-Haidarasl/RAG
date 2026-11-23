@@ -1,12 +1,12 @@
 # Phase 1 — Evaluation Metrics Baseline
 
-Status: **initial — pending supervisor review.** All targets below are proposals for discussion; spec section 19 allows the team to adjust them with the supervisor. No values have been measured yet; measurement starts in the phase listed for each metric.
+Status: **reviewed and accepted — historical Phase 1 baseline.** The targets below were the starting proposals; spec section 19 allows the team to adjust them, and the later metrics documents (Phase 14 `docs/phase-14/updated-metrics.md`, Phase 15 `docs/phase-15/unit-test-report.md`) supersede them. Measurement started in the phase listed for each metric.
 
 Sources: specification section 19.1 (component matrix, 44 components), 19.2 (model and prompt metrics, 8 areas), section 16 (judge rubric and 18/20 threshold).
 
 ## 1. Component metrics (spec 19.1)
 
-| ID | Component | What is measured | Success criterion (spec) | Initial target (pending supervisor review) | Method | Measured in phase |
+| ID | Component | What is measured | Success criterion (spec) | Initial target (Phase 1 baseline) | Method | Measured in phase |
 |---|---|---|---|---|---|---|
 | C-01 | DDD architecture | Bounded contexts, aggregates, entities, VOs, domain services, repositories, application services defined | Architecture document names every core concept and maps each use case to a context | 100% of the 12 use cases in `bounded-contexts-draft.md` mapped; every glossary term owned by one context | Document review with supervisor | 3 |
 | C-02 | Node definition | Node can be registered with name, domain, layer, parent, attributes, reporting rule | All required node fields are created, updated, retrieved and validated in unit tests | 21/21 sample nodes load from `node-registry.sample.csv` without validation error; each required field has a failing-input test | Unit tests | 6 |
@@ -55,7 +55,7 @@ Sources: specification section 19.1 (component matrix, 44 components), 19.2 (mod
 
 ## 2. Model and prompt metrics (spec 19.2)
 
-| ID | Area | Metric | Initial target (pending supervisor review) |
+| ID | Area | Metric | Initial target (Phase 1 baseline) |
 |---|---|---|---|
 | MP-01 | Retrieval relevance | Relevance of Top-K chunks to sample questions | Recall@5 ≥ 0.80 and MRR ≥ 0.60 on the golden set (threshold confirmed after baseline run) |
 | MP-02 | Answer faithfulness | Answer does not contradict the source | Judge faithfulness criterion ≥ 4/5 on ≥ 90% of answers |

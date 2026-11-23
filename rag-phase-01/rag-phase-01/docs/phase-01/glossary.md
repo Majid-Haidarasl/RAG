@@ -2,7 +2,7 @@
 
 Bilingual (EN/FA) shared vocabulary for the offline hierarchical RAG core. Terms come from the project specification (sections 5–19) and are illustrated with the ArmanRayan IT corpus (`corpus/`). Context names refer to `bounded-contexts-draft.md`.
 
-Status: initial, version 0.1 — to be reviewed with the supervisor. Term count: **98**.
+Status: version 0.1, reviewed (historical Phase 1 baseline). Term count: **98**.
 
 Rules: (1) code, tests and documents use the English term exactly; (2) Persian documents use the Persian term; (3) a new term is added here before it appears in code.
 

@@ -2,7 +2,7 @@
 """Run the whole Phase 2 baseline: env check -> embedding -> LLM -> LVM, with VRAM tracking.
 
   python3 experiments/phase-02/run_all.py --quick     # ~3-5 min smoke run
-  python3 experiments/phase-02/run_all.py             # full run (~8-10 min on RTX 3060, measured 7.2)
+  python3 experiments/phase-02/run_all.py             # full run (~8-10 min on a 12 GB GPU, measured 7.2)
   python3 experiments/phase-02/run_all.py --only vram # co-residency check only (~1 min)
 
 Outputs: experiments/phase-02/results/<timestamp>/{results.json, summary.md, llm_runs.jsonl,

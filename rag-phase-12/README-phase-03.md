@@ -1,4 +1,4 @@
-# فاز ۳ — معماری DDD و مدل دامنه
+# فاز ۳ — معماری DDD و مدل دامنه (نسخهٔ ۰.۳.۰)
 
 هستهٔ RAG سلسله‌مراتبی آفلاین · مطالعهٔ موردی **آرمان‌رایان** · ایشو #۳ گیت‌هاب.
 
@@ -6,12 +6,12 @@
 
 ## استخراج داخل ریشهٔ ریپو
 
-فرض: zip در `~/Downloads/rag-phase-03.zip` است و ریپو در `~/RAG`. اگر مسیرهایت فرق دارد، همین دو جا را عوض کن.
+فرض: zip در `~/Downloads/rag-phase-03.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید). اگر مسیرهایت فرق دارد، همین دو جا را عوض کن.
 
 ```bash
 cd ~/Downloads
-unzip -o rag-phase-03.zip -d ~/RAG
-cd ~/RAG
+unzip -o rag-phase-03.zip -d ~/Desktop/RAG
+cd ~/Desktop/RAG
 bash scripts/setup_and_test.sh
 ```
 
@@ -22,7 +22,7 @@ bash scripts/setup_and_test.sh
 اگر بخواهی دستی اجرا کنی:
 
 ```bash
-cd ~/RAG
+cd ~/Desktop/RAG
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"

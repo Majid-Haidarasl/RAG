@@ -181,7 +181,9 @@ def main() -> int:
     print(f"pdf_text_quality: {', '.join(f'{k}={v}' for k, v in sorted(quality.items())) or 'none'}")
     garbled_fail = sum(1 for f in failures if f.get("error_type") == "GarbledTextError")
     print(f"pdf_garbled_failures: {garbled_fail}")
-    print(f"results_json: {out_json}")
+    shown = out_json.resolve()
+    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    print(f"results_json: {shown}")
     if failures:
         print("failures:")
         for item in failures:

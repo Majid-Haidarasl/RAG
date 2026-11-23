@@ -2,7 +2,7 @@
 
 Measured numbers of the Phase 14 reference run, taken from its PHASE 14 SUMMARY block.
 
-Run: 3 Azar 1405, about 00:30 Tehran time, on Fedora Linux, Python 3.15.2, Ollama 0.40.17, `qwen3:8b` + `bge-m3` (think off), Intel Core i5-12400F, 16 GB RAM, NVIDIA RTX 3060 12 GB.
+Run: 3 Azar 1405, about 00:30 Tehran time, on Fedora Linux, Python 3.15.2, Ollama 0.40.17, `qwen3:8b` + `bge-m3` (think off).
 Results file: `eval/results/phase-14-check-20261123T210037Z.json` (tables: `eval/results/updated-metrics-20261123T210037Z.md`).
 Result: **PASS**, all 12 checks `ok`, live step `ok`.
 

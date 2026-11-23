@@ -5,7 +5,7 @@
 # 1.0.0 — ai_ids back to baseline: the Phase 15 run measured it better than listed_guarded (accepted 2/4
 # vs 1/4); listed_guarded stays available as a variant.
 # Models, endpoint and timeouts come from config/rag.yaml (Phase 8) and config/judge.yaml (Phase 10).
-# Target system: Fedora Linux · Python 3.15.2 · Ollama 0.40.17 · i5-12400F · 16 GB RAM · RTX 3060 12 GB.
+# Target system: Fedora Linux · Python 3.15.2 · Ollama 0.40.17.
 config_version: 1.0.0
 
 files:

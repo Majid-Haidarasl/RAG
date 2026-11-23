@@ -127,15 +127,15 @@ function slide07() {
 
 // 8 — tests
 function slide08() {
-  const s = base("از ۱۴۹ تا ۱۶۴۳ تست؛ پوشش خط ۹۶٫۳٪", 8);
-  s.addChart(pres.charts.BAR, [{ name: "تست‌ها", labels: ["5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"],
-    values: [149, 240, 474, 658, 788, 937, 1061, 1207, 1355, 1493, 1643] }], {
+  const s = base("از ۱۴۹ تا ۱۷۱۵ تست؛ پوشش خط ۹۶٫۳٪", 8);
+  s.addChart(pres.charts.BAR, [{ name: "تست‌ها", labels: ["5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"],
+    values: [149, 240, 474, 658, 788, 937, 1061, 1207, 1355, 1493, 1643, 1715] }], {
     x: M, y: 1.3, w: 6.2, h: 3.7, barDir: "col", chartColors: [C.accent], barGapWidthPct: 60,
     showLegend: false, valAxisMinVal: 0, valGridLine: { color: "E5E7EB", size: 0.5 }, catGridLine: { style: "none" },
     catAxisLabelColor: C.muted, valAxisLabelColor: C.muted, catAxisTitle: "فاز", showCatAxisTitle: true,
     catAxisTitleFontFace: FONT, catAxisTitleColor: C.muted,
   });
-  bullets(s, ["پوشش خط ۹۶٫۳٪، شاخه ۸۹٫۶٪", "هیچ تستی به مدل، کارت گرافیک یا اینترنت نیاز ندارد", "۵۷٫۷ ثانیه برای همهٔ تست‌ها"],
+  bullets(s, ["پوشش خط ۹۶٫۳٪، شاخه ۸۹٫۸٪", "هیچ تستی به مدل، کارت گرافیک یا اینترنت نیاز ندارد", "۵۹٫۲۳ ثانیه برای همهٔ ۱۷۱۵ تست"],
     { x: 7.0, y: 1.5, w: 2.5, h: 3.5, fontSize: 15 });
 }
 

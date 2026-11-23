@@ -1,0 +1,33 @@
+# Python and tooling
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+**/htmlcov/
+.python-version
+node_modules/
+*.log
+
+# Search index built by the kits
+**/.rag-index/
+
+# Run outputs of each kit (same patterns as rag-phase-16/.gitignore)
+/rag-phase-*/results/phase-04/ingest-*.json
+/rag-phase-*/results/phase-05/dedup-*.json
+/rag-phase-*/results/phase-06/hierarchy-*.json
+/rag-phase-*/results/phase-07/issue-check-*.json
+/rag-phase-*/results/phase-08/rag-demo-*.json
+/rag-phase-*/results/phase-09/ike-check-*.json
+/rag-phase-*/results/phase-10/judge-check-*.json
+/rag-phase-*/results/phase-11/transfer-check-*.json
+/rag-phase-*/results/phase-12/project-check-*.json
+/rag-phase-*/results/phase-13/rfp-check-*.json
+/rag-phase-*/results/phase-15/
+/rag-phase-*/results/phase-16/
+/rag-phase-*/exports/transfer-packages/
+/rag-phase-*/exports/project-tracking/
+/rag-phase-*/exports/rfp/
+/rag-phase-*/eval/results/*
+!/rag-phase-*/eval/results/README.md

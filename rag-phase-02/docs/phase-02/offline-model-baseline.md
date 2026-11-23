@@ -14,7 +14,7 @@ Raw files are in `experiments/phase-02/results/20261109-184242/`. Every number b
 | Kit / prompt registry | kit 0.1.0, registry 0.1.0 (all prompts v1.0.0) |
 | Ollama | 0.40.2; `think` API field supported (think_mode = `api` on every call) |
 | OS / Python | Ubuntu 24.04.5 LTS / Python 3.12.3 |
-| Hardware | i5-12400F · 16 GB RAM · RTX 3060 12 GB · driver 595.99.02 (CUDA 13.2). Desktop uses 490 MiB of VRAM before the run. |
+| Hardware | 16 GB RAM · 12 GB NVIDIA GPU · driver 595.99.02 (CUDA 13.2). Desktop uses 490 MiB of VRAM before the run. |
 | Calls | LLM 86/86 ok, LVM 7/7 ok, 0 errors, 0 truncations |
 | Network during run | Not recorded for this run. The offline check is run `20261109-190709` (section 11). |
 | Confirmation runs | `20261109-190709` offline LLM; `20261109-191910` kit 0.2.0 `--only llm`; `20261109-192721` kit 0.2.0 `--only vram` (section 11) |

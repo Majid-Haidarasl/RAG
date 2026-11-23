@@ -201,7 +201,9 @@ def main() -> int:
         print(f"workflow_sim: add+move -> {sim['path_after_move']}; retire N-SW-VIS -> N-SW-UX reassigned {len(sim['reassigned'])}")  # type: ignore[index,arg-type]
         routing = sim["routing_examples"]  # type: ignore[index]
         print("escalation: " + "; ".join(f"{k} => {v}" for k, v in routing.items()))  # type: ignore[union-attr]
-    print(f"results_json: {out_json}")
+    shown = out_json.resolve()
+    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    print(f"results_json: {shown}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1
 

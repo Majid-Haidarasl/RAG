@@ -78,7 +78,7 @@ tests/
 2. A bug fix starts with a test that reproduces it.
 3. Tests do not depend on order or shared mutable state.
 4. Test data uses fictional ArmanRayan facts only; no real personal data.
-5. Coverage target (initial, pending supervisor review): ≥ 80% line coverage of the domain and application layers; adapters for real models are excluded from coverage.
+5. Coverage target (initial Phase 1 target, reviewed): ≥ 80% line coverage of the domain and application layers; adapters for real models are excluded from coverage.
 
 ## 8. Definition of done for a module
 

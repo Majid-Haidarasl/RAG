@@ -1,6 +1,6 @@
 # Phase 3 — DDD Architecture
 
-Status: v1.0 for supervisor review. Date: 10 November 2026 (19 Aban 1405).
+Status: v1.0, reviewed and accepted as the Phase 3 design baseline. Date: 10 November 2026 (19 Aban 1405).
 Project: offline hierarchical RAG core · case study ArmanRayan IT.
 Inputs: Phase 1 bounded-contexts draft, glossary, unit-test policy, layer/node registry; Phase 2 model-usage guide and model registry 0.3.0.
 

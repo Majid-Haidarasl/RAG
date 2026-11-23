@@ -6,7 +6,7 @@
 
 ## اجرا روی اوبونتو
 
-فرض: zip در `~/Downloads/rag-phase-06.zip` است و کلون ریپو در `~/Desktop/RAG`.
+فرض: zip در `~/Downloads/rag-phase-06.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
 
 ```bash
 cd ~/Downloads
@@ -45,7 +45,7 @@ python scripts/run_hierarchy_check.py
 
 ## نتیجه روی داده‌های واقعی
 
-سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3، پردازندهٔ Intel Core i5-12400F، ۱۶ گیگابایت RAM، کارت گرافیک NVIDIA RTX 3060 با ۱۲ گیگابایت حافظه (تست‌ها از GPU استفاده نمی‌کنند)؛ مسیر پروژه `~/Desktop/RAG`.
+سیستم آزمون: Ubuntu 24.04.5 LTS، پایتون 3.12.3 (تست‌ها از GPU استفاده نمی‌کنند)؛ مسیر پروژه `~/Desktop/RAG`.
 
 | شاخص | مقدار |
 |---|---|

@@ -1,8 +1,8 @@
 # Phase 10 — LLM-as-judge runtime settings.
 # The Ollama endpoint, timeouts and retries come from config/rag.yaml (Phase 8).
 # The judge is qwen3:8b — the same model that writes the answers (self-judging bias,
-# see docs/phase-10/scoring-framework.md §6). Sized for Ubuntu 24.04 · i5-12400F ·
-# 16 GB RAM · RTX 3060 12 GB: one 8B model at num_ctx 8192, no embedding needed.
+# see docs/phase-10/scoring-framework.md §6). Sized for a 12 GB
+# NVIDIA GPU: one 8B model at num_ctx 8192, no embedding needed.
 config_version: 0.10.0
 
 model:

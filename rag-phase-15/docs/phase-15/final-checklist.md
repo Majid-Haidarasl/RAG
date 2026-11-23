@@ -115,7 +115,7 @@ this kit. Phase 15 is `partial` only because its release tag is still planned (s
 | 14 | docs/phase-14/updated-metrics.md | done | `docs/phase-14/updated-metrics.md` |  |
 | 15 | docs/phase-15/unit-test-report.md | done | `docs/phase-15/unit-test-report.md` |  |
 | 15 | coverage report | run | `results/phase-15` | coverage.json / coverage.txt / htmlcov written by scripts/setup_and_test.sh; not committed |
-| 15 | release tag v0.9 (final trial core) | planned | — | set on the pushed Phase 15 commit after the reference run passes |
+| 15 | release tag v0.9 (final trial core) | **set** | git tag `v0.9` | set on the pushed Phase 15 commit after the reference run passed; `config/release-checklist.yaml` kept `planned` because the check ran before the tag existed |
 | 15 | docs/phase-15/final-checklist.md | done | `docs/phase-15/final-checklist.md` |  |
 | 16 | README.md + docs/technical/ | planned | — | Phase 16 (final wrap-up) |
 | 16 | docs/user-guide.md | planned | — | Phase 16 |
@@ -140,7 +140,7 @@ this kit. Phase 15 is `partial` only because its release tag is still planned (s
 |---|---|
 | `checklist:` line | `deliverables=80 done=57 external=12 run=3 planned=8 phases=16 problems=0` |
 | `checklist_phases:` line | `1=partial 2=external 3=done … 14=done 15=partial 16=planned` (3–14 all done) |
-| `release:` line | `tag=v0.9 (final trial core) not tagged yet; tag the pushed Phase 15 commit after this PASS docs=2/2` |
+| `release:` line | `tag=v0.9 (final trial core) not tagged yet; tag the pushed Phase 15 commit after this PASS docs=2/2` (printed before the tag was set; `v0.9` is set now) |
 | Status | PASS, 1643 tests passed, line coverage 96.3 %, branch coverage 89.6 % |
 | Tag | `v0.9` set on the pushed Phase 15 commit after this PASS |
 
