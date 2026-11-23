@@ -1,0 +1,53 @@
+# Phase 8 — RAG retrieval core & Q&A runtime settings.
+# Models and endpoint follow the Phase 2 registry (config/model-registry.yaml 0.3.0
+# in the Phase 2 kit): bge-m3 for embeddings, qwen3:8b for answers, think off.
+# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB
+# (bge-m3 + qwen3:8b resident together ≈ 7.5 GB VRAM, measured in Phase 2).
+config_version: 0.8.0
+
+ollama:
+  base_url: http://localhost:11434   # local only; other hosts are rejected
+  connect_timeout_s: 3               # reachability probe in run_rag_demo.py
+  embed_timeout_s: 120               # per batch; includes a cold model load (~11 s)
+  generate_timeout_s: 240            # per answer; Phase 2 p95 was ~17 s, cold load adds more
+  keep_alive: 30m
+  retries: 1
+
+embedding:
+  model: bge-m3:latest
+  dim: 1024
+  batch_size: 16                     # chunks ≤ 1600 chars; 16 per request is light on a 12 GB card
+  num_ctx: 8192
+
+generation:
+  model: qwen3:8b
+  think: false                       # Phase 2: think off by default; <think> text is stripped anyway
+  options:
+    temperature: 0.2
+    top_p: 0.9
+    seed: 42
+    num_ctx: 8192
+    num_predict: 1024
+
+retrieval:
+  top_k: 5
+  candidate_k: 30
+  rrf_k: 60
+  lexical_weight: 1.0
+  vector_weight: 1.0
+  near_duplicate_threshold: 0.80     # Phase 5 near-duplicate threshold
+  probe_k: 3
+
+context:
+  budget_tokens: 3500                # estimated tokens (2 chars ≈ 1 token, pessimistic)
+  max_block_tokens: 900
+
+qa:
+  prompt_dir: config/prompts/qa
+  prompt_id: qa.answer
+  evidence_min_vector: 0.45          # bge-m3 cosine below this is treated as "no evidence"
+  evidence_min_lexical: 3.0          # BM25 floor used when no embedder is configured
+  escalate_margin: 0.02              # outside evidence must beat inside evidence by this margin
+
+index:
+  path: .rag-index/phase-08.sqlite   # local cache, not committed

@@ -1,0 +1,42 @@
+# Phase 11 — cyclic node processing and upward knowledge transfer.
+# One cycle = one processing period. 1403-Q2 is the quarter that ends at the end of
+# Shahrivar 1403, the reporting cutoff of AR-TRN-026 and AR-FIN-008.
+# The Ollama endpoint, timeouts and retries come from config/rag.yaml (Phase 8);
+# the judge (rubric, thresholds, judge model) comes from config/judge.yaml (Phase 10).
+# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model,
+# num_ctx 8192, no embedding model needed in this phase.
+config_version: 0.11.0
+case: AR-ISS-024
+
+cycle:
+  id: "1403-Q2"
+  period_start: "1403-04-01"
+  period_end: "1403-06-31"
+  trigger: quarter close (AR-FIN-008 quarterly report)
+
+storage:
+  db: exports/transfer-packages/transfer-packages.sqlite   # latest package per (cycle, node) + history
+  csv_dir: exports/transfer-packages                       # <cycle>/<NODE>.csv + latest-packages.csv
+
+model:                         # AI transfer suggestions
+  model: qwen3:8b
+  think: false
+  format: json                 # the reply must be one JSON object
+  keep_alive: 30m
+  timeout_s: 180
+  options:
+    temperature: 0.2
+    top_p: 0.9
+    seed: 42
+    num_ctx: 8192
+    num_predict: 768
+
+live:
+  languages: [fa, en]
+  max_packages: 6              # suggestions for the 6 most important packages (CEO and deputies first)
+  llm_judge: true              # judge templates and suggestions with qwen3:8b too (combined with the rule judge)
+
+update_check:                  # re-run check: one node reports a changed item status
+  node: N-HW-REP
+  item: AR-ISS-024/HW
+  status: resolved

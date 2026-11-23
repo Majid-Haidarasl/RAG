@@ -1,0 +1,69 @@
+document_id,node_id,role,source
+AR-BRD-003,N-BRD,owner,catalog owning_node (AR manifest)
+AR-BRD-003,N-CEO,described_in,node-registry source_docs
+AR-EXE-023,N-LIB,owner,catalog owning_node (AR manifest)
+AR-EXE-023,N-HW-REP,co_owner,catalog additional_nodes
+AR-EXE-023,N-SW-WIN,co_owner,catalog additional_nodes
+AR-EXE-023,N-ADM-HR,described_in,node-registry source_docs
+AR-FIN-008,N-ADM-FIN,owner,catalog owning_node (AR manifest)
+AR-FIN-008,N-BRD,co_owner,catalog additional_nodes
+AR-FIN-008,N-CEO,co_owner,catalog additional_nodes
+AR-FIN-010,N-ADM-FIN,owner,catalog owning_node (AR manifest)
+AR-FIN-010,N-ADM,co_owner,catalog additional_nodes
+AR-HR-004,N-ADM-HR,owner,catalog owning_node (AR manifest)
+AR-HR-004,N-ADM,co_owner,catalog additional_nodes
+AR-HR-005,N-ADM-HR,owner,catalog owning_node (AR manifest)
+AR-HR-005,N-ADM,co_owner,catalog additional_nodes
+AR-HR-006,N-ADM-HR,owner,catalog owning_node (AR manifest)
+AR-HR-006,N-ADM,co_owner,catalog additional_nodes
+AR-HR-007,N-ADM-HR,owner,catalog owning_node (AR manifest)
+AR-HR-007,N-ADM,co_owner,catalog additional_nodes
+AR-HR-011,N-ADM-HR,owner,catalog owning_node (AR manifest)
+AR-HR-011,N-ADM,co_owner,catalog additional_nodes
+AR-HR-011,N-ADM-SRV,described_in,node-registry source_docs
+AR-HW-012,N-HW-REP,owner,catalog owning_node (AR manifest)
+AR-HW-012,N-HW,co_owner,catalog additional_nodes
+AR-HW-013,N-HW-ADV,owner,catalog owning_node (AR manifest)
+AR-HW-013,N-HW,co_owner,catalog additional_nodes
+AR-HW-014,N-HW-SAL,owner,catalog owning_node (AR manifest)
+AR-HW-014,N-HW,co_owner,catalog additional_nodes
+AR-HW-015,N-HW-ASM,owner,catalog owning_node (AR manifest)
+AR-HW-015,N-HW,co_owner,catalog additional_nodes
+AR-ISS-024,N-LIB,owner,catalog owning_node (AR manifest)
+AR-ISS-024,N-ADM-LEG,described_in,node-registry source_docs
+AR-ISS-024,N-HW-ADV,described_in,node-registry source_docs
+AR-ISS-024,N-HW-ASM,described_in,node-registry source_docs
+AR-ISS-024,N-HW-REP,described_in,node-registry source_docs
+AR-ISS-024,N-SW-WIN,described_in,node-registry source_docs
+AR-LEG-009,N-ADM-LEG,owner,catalog owning_node (AR manifest)
+AR-LEG-009,N-ADM,co_owner,catalog additional_nodes
+AR-ORG-001,N-BRD,owner,catalog owning_node (AR manifest)
+AR-ORG-001,N-CEO,co_owner,catalog additional_nodes
+AR-ORG-002,N-CEO,owner,catalog owning_node (AR manifest)
+AR-ORG-002,N-ADM,described_in,node-registry source_docs
+AR-ORG-002,N-ADM-SEC,described_in,node-registry source_docs
+AR-ORG-002,N-ADM-SRV,described_in,node-registry source_docs
+AR-ORG-002,N-HW,described_in,node-registry source_docs
+AR-ORG-002,N-LIB,described_in,node-registry source_docs
+AR-ORG-002,N-SW,described_in,node-registry source_docs
+AR-RFP-025,N-SW,owner,catalog owning_node (AR manifest)
+AR-RFP-025,N-ADM-LEG,co_owner,catalog additional_nodes
+AR-SW-016,N-SW,owner,catalog owning_node (AR manifest)
+AR-SW-016,N-SW-WEB,described_in,node-registry source_docs
+AR-SW-017,N-SW-WEB,owner,catalog owning_node (AR manifest)
+AR-SW-017,N-SW,co_owner,catalog additional_nodes
+AR-SW-018,N-SW-MOB,owner,catalog owning_node (AR manifest)
+AR-SW-018,N-SW,co_owner,catalog additional_nodes
+AR-SW-019,N-SW-WIN,owner,catalog owning_node (AR manifest)
+AR-SW-019,N-SW,co_owner,catalog additional_nodes
+AR-SW-020,N-SW-UX,owner,catalog owning_node (AR manifest)
+AR-SW-020,N-SW,co_owner,catalog additional_nodes
+AR-SW-021,N-SW-VIS,owner,catalog owning_node (AR manifest)
+AR-SW-021,N-SW,co_owner,catalog additional_nodes
+AR-SW-022,N-SW-SUP,owner,catalog owning_node (AR manifest)
+AR-SW-022,N-SW,co_owner,catalog additional_nodes
+AR-TRN-026,N-LIB,owner,catalog owning_node (AR manifest)
+AR-TRN-026,N-BRD,co_owner,catalog additional_nodes
+AR-TRN-026,N-CEO,co_owner,catalog additional_nodes
+AR-TRN-026,N-SW,co_owner,catalog additional_nodes
+AR-TRN-026,N-SW-WEB,co_owner,catalog additional_nodes
