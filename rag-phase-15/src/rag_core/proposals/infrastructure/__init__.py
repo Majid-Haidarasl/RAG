@@ -1,0 +1,1 @@
+"""Proposals infrastructure layer."""

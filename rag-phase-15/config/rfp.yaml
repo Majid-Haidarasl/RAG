@@ -1,0 +1,41 @@
+# Phase 13 — RFP generation & proposal management.
+# The RFP text is built from templates (deterministic); qwen3:8b only writes an
+# optional advisory summary and bidder feedback, which are fact-checked and judged.
+# Sized for Fedora Linux · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model, num_ctx 8192.
+config_version: 0.13.0
+
+cycle:                         # same cycle as Phase 12 (the key issues come from it)
+  id: "1403-Q2"
+  cutoff: "1403-06-31"
+
+storage:
+  blueprint_dir: data/rfp              # rfp-blueprints.json: requirements, criteria, knowledge links
+  proposal_dir: data/proposals         # proposal-registry.json: registered proposals and the decision
+  prompt_dir: config/prompts/rfp       # section headings + the two advisory prompts
+  csv_dir: exports/rfp                 # CSV tables, one folder per RFP
+
+candidates:                    # which Phase 12 key issues need an RFP
+  categories: [procurement]    # an issue of this category is sourced from outside
+  targets:                     # issue -> sub-issue that is sourced on purpose
+    AR-ISS-024: AR-ISS-024/WEB
+
+judging:
+  max_rfp_chars: 6000          # an RFP is a document; the Phase 10 summary limit (3000) is for summaries
+
+model:                         # AI summary and feedback (advisory only)
+  model: qwen3:8b
+  think: false
+  format: json
+  keep_alive: 30m
+  timeout_s: 180
+  options:
+    temperature: 0.2
+    top_p: 0.9
+    seed: 42
+    num_ctx: 8192
+    num_predict: 768
+
+live:
+  languages: [fa, en]
+  llm_judge: true              # judge the AI texts with qwen3:8b too (combined with the rule judge)
+  tasks: [rfp_summary, feedback]

@@ -1,0 +1,20 @@
+# Phase 13 — RFP section headings (English / Persian). Keys are fixed; only the text may change.
+id: rfp-sections
+version: "1.0"
+headings:
+  identity: {en: "Identity", fa: "شناسه"}
+  context: {en: "Why this RFP", fa: "چرا این درخواست"}
+  gaps: {en: "Knowledge gaps", fa: "شکاف‌های دانشی"}
+  need: {en: "Need", fa: "نیاز"}
+  scope: {en: "Scope", fa: "دامنه"}
+  deliverables: {en: "Deliverables", fa: "تحویل‌دادنی‌ها"}
+  exclusions: {en: "Out of scope", fa: "خارج از دامنه"}
+  architecture: {en: "Architecture", fa: "معماری"}
+  security: {en: "Security", fa: "امنیت"}
+  testing: {en: "Testing", fa: "آزمون"}
+  response_format: {en: "Proposal format", fa: "قالب پیشنهاد"}
+  evaluation: {en: "Evaluation", fa: "ارزیابی"}
+  acceptance: {en: "Acceptance", fa: "پذیرش"}
+  knowledge: {en: "Knowledge handover", fa: "انتقال دانش"}
+  criteria: {en: "Weighted criteria", fa: "معیارهای وزن‌دار"}
+  links: {en: "Who holds the knowledge", fa: "دانش نزد کیست"}

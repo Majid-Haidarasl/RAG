@@ -1,0 +1,108 @@
+# Phase 14 — prompt testing, retrieval tuning and sample evaluation.
+# Phase 15 — defaults switched to the Phase 14 measurements (retrieval=baseline, qa_prompt=qa.answer), the
+# strict judge gets a deterministic fact pre-check (strict_precheck) and the id retry an invented-id guard
+# (listed_guarded). The Phase 14 run re-measures them; the Phase 15 check reads that result.
+# Models, endpoint and timeouts come from config/rag.yaml (Phase 8) and config/judge.yaml (Phase 10).
+# Target system: Fedora Linux · Python 3.15.2 · Ollama 0.40.17 · i5-12400F · 16 GB RAM · RTX 3060 12 GB.
+config_version: 0.15.0
+
+files:
+  dataset: eval/datasets/armanrayan-qa.jsonl     # 16 bilingual pairs = 32 gold items
+  results_dir: eval/results                      # phase-14-check-<UTC>.json + updated-metrics-<UTC>.md
+  calibration: data/judge/calibration-set.json   # the 14 Phase 10 cases; 28 more are derived from the gold set
+  phase13_results: results/phase-13              # newest rfp-check-*.json: the AI-text jobs for the id test
+  qa_prompt_dir: config/prompts/qa
+  strict_judge_dir: config/prompts/judge_strict
+  ids_prompt_dir: config/prompts/rfp_ids
+
+# Retrieval variants. Offline (no Ollama) only BM25 runs, so the two weights make no difference there;
+# live, bge-m3 vectors are fused with BM25 (RRF). budget_tokens is the context budget of the answer prompt.
+retrieval_variants:
+  - id: baseline
+    description: Phase 8 settings (top 5, 30 candidates, equal weights, 3500-token context)
+    top_k: 5
+    candidate_k: 30
+    lexical_weight: 1.0
+    vector_weight: 1.0
+    budget_tokens: 3500
+  - id: wide
+    description: more hits and a larger context (top 8, 40 candidates, 5000-token context)
+    top_k: 8
+    candidate_k: 40
+    lexical_weight: 1.0
+    vector_weight: 1.0
+    budget_tokens: 5000
+  - id: lexical_boost
+    description: Phase 8 size, BM25 weighted 1.5 (ids, numbers and exact terms count more)
+    top_k: 5
+    candidate_k: 30
+    lexical_weight: 1.5
+    vector_weight: 1.0
+    budget_tokens: 3500
+  - id: wide_lexical
+    description: wide + BM25 weighted 1.5
+    top_k: 8
+    candidate_k: 40
+    lexical_weight: 1.5
+    vector_weight: 1.0
+    budget_tokens: 5000
+
+qa_prompts: [qa.answer, qa.answer_complete]     # ids in config/prompts/qa/*.yaml; the first is the baseline
+judge_prompts: [baseline, strict, strict_precheck]   # baseline = config/prompts/judge, strict = files.strict_judge_dir,
+                                                    # strict_precheck = fact / id pre-check, then the strict prompt
+id_variants: [baseline, listed, listed_retry, listed_guarded]   # baseline = config/prompts/rfp, listed* = files.ids_prompt_dir
+
+# How the script picks a variant from its own measurements (printed next to the choice below).
+selection_rules:
+  retrieval: {primary: context_facts, higher_is_better: true, tie_breakers: [[hit_at_5, true], [mrr, true]], min_gain: 0.02}
+  qa_prompt: {primary: facts, higher_is_better: true, tie_breakers: [[rule_accept, true], [generation_avg_s, false]], min_gain: 0.02}
+  judge_prompt: {primary: accuracy, higher_is_better: true, tie_breakers: [[leniency, false], [avg_s, false]], min_gain: 0.02}
+  ai_ids: {primary: accept_rate, higher_is_better: true, tie_breakers: [[invented_ids, false], [mention_rate, true], [seconds_avg, false]], min_gain: 0.0}
+
+# The chosen variant per kind, with the reason. Measured results are compared with this choice in
+# the PHASE 14 SUMMARY (selection lines); docs/phase-14/updated-metrics.md records the outcome.
+selection:
+  retrieval:
+    variant: baseline
+    reason: >-
+      Measured in the Phase 14 run (3 Azar 1405): every variant put all 62 reference fact groups into the
+      context (62/62), so no variant beat the Phase 8 baseline by the minimum gain of 0.02. Live, wide scored
+      exactly like baseline (hit@5 0.929, MRR 0.833) and only sends a longer context; wide_lexical's MRR
+      0.846 is below the minimum gain. Phase 14 had configured wide; switched in Phase 15.
+  qa_prompt:
+    variant: qa.answer
+    reason: >-
+      Measured in the Phase 14 run: the Phase 8 prompt found 62 of 62 facts (status 32/32, rule judge 28/28)
+      against 60 of 62 (31/32, 26/28) for qa.answer_complete, and was slightly faster (2.67 s vs 2.76 s).
+      Both gave all four Q06 causes. Phase 14 had configured qa.answer_complete; switched in Phase 15.
+  judge_prompt:
+    variant: strict_precheck
+    reason: >-
+      The strict prompt won in Phase 14 (36/42, kappa 0.712, 4 false accepts vs 7) but caught only 1 of 3
+      drop_fact answers. strict_precheck first counts the reference fact groups (answers) or required ids
+      (summaries) deterministically and rejects an output that misses one; the strict LLM judges the rest.
+  ai_ids:
+    variant: listed_guarded
+    reason: >-
+      listed_retry named the most ids in Phase 14 (15 of 18) but invented one id, so acceptance stayed 2 of 4.
+      listed_guarded keeps the retry, also retries when an id was invented, prefers the clean text and
+      rejects a text that still invents an id.
+  generation_model:
+    variant: qwen3:8b
+    reason: >-
+      The only generation model installed on the target system; it fits the 12 GB card together with
+      bge-m3. Other installed models can be compared by adding them to live.generation_models.
+  embedding_model:
+    variant: bge-m3:latest
+    reason: >-
+      Multilingual embeddings (a Persian question finds the English chunk), already used by the Phase 8
+      index, so the live step reuses the stored vectors instead of embedding the corpus again.
+
+live:
+  enabled: true
+  generation_models: [qwen3:8b]   # extra installed models (same Ollama) are compared on the gold answers
+  qa: true                        # QA prompt comparison on the 32 gold items (2 prompts)
+  judge: true                     # baseline vs strict vs strict_precheck LLM judge on the expanded calibration set
+  ids: true                       # required-id variants on the Phase 13 AI-text jobs
+  max_generations: 120            # hard cap on answer / AI-text generations in one run
+  max_judge_calls: 140            # hard cap on LLM judge calls in one run (3 judge variants x 42 cases)

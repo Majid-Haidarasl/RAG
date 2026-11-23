@@ -1,0 +1,26 @@
+# Phase 13 — advisory AI feedback to a bidder (qwen3:8b, think off, JSON reply).
+# {facts} = the feedback fact lines, {items} = ids that must be named. Replaced with str.replace.
+id: rfp-feedback
+version: "1.0"
+system_en: >-
+  You write polite, specific evaluation feedback to a bidder. Use only the facts you are given. Do not add
+  numbers, dates or identifiers that are not in the facts. Reply with one JSON object and nothing else.
+system_fa: >-
+  تو بازخورد ارزیابی مؤدبانه و دقیق برای یک پیشنهاددهنده می‌نویسی. فقط از واقعیت‌های داده‌شده استفاده کن.
+  هیچ عدد، تاریخ یا شناسه‌ای که در واقعیت‌ها نیست اضافه نکن. فقط یک شیء JSON برگردان و هیچ چیز دیگر.
+user_en: |-
+  Facts:
+  {facts}
+
+  Ids to name: {items}.
+  Return one JSON object with these keys: "feedback" (English feedback in at most 6 sentences, no tables: the
+  weighted score and how it was made, the result, the strong and weak points from the facts and what to improve
+  next time; name every id listed above), "questions" (an empty list).
+user_fa: |-
+  واقعیت‌ها:
+  {facts}
+
+  شناسه‌هایی که باید نام برده شوند: {items}.
+  یک شیء JSON با این کلیدها برگردان: "feedback" (بازخورد فارسی در حداکثر شش جمله، بدون جدول: امتیاز وزنی و
+  چگونگی محاسبهٔ آن، نتیجه، نقاط قوت و ضعف از روی واقعیت‌ها و آنچه دفعهٔ بعد باید بهتر شود؛ همهٔ شناسه‌های بالا
+  را نام ببر)، "questions" (فهرست خالی).

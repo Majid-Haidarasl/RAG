@@ -1,0 +1,40 @@
+# Phase 10 — LLM-as-judge runtime settings.
+# The Ollama endpoint, timeouts and retries come from config/rag.yaml (Phase 8).
+# The judge is qwen3:8b — the same model that writes the answers (self-judging bias,
+# see docs/phase-10/scoring-framework.md §6). Sized for Ubuntu 24.04 · i5-12400F ·
+# 16 GB RAM · RTX 3060 12 GB: one 8B model at num_ctx 8192, no embedding needed.
+config_version: 0.10.0
+
+model:
+  model: qwen3:8b
+  think: false                 # think off, like Phase 8/9; <think> text is stripped anyway
+  format: json                 # Ollama "format": the reply must be a JSON object
+  keep_alive: 30m
+  timeout_s: 180               # per judgement; a cold model load adds ~10 s
+  options:
+    temperature: 0.0           # a judge should be repeatable
+    top_p: 1.0
+    seed: 42
+    num_ctx: 8192              # prompt = rubric + sources (≤ 6000 chars) + output
+    num_predict: 512           # JSON scores + a few short issues
+
+run:
+  retries: 1                   # one more try with a reminder when the reply cannot be read
+  sources_char_budget: 6000    # characters of source text shown to the judge per case
+  live_calibration: true       # also judge the calibration set live (agreement with gold labels)
+  live_negatives: true         # also judge negative controls live (discrimination)
+  max_live_cases: 60           # hard cap on live judge calls in one run
+
+files:
+  rubric: config/prompts/judge/rubric.yaml
+  prompt_dir: config/prompts/judge
+  calibration: data/judge/calibration-set.json
+  parser_cases: data/judge/parser-cases.json
+  phase8_results: results/phase-08     # newest rag-demo-*.json (live answers of Phase 8)
+  phase9_results: results/phase-09     # newest ike-check-*.json (live summaries of Phase 9)
+
+rules:                         # deterministic rule judge (offline)
+  max_answer_chars: 1200
+  max_answer_sentences: 6
+  max_summary_chars: 3000
+  min_refusal_chars: 20
