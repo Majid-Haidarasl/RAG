@@ -1,0 +1,565 @@
+{
+  "schema": "executor-registry/1.0",
+  "source": "AR-EXE-023 v1.0 (Mehr 1403 / October 2024)",
+  "note": "Fifteen sample executors. Pay is deliberately not copied here: AR-EXE-023 keeps employee pay access-restricted, and matching never needs it. capacity_hours_per_week is the weekly referral ceiling; null means no fixed hours are published (allocated through unit planning) - neither zero nor unlimited.",
+  "executors": [
+    {
+      "id": "EX-NAZANIN-FARAHANI",
+      "name_en": "Nazanin Farahani",
+      "name_fa": "نازنین فراهانی",
+      "aliases": [],
+      "role_en": "Web technical lead / Django backend",
+      "role_fa": "رهبر فنی تیم وب / بک‌اند Django",
+      "home_node": "N-SW-WEB",
+      "specialty": [
+        "Django",
+        "REST",
+        "PostgreSQL"
+      ],
+      "allowed_referral_domains": [
+        "Web architecture",
+        "warehouse API",
+        "reporting-module integration"
+      ],
+      "allowed_referral_domains_fa": "معماری وب، API انبار، یکپارچه‌سازی ماژول گزارش",
+      "expertise": [
+        "API contract tests",
+        "permission patterns",
+        "reporting integration review"
+      ],
+      "knowledge_documents": [
+        "AR-SW-016",
+        "AR-SW-017"
+      ],
+      "outputs": [
+        "architecture decision",
+        "API contract tests"
+      ],
+      "authority_limits": [
+        "cannot amend contractual commitments",
+        "cannot diagnose server components"
+      ],
+      "capacity_hours_per_week": 18,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-KIAN-RAZAVI",
+      "name_en": "Kian Razavi",
+      "name_fa": "کیان رضوی",
+      "aliases": [],
+      "role_en": "Laravel and Node.js developer",
+      "role_fa": "توسعه‌دهنده Laravel و Node.js",
+      "home_node": "N-SW-WEB",
+      "specialty": [
+        "Laravel",
+        "Node.js"
+      ],
+      "allowed_referral_domains": [
+        "Non-Django web backend",
+        "webhooks",
+        "work queues"
+      ],
+      "allowed_referral_domains_fa": "بک‌اند وب غیرجاگو، وب‌هوک، صف کار",
+      "expertise": [
+        "status notification webhooks",
+        "retry queues",
+        "event connectors"
+      ],
+      "knowledge_documents": [
+        "AR-SW-016",
+        "AR-SW-017"
+      ],
+      "outputs": [
+        "event contract",
+        "repeatability tests"
+      ],
+      "authority_limits": [
+        "does not own the Azarpakhsh Django backend; advises only through the technical lead",
+        "Node.js is not an automatic replacement for an existing codebase"
+      ],
+      "capacity_hours_per_week": 28,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-HANIEH-SAADATI",
+      "name_en": "Hanieh Saadati",
+      "name_fa": "هانیه سعادتی",
+      "aliases": [],
+      "role_en": "React frontend developer",
+      "role_fa": "توسعه‌دهنده فرانت‌اند React",
+      "home_node": "N-SW-WEB",
+      "specialty": [
+        "React"
+      ],
+      "allowed_referral_domains": [
+        "Enterprise web interfaces",
+        "dashboards"
+      ],
+      "allowed_referral_domains_fa": "رابط وب سازمانی، داشبورد",
+      "expertise": [
+        "service status tables",
+        "error states",
+        "reporting status views"
+      ],
+      "knowledge_documents": [
+        "AR-SW-017",
+        "AR-SW-020"
+      ],
+      "outputs": [
+        "testable components",
+        "accessibility evidence"
+      ],
+      "authority_limits": [
+        "changing financial report formulas requires business-owner approval"
+      ],
+      "capacity_hours_per_week": 30,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-AMIN-TOURANI",
+      "name_en": "Amin Tourani",
+      "name_fa": "امین تورانی",
+      "aliases": [],
+      "role_en": "Flutter mobile developer",
+      "role_fa": "توسعه‌دهنده موبایل Flutter",
+      "home_node": "N-SW-MOB",
+      "specialty": [
+        "Flutter",
+        "API consumption"
+      ],
+      "allowed_referral_domains": [
+        "Warehouse or sales companion app",
+        "web API consumption"
+      ],
+      "allowed_referral_domains_fa": "اپ همراه انبار/فروش، مصرف API وب",
+      "expertise": [
+        "visit entry flows",
+        "session recovery"
+      ],
+      "knowledge_documents": [
+        "AR-SW-018",
+        "AR-SW-016"
+      ],
+      "outputs": [
+        "mobile test package",
+        "API-consumption report"
+      ],
+      "authority_limits": [
+        "not responsible for the Windows client or hardware replacement in AR-ISS-024",
+        "React Native only for existing customer code"
+      ],
+      "capacity_hours_per_week": 30,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-ROOZBEH-MOHSENI",
+      "name_en": "Roozbeh Mohseni",
+      "name_fa": "روزبه محسنی",
+      "aliases": [
+        "Rouzbeh Mohseni"
+      ],
+      "role_en": "Windows programmer",
+      "role_fa": "برنامه‌نویس ویندوز",
+      "home_node": "N-SW-WIN",
+      "specialty": [
+        "C#",
+        ".NET"
+      ],
+      "allowed_referral_domains": [
+        "Warehouse desktop client",
+        "kiosks",
+        "customer-network installation"
+      ],
+      "allowed_referral_domains_fa": "کلاینت دسکتاپ انبار، کیوسک، نصب شبکه مشتری",
+      "expertise": [
+        "Windows client compatibility",
+        "driver version",
+        "multi-station tests",
+        "rollback package"
+      ],
+      "knowledge_documents": [
+        "AR-SW-019",
+        "AR-SW-016"
+      ],
+      "outputs": [
+        "installation package",
+        "rollback package",
+        "multi-station test package"
+      ],
+      "authority_limits": [
+        "controller procurement is outside his decision authority"
+      ],
+      "capacity_hours_per_week": 26,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-YASAMAN-KARAMI",
+      "name_en": "Yasaman Karami",
+      "name_fa": "یاسمن کرمی",
+      "aliases": [],
+      "role_en": "UI/UX designer",
+      "role_fa": "طراح UI/UX",
+      "home_node": "N-SW-UX",
+      "specialty": [
+        "user research",
+        "design systems"
+      ],
+      "allowed_referral_domains": [
+        "Web and mobile wireframes",
+        "design acceptance criteria"
+      ],
+      "allowed_referral_domains_fa": "وایرفریم و معیار پذیرش طراحی وب و موبایل",
+      "expertise": [
+        "dashboard readability",
+        "reporting journeys"
+      ],
+      "knowledge_documents": [
+        "AR-SW-020"
+      ],
+      "outputs": [
+        "versioned wireframes",
+        "acceptance criteria"
+      ],
+      "authority_limits": [
+        "design approval does not replace inventory-correctness tests or Windows deployment acceptance",
+        "customer-design disagreements go to the product owner"
+      ],
+      "capacity_hours_per_week": 24,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-MILAD-SHAFIEI",
+      "name_en": "Milad Shafiei",
+      "name_fa": "میلاد شفیعی",
+      "aliases": [],
+      "role_en": "Visual identity and logo designer",
+      "role_fa": "طراح هویت بصری و لوگو",
+      "home_node": "N-SW-VIS",
+      "specialty": [
+        "brand",
+        "logo"
+      ],
+      "allowed_referral_domains": [
+        "Customer visual identity",
+        "ArmanRayan logo application"
+      ],
+      "allowed_referral_domains_fa": "هویت بصری مشتری و کاربرد لوگو آرمان‌رایان",
+      "expertise": [
+        "mark usage guide",
+        "usage permissions"
+      ],
+      "knowledge_documents": [
+        "AR-SW-021",
+        "AR-LEG-009"
+      ],
+      "outputs": [
+        "source assets",
+        "usage permissions"
+      ],
+      "authority_limits": [
+        "design ownership follows the contract"
+      ],
+      "capacity_hours_per_week": 20,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-SAEED-AKBARI",
+      "name_en": "Saeed Akbari",
+      "name_fa": "سعید اکبری",
+      "aliases": [],
+      "role_en": "Senior repair technician",
+      "role_fa": "تکنسین ارشد تعمیرات",
+      "home_node": "N-HW-REP",
+      "specialty": [
+        "Server and workstation diagnosis"
+      ],
+      "allowed_referral_domains": [
+        "Repair intake",
+        "repair warranty",
+        "repair knowledge"
+      ],
+      "allowed_referral_domains_fa": "پذیرش تعمیر، گارانتی تعمیر، دانش تعمیر",
+      "expertise": [
+        "controller and memory compatibility",
+        "symptom recording",
+        "startup faults"
+      ],
+      "knowledge_documents": [
+        "AR-HW-012",
+        "AR-HW-015"
+      ],
+      "outputs": [
+        "diagnostic evidence",
+        "test results"
+      ],
+      "authority_limits": [
+        "a photograph alone cannot authorize replacement or establish warranty eligibility"
+      ],
+      "capacity_hours_per_week": 32,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-FARZANEH-JAVADI",
+      "name_en": "Farzaneh Javadi",
+      "name_fa": "فرزانه جوادی",
+      "aliases": [],
+      "role_en": "Equipment procurement adviser",
+      "role_fa": "مشاور خرید تجهیزات",
+      "home_node": "N-HW-ADV",
+      "specialty": [
+        "Supplier evaluation"
+      ],
+      "allowed_referral_domains": [
+        "Written procurement advice",
+        "server/component comparison"
+      ],
+      "allowed_referral_domains_fa": "مشاوره خرید کتبی، مقایسه سرور و قطعات",
+      "expertise": [
+        "controller replacement",
+        "additional RAM",
+        "warranty service comparison"
+      ],
+      "knowledge_documents": [
+        "AR-HW-013",
+        "AR-HW-015"
+      ],
+      "outputs": [
+        "documented comparison",
+        "conditional recommendation"
+      ],
+      "authority_limits": [
+        "advice does not authorize a purchase commitment or contractual amendment"
+      ],
+      "capacity_hours_per_week": 22,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-KAMRAN-NIKPOUR",
+      "name_en": "Kamran Nikpour",
+      "name_fa": "کامران نیک‌پور",
+      "aliases": [],
+      "role_en": "Hardware sales specialist",
+      "role_fa": "کارشناس فروش سخت‌افزار",
+      "home_node": "N-HW-SAL",
+      "specialty": [
+        "Sales",
+        "quotations"
+      ],
+      "allowed_referral_domains": [
+        "Leads",
+        "quotations",
+        "discounts within authorized limits"
+      ],
+      "allowed_referral_domains_fa": "سرنخ، پیش‌فاکتور، تخفیف در سقف مجاز",
+      "expertise": [
+        "traceable quotation",
+        "approved specifications"
+      ],
+      "knowledge_documents": [
+        "AR-HW-014"
+      ],
+      "outputs": [
+        "traceable quotation"
+      ],
+      "authority_limits": [
+        "specialist discount up to 3%, hardware VP up to 8%, higher discounts require the CEO"
+      ],
+      "capacity_hours_per_week": 30,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-EHSAN-DAVARI",
+      "name_en": "Ehsan Davari",
+      "name_fa": "احسان داوری",
+      "aliases": [],
+      "role_en": "Assembly and test officer",
+      "role_fa": "مسئول اسمبل و تست",
+      "home_node": "N-HW-ASM",
+      "specialty": [
+        "Assembly",
+        "stress testing"
+      ],
+      "allowed_referral_domains": [
+        "Assembly checklist",
+        "tests",
+        "delivery minutes"
+      ],
+      "allowed_referral_domains_fa": "چک‌لیست اسمبل، تست، صورت‌جلسه تحویل",
+      "expertise": [
+        "configuration records",
+        "workstation stress-test records"
+      ],
+      "knowledge_documents": [
+        "AR-HW-015"
+      ],
+      "outputs": [
+        "signed checklist",
+        "test minutes"
+      ],
+      "authority_limits": [
+        "passing stress tests is not client-function acceptance or contractual delivery"
+      ],
+      "capacity_hours_per_week": 32,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-NILOUFAR-AHMADI",
+      "name_en": "Niloufar Ahmadi",
+      "name_fa": "نیلوفر احمدی",
+      "aliases": [],
+      "role_en": "Software support specialist",
+      "role_fa": "کارشناس پشتیبانی نرم‌افزار",
+      "home_node": "N-SW-SUP",
+      "specialty": [
+        "SLA",
+        "knowledge base"
+      ],
+      "allowed_referral_domains": [
+        "Incident intake",
+        "prioritization",
+        "escalation"
+      ],
+      "allowed_referral_domains_fa": "ثبت حادثه، اولویت‌بندی، ارجاع تصعیدی",
+      "expertise": [
+        "error guidance",
+        "escalation routes",
+        "user symptoms"
+      ],
+      "knowledge_documents": [
+        "AR-SW-022"
+      ],
+      "outputs": [
+        "ticket",
+        "reviewed article"
+      ],
+      "authority_limits": [
+        "project delay is not automatically priority 1"
+      ],
+      "capacity_hours_per_week": 32,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-BAHAR-ESKANDARI",
+      "name_en": "Bahar Eskandari",
+      "name_fa": "بهار اسکندری",
+      "aliases": [],
+      "role_en": "Human resources specialist",
+      "role_fa": "کارشناس منابع انسانی",
+      "home_node": "N-ADM-HR",
+      "specialty": [
+        "Recruitment",
+        "retention"
+      ],
+      "allowed_referral_domains": [
+        "Recruitment",
+        "leave",
+        "personnel records"
+      ],
+      "allowed_referral_domains_fa": "استخدام، مرخصی، پرونده پرسنلی",
+      "expertise": [
+        "knowledge handover",
+        "training needs"
+      ],
+      "knowledge_documents": [
+        "AR-HR-004",
+        "AR-HR-005",
+        "AR-HR-007"
+      ],
+      "outputs": [
+        "authorized staffing and capacity records"
+      ],
+      "authority_limits": [
+        "complete personnel files are excluded from general retrieval indexes"
+      ],
+      "capacity_hours_per_week": null,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-REZA-ABBASI",
+      "name_en": "Reza Abbasi",
+      "name_fa": "رضا عباسی",
+      "aliases": [],
+      "role_en": "Project accountant",
+      "role_fa": "حسابدار پروژه",
+      "home_node": "N-ADM-FIN",
+      "specialty": [
+        "Cost centres",
+        "petty cash"
+      ],
+      "allowed_referral_domains": [
+        "Quotations",
+        "invoices",
+        "time allocation"
+      ],
+      "allowed_referral_domains_fa": "پیش‌فاکتور، صورتحساب، تخصیص ساعت",
+      "expertise": [
+        "billing reconciliation",
+        "project ledger",
+        "timesheets"
+      ],
+      "knowledge_documents": [
+        "AR-FIN-010"
+      ],
+      "outputs": [
+        "billing reconciliation",
+        "project ledger"
+      ],
+      "authority_limits": [
+        "cannot waive penalties, decide technical causes or increase contractual obligations"
+      ],
+      "capacity_hours_per_week": null,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    },
+    {
+      "id": "EX-MAHSA-JALALI",
+      "name_en": "Mahsa Jalali",
+      "name_fa": "مهسا جلالی",
+      "aliases": [],
+      "role_en": "Legal and contracts specialist",
+      "role_fa": "کارشناس حقوقی و قراردادها",
+      "home_node": "N-ADM-LEG",
+      "specialty": [
+        "Contracts",
+        "intellectual property"
+      ],
+      "allowed_referral_domains": [
+        "Contract types",
+        "disputes",
+        "delay penalties"
+      ],
+      "allowed_referral_domains_fa": "انواع قرارداد، اختلاف، جریمه تأخیر",
+      "expertise": [
+        "nonconformity versus scope analysis",
+        "delay-penalty review",
+        "amendment drafting"
+      ],
+      "knowledge_documents": [
+        "AR-LEG-009"
+      ],
+      "outputs": [
+        "legal memorandum",
+        "draft amendment"
+      ],
+      "authority_limits": [
+        "contracts over 500 million toman require CEO approval; over 2,000 million require Board approval"
+      ],
+      "capacity_hours_per_week": null,
+      "profile_version": "1.0",
+      "source": "AR-EXE-023"
+    }
+  ]
+}

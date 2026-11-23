@@ -1,0 +1,63 @@
+# Phase 12 — project, research, achievement and gap tracking + key-issue prioritization.
+# The registry (data/projects/project-registry.json) holds the 1403 projects, achievements,
+# challenges, research gaps, unsolved issues and the interim knowledge scorecard of AR-TRN-026.
+# The Ollama endpoint comes from config/rag.yaml (Phase 8); the judge from config/judge.yaml (Phase 10).
+# Sized for Ubuntu 24.04 · i5-12400F · 16 GB RAM · RTX 3060 12 GB: one 8B model, num_ctx 8192.
+config_version: 0.12.0
+case: AR-ISS-024               # the issue with the IKE graph (Phase 9)
+
+cycle:
+  id: "1403-Q2"
+  cutoff: "1403-06-31"         # end of Shahrivar 1403, reporting cutoff of AR-TRN-026 and AR-FIN-008
+
+storage:
+  registry_dir: data/projects
+  csv_dir: exports/project-tracking       # <cycle>/projects.csv, records.csv, gaps.csv, priorities.csv
+
+gap_rules:                     # code: enabled + base severity (low | medium | high)
+  RG: {enabled: true, severity: medium}   # open research record
+  KL: {enabled: true, severity: medium}   # IKE knowledge lack on an active sub-issue (high when blocked)
+  EX: {enabled: true, severity: high}     # active sub-issue without lead / executor
+  DEP: {enabled: true, severity: high}    # blocked by an unresolved sibling sub-issue
+  CH: {enabled: true, severity: medium}   # challenge not tracked by any issue
+  SC: {enabled: true, severity: medium}   # open scorecard dimension (conditional: one level lower)
+  ST: {enabled: true, severity: low}      # unsolved-issue record whose issues are all closed
+  EV: {enabled: true, severity: high}     # record without evidence
+
+prioritization:
+  weights:                     # must sum to 1.0; score = 100 x sum(weight x factor)
+    priority: 0.15
+    severity: 0.10
+    urgency: 0.15
+    risk: 0.15
+    dependents: 0.10
+    exposure: 0.10
+    blocked: 0.10
+    gaps: 0.10
+    spread: 0.05
+  caps:
+    dependents: 4
+    exposure_mtoman: 1000
+    gaps: 5
+    spread: 6
+  key_count: 3                 # at most 3 key issues ...
+  key_min_score: 25            # ... each with a score of at least 25 / 100
+  sensitivity_ratios: [0.8, 1.2]
+  risk_threshold: 7            # project health: an open linked issue with risk >= 7 means at_risk
+
+model:                         # AI key-issue brief (advisory only)
+  model: qwen3:8b
+  think: false
+  format: json
+  keep_alive: 30m
+  timeout_s: 180
+  options:
+    temperature: 0.2
+    top_p: 0.9
+    seed: 42
+    num_ctx: 8192
+    num_predict: 768
+
+live:
+  languages: [fa, en]
+  llm_judge: true              # judge template and AI brief with qwen3:8b too (combined with the rule judge)

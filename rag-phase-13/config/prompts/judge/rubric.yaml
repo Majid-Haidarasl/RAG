@@ -1,0 +1,86 @@
+# Phase 10 judge rubric. Five criteria, 20 points in total.
+# Acceptance (initial bar of the project plan): total >= 18 AND every criterion >= its min.
+# guidance: one line per output kind (qa_answer, qa_refusal, ike_summary); it is shown to the
+# LLM judge as the scoring scale. Bump `version` on any change.
+id: judge.rubric
+type: rubric
+version: 1.0.0
+out_of: 20
+accept_total: 18
+criteria:
+  - key: grounding
+    max: 5
+    min: 4
+    title_en: Grounding
+    title_fa: پشتوانه‌داری
+    aliases: [groundedness, faithfulness, grounded, support, evidence]
+    guidance:
+      qa_answer: >-
+        every statement, number, name and document id is supported by the SOURCES; 5 = fully supported,
+        3 = one small unsupported detail, 0-2 = an invented number, name or claim.
+      qa_refusal: >-
+        a refusal makes no factual claim; 5 = no claim beyond the question, 0 = it answers with facts although
+        the node has no evidence in its scope.
+      ike_summary: >-
+        every identifier, number, person and document is in the FACTS; 5 = nothing outside the FACTS,
+        0-2 = anything invented.
+  - key: correctness
+    max: 5
+    min: 4
+    title_en: Correctness
+    title_fa: درستی
+    aliases: [accuracy, correct, factual_accuracy, factuality]
+    guidance:
+      qa_answer: >-
+        the answer gives the right facts for this question (compare with the reference key facts when given);
+        5 = all right, 3 = partly right or one fact missing, 0 = wrong, off-topic or a refusal.
+      qa_refusal: >-
+        the behaviour is right: decline and, when the evidence belongs to another node, suggest the expected
+        escalation; 5 = right behaviour, 2 = declined in the wrong way, 0 = it answered.
+      ike_summary: >-
+        each sub-issue is linked to its own owner node and lead executor exactly as in the FACTS;
+        5 = all right, 0-2 = leads or owners mixed up.
+  - key: citation
+    max: 4
+    min: 3
+    title_en: Citation / traceability
+    title_fa: ارجاع
+    aliases: [citations, traceability, references, attribution, cite]
+    guidance:
+      qa_answer: >-
+        factual sentences carry bracket labels that exist in the SOURCES, e.g. [AR-HR-005 §12];
+        4 = all labels present and valid, 2 = some sentences without a label, 0-1 = no label or an invented label.
+      qa_refusal: >-
+        a refusal needs no labels; 4 = no labels (or only correct ones), 0-2 = it cites documents to support an
+        answer it should not give.
+      ike_summary: >-
+        sub-issue ids are written exactly (e.g. AR-ISS-024/HW); 4 = every required sub-issue id appears,
+        lower in proportion to the missing ids.
+  - key: completeness
+    max: 3
+    min: 2
+    title_en: Completeness
+    title_fa: کامل‌بودن
+    aliases: [coverage, complete]
+    guidance:
+      qa_answer: >-
+        every part of the question is answered; 3 = complete, 2 = one small part missing, 0-1 = most is missing.
+      qa_refusal: >-
+        the refusal says what is missing or names the escalation target; 3 = complete, 1 = vague, 0 = missing.
+      ike_summary: >-
+        covers the issue and its status, every sub-issue and the knowledge gaps; 3 = all, 0-1 = major parts missing.
+  - key: clarity
+    max: 3
+    min: 2
+    title_en: Language and clarity
+    title_fa: زبان و وضوح
+    aliases: [language, clarity_language, language_clarity, fluency, style]
+    guidance:
+      qa_answer: >-
+        written in the required language, short (at most 4 sentences), readable, no leftovers such as think
+        tags, code fences or JSON; 3 = clear, 0 = wrong language.
+      qa_refusal: >-
+        written in the required language, one or two clear sentences; 3 = clear, 0 = wrong language.
+      ike_summary: >-
+        written in the required language, plain readable text without tables, not longer than needed;
+        3 = clear, 0 = wrong language.
