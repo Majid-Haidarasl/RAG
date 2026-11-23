@@ -1,0 +1,1 @@
+"""Proposals application layer."""

@@ -1,0 +1,425 @@
+{
+  "schema": "rag-core issue registry v1 (phase 7)",
+  "case": "ArmanRayan (fictional)",
+  "note": "AR-ISS-024 comes from the corpus; AR-ISS-031..036 are synthetic seeds derived from corpus facts for comparison tests.",
+  "issues": [
+    {
+      "id": "AR-ISS-024",
+      "title_en": "Azarpakhsh warehouse system delivery delay and server-component incompatibility with the Windows warehouse software",
+      "title_fa": "تأخیر تحویل سامانه انبار مشتری آذرپخش و ناهماهنگی قطعه سرور با نرم‌افزار ویندوزی انبار",
+      "description_en": "Contract AR-CNT-1402-118 (enterprise web module, Windows clients for warehouse stations, server/workstation package) planned delivery 15 Mordad 1403; proposed revised delivery 20 Mehr 1403; physical progress 62% at the end of Shahrivar. Principal symptom: the purchased RAID controller and server RAM capacity do not match the Windows client requirements for several concurrent stations; driver behaviour and minimum RAM must be checked. Delayed web reporting also contributes to the delivery delay. The paths must not collapse into a vague server problem. Penalty, extension and amendment need a legal decision.",
+      "description_fa": "قرارداد AR-CNT-1402-118 شامل ماژول وب سازمانی، کلاینت ویندوزی ایستگاه‌های انبار و بسته سرور است. تحویل برنامه‌ای ۱۵ مرداد ۱۴۰۳ و تاریخ تحویل پیشنهادی ۲۰ مهر ۱۴۰۳ است و پیشرفت واقعی ۶۲٪ است. نشانه اصلی ناهماهنگی مشخصات کنترلر RAID و ظرفیت حافظه سرور با نیاز کلاینت ویندوزی برای سرویس همزمان چند ایستگاه است؛ درایور و حداقل RAM باید بررسی شوند. تأخیر ماژول گزارش‌گیری وب نیز در تأخیر تحویل سهم دارد. جریمه، تمدید و الحاقیه قرارداد نیاز به تصمیم حقوقی دارد.",
+      "customer": "Azarpakhsh Food Distribution Company (fictional)",
+      "reporter_node": "N-SW-SUP",
+      "owner_node": "N-LIB",
+      "affected_nodes": [
+        "N-HW-REP",
+        "N-HW-ADV",
+        "N-HW-ASM",
+        "N-SW-WIN",
+        "N-SW-WEB",
+        "N-ADM-LEG",
+        "N-ADM-FIN"
+      ],
+      "related_documents": [
+        "AR-ISS-024",
+        "AR-HW-012",
+        "AR-HW-013",
+        "AR-HW-015",
+        "AR-SW-016",
+        "AR-SW-017",
+        "AR-SW-019",
+        "AR-SW-022",
+        "AR-RFP-025",
+        "AR-LEG-009",
+        "AR-FIN-008",
+        "AR-FIN-010",
+        "AR-EXE-023",
+        "AR-TRN-026"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "delivery_delay",
+      "severity": "high",
+      "priority": "P2",
+      "status": "in_progress",
+      "opened_on": "2024-08-06",
+      "due_on": "2024-10-11",
+      "dates_jalali": {
+        "contract_signed": "1402-12-12",
+        "planned_delivery": "1403-05-15",
+        "proposed_delivery": "1403-07-20"
+      },
+      "progress_percent": 62,
+      "decision_amount_mtoman": 95,
+      "urgency": 8,
+      "risk": 8,
+      "dependents": 4,
+      "tags": [
+        "azarpakhsh",
+        "raid",
+        "ram",
+        "windows-client",
+        "web-reporting",
+        "penalty"
+      ],
+      "source_documents": [
+        "AR-ISS-024",
+        "AR-FIN-008",
+        "AR-TRN-026",
+        "AR-ORG-002",
+        "AR-EXE-023"
+      ],
+      "seed_origin": "corpus",
+      "sub_issues": [
+        {
+          "id": "AR-ISS-024/HW",
+          "position": 1,
+          "title_en": "Hardware: RAID controller and server RAM compatibility",
+          "title_fa": "سخت‌افزار: سازگاری کنترلر RAID و حافظه RAM سرور",
+          "scope": "Controller, RAM and assembly compatibility",
+          "owner_node": "N-HW-REP",
+          "supporting_nodes": [
+            "N-HW-ADV",
+            "N-HW-ASM"
+          ],
+          "related_documents": [
+            "AR-HW-012",
+            "AR-HW-013",
+            "AR-HW-015"
+          ],
+          "executors": [
+            "Saeed Akbari",
+            "Farzaneh Javadi",
+            "Ehsan Davari"
+          ],
+          "acceptance_output": "Diagnosis, replacement recommendation and joint tests",
+          "status": "in_progress",
+          "depends_on": [],
+          "reserved_decision": false
+        },
+        {
+          "id": "AR-ISS-024/WIN",
+          "position": 2,
+          "title_en": "Windows client requirements and drivers",
+          "title_fa": "نیازمندی‌های کلاینت ویندوزی و درایورها",
+          "scope": "C#/.NET client and network deployment; repeat multi-station tests after component changes",
+          "owner_node": "N-SW-WIN",
+          "supporting_nodes": [],
+          "related_documents": [
+            "AR-SW-019",
+            "AR-SW-016",
+            "AR-HW-015"
+          ],
+          "executors": [
+            "Rouzbeh Mohseni"
+          ],
+          "acceptance_output": "Installation package, driver version and multi-station tests",
+          "status": "blocked",
+          "blocked_reason": "waits for the tested replacement hardware configuration (AR-ISS-024/HW)",
+          "depends_on": [
+            "HW"
+          ],
+          "reserved_decision": false
+        },
+        {
+          "id": "AR-ISS-024/WEB",
+          "position": 3,
+          "title_en": "Web reporting delay",
+          "title_fa": "تأخیر ماژول گزارش‌گیری وب",
+          "scope": "Reporting API contract, React dashboard compatibility and report-data acceptance",
+          "owner_node": "N-SW-WEB",
+          "supporting_nodes": [
+            "N-SW-UX"
+          ],
+          "related_documents": [
+            "AR-SW-017",
+            "AR-RFP-025"
+          ],
+          "executors": [
+            "Nazanin Farahani",
+            "Hanieh Saadati",
+            "Yasaman Karami"
+          ],
+          "acceptance_output": "Versioned API contract, dashboard tests and accepted report data",
+          "status": "in_progress",
+          "depends_on": [],
+          "reserved_decision": false
+        },
+        {
+          "id": "AR-ISS-024/LEG",
+          "position": 4,
+          "title_en": "Contract and delivery schedule",
+          "title_fa": "قرارداد و زمان‌بندی تحویل",
+          "scope": "Nonconformity versus scope; penalty, extension to 20 Mehr 1403 and amendment",
+          "owner_node": "N-ADM-LEG",
+          "supporting_nodes": [
+            "N-ADM-FIN"
+          ],
+          "related_documents": [
+            "AR-LEG-009",
+            "AR-FIN-010"
+          ],
+          "executors": [
+            "Mahsa Jalali",
+            "Reza Abbasi"
+          ],
+          "acceptance_output": "Legal memorandum and amendment for approval",
+          "status": "blocked",
+          "blocked_reason": "awaiting Board decision on extension without penalty (AR-FIN-008 decision 2); contract 2,180M toman is above the Board threshold",
+          "depends_on": [
+            "HW"
+          ],
+          "reserved_decision": true
+        }
+      ]
+    },
+    {
+      "id": "AR-ISS-031",
+      "title_en": "DashtPakhsh visitor mobile app schedule density",
+      "title_fa": "فشردگی زمان‌بندی اپلیکیشن موبایل ویزیتور دشت‌پخش",
+      "description_en": "The DashtPakhsh visitor mobile application is 45% complete with 225 million toman remaining. Flutter delivery depends on the web API and on design-to-web requirements; if both software schedules slip, autumn software revenue falls.",
+      "description_fa": "اپلیکیشن موبایل ویزیتور دشت‌پخش ۴۵٪ پیشرفت دارد و ۲۲۵ میلیون تومان باقی مانده است. تحویل فلاتر به API وب و نیازمندی‌های طراحی وابسته است.",
+      "customer": "DashtPakhsh (fictional)",
+      "reporter_node": "N-SW",
+      "owner_node": "N-SW-MOB",
+      "affected_nodes": [
+        "N-SW-WEB",
+        "N-SW-UX"
+      ],
+      "related_documents": [
+        "AR-FIN-008",
+        "AR-SW-018",
+        "AR-TRN-026"
+      ],
+      "contract_ref": null,
+      "category": "schedule",
+      "severity": "medium",
+      "priority": "P3",
+      "status": "triaged",
+      "opened_on": "2024-09-21",
+      "due_on": null,
+      "urgency": 5,
+      "risk": 5,
+      "dependents": 1,
+      "tags": [
+        "dashtpakhsh",
+        "mobile",
+        "flutter",
+        "synthetic-seed"
+      ],
+      "source_documents": [
+        "AR-FIN-008",
+        "AR-TRN-026",
+        "AR-EXE-023"
+      ],
+      "seed_origin": "synthetic, derived from corpus facts",
+      "sub_issues": []
+    },
+    {
+      "id": "AR-ISS-032",
+      "title_en": "Azarpakhsh customer-held receivable of 185 million toman",
+      "title_fa": "مطالبه نگه‌داشته‌شده ۱۸۵ میلیون تومانی آذرپخش",
+      "description_en": "The customer withholds 185 million toman linked to the component dispute. It is a receivable, not a replacement-part expense or a write-off; Legal assesses whether the controller and memory replacement is a scope change or correction of nonconformity.",
+      "description_fa": "مشتری ۱۸۵ میلیون تومان از مانده را به‌دلیل اختلاف قطعه نگه داشته است. این مبلغ مطالبه است، نه هزینه قطعه جایگزین.",
+      "customer": "Azarpakhsh Food Distribution Company (fictional)",
+      "reporter_node": "N-ADM-FIN",
+      "owner_node": "N-ADM-FIN",
+      "affected_nodes": [
+        "N-ADM-LEG"
+      ],
+      "related_documents": [
+        "AR-FIN-008",
+        "AR-FIN-010",
+        "AR-LEG-009",
+        "AR-ISS-024"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "finance",
+      "severity": "medium",
+      "priority": "P3",
+      "status": "open",
+      "opened_on": "2024-09-21",
+      "due_on": null,
+      "urgency": 4,
+      "risk": 6,
+      "dependents": 0,
+      "tags": [
+        "azarpakhsh",
+        "receivable",
+        "synthetic-seed"
+      ],
+      "related_issues": [
+        "AR-ISS-024"
+      ],
+      "source_documents": [
+        "AR-FIN-008",
+        "AR-ISS-024"
+      ],
+      "seed_origin": "synthetic, derived from corpus facts",
+      "sub_issues": []
+    },
+    {
+      "id": "AR-ISS-033",
+      "title_en": "Rahavard Sanat after-sales portal handover",
+      "title_fa": "تحویل پورتال خدمات پس از فروش رهاورد صنعت",
+      "description_en": "The Rahavard Sanat after-sales portal is 78% complete with 410 million toman remaining and no open dispute. Ordinary completion and handover to support: API response contracts, status notifications and error guidance must reach the support team.",
+      "description_fa": "پورتال پس از فروش رهاورد صنعت ۷۸٪ پیشرفت دارد و اختلاف بازی ندارد. تکمیل عادی و تحویل به تیم پشتیبانی.",
+      "customer": "Rahavard Sanat (fictional)",
+      "reporter_node": "N-SW",
+      "owner_node": "N-SW-WEB",
+      "affected_nodes": [
+        "N-SW-SUP"
+      ],
+      "related_documents": [
+        "AR-SW-017",
+        "AR-SW-022",
+        "AR-TRN-026",
+        "AR-FIN-008"
+      ],
+      "contract_ref": null,
+      "category": "handover",
+      "severity": "low",
+      "priority": "P4",
+      "status": "in_progress",
+      "opened_on": "2024-09-21",
+      "due_on": null,
+      "urgency": 2,
+      "risk": 2,
+      "dependents": 0,
+      "tags": [
+        "rahavard-sanat",
+        "handover",
+        "synthetic-seed"
+      ],
+      "source_documents": [
+        "AR-FIN-008",
+        "AR-TRN-026",
+        "AR-EXE-023"
+      ],
+      "seed_origin": "synthetic, derived from corpus facts",
+      "sub_issues": []
+    },
+    {
+      "id": "AR-ISS-034",
+      "title_en": "Rahavard Sanat workstation startup faults",
+      "title_fa": "خطای راه‌اندازی ایستگاه‌های کاری رهاورد صنعت",
+      "description_en": "Workstations failed at startup. Symptoms were recorded at intake, level-1 diagnosis followed AR-HW-012 and stress-test records were prepared on the assembly bench before handover.",
+      "description_fa": "ایستگاه‌های کاری هنگام راه‌اندازی خطا می‌دادند. نشانه‌ها ثبت و عیب‌یابی سطح یک انجام شد و پیش از تحویل آزمون فشار گرفته شد.",
+      "customer": "Rahavard Sanat (fictional)",
+      "reporter_node": "N-HW-SAL",
+      "owner_node": "N-HW-REP",
+      "affected_nodes": [
+        "N-HW-ASM"
+      ],
+      "related_documents": [
+        "AR-HW-012",
+        "AR-HW-015",
+        "AR-EXE-023"
+      ],
+      "contract_ref": null,
+      "category": "hardware",
+      "severity": "medium",
+      "priority": "P3",
+      "status": "closed",
+      "resolution": "fixed",
+      "opened_on": "2024-05-12",
+      "due_on": "2024-05-20",
+      "urgency": 3,
+      "risk": 2,
+      "dependents": 0,
+      "tags": [
+        "rahavard-sanat",
+        "workstation",
+        "synthetic-seed"
+      ],
+      "source_documents": [
+        "AR-EXE-023"
+      ],
+      "seed_origin": "synthetic, derived from corpus facts",
+      "sub_issues": []
+    },
+    {
+      "id": "AR-ISS-035",
+      "title_en": "Azarpakhsh reporting contractor selection",
+      "title_fa": "انتخاب پیمانکار گزارش‌گیری آذرپخش",
+      "description_en": "An RFP for outsourcing the Azarpakhsh web reporting module. Selecting a contractor does not make the module ready; the API contract, inventory data and report date ranges must still match the test reference.",
+      "description_fa": "درخواست پیشنهاد برای برون‌سپاری ماژول گزارش‌گیری وب آذرپخش. انتخاب پیمانکار به معنای آماده‌بودن ماژول نیست.",
+      "customer": "Azarpakhsh Food Distribution Company (fictional)",
+      "reporter_node": "N-SW",
+      "owner_node": "N-SW",
+      "affected_nodes": [
+        "N-SW-WEB",
+        "N-ADM-LEG"
+      ],
+      "related_documents": [
+        "AR-RFP-025",
+        "AR-SW-017",
+        "AR-ISS-024"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "procurement",
+      "severity": "medium",
+      "priority": "P3",
+      "status": "triaged",
+      "opened_on": "2024-09-25",
+      "due_on": null,
+      "urgency": 5,
+      "risk": 4,
+      "dependents": 1,
+      "tags": [
+        "azarpakhsh",
+        "rfp",
+        "web-reporting",
+        "synthetic-seed"
+      ],
+      "related_issues": [
+        "AR-ISS-024"
+      ],
+      "source_documents": [
+        "AR-RFP-025"
+      ],
+      "seed_origin": "synthetic, derived from corpus facts",
+      "sub_issues": []
+    },
+    {
+      "id": "AR-ISS-036",
+      "title_en": "Outbound recording is slow while one station still works (training scenario)",
+      "title_fa": "کندی ثبت خروجی انبار در حالی که یک ایستگاه کار می‌کند (سناریوی آموزشی)",
+      "description_en": "Hypothetical user report from AR-ISS-024 s.9: outbound recording is slow, one Windows station still works. Support records symptoms under the SLA; Windows checks client version and concurrent load; hardware inspects controller behaviour. Closed as a duplicate of AR-ISS-024.",
+      "description_fa": "گزارش فرضی کاربر: ثبت خروجی کند است و یک ایستگاه ویندوزی هنوز کار می‌کند. بررسی نسخه کلاینت، بار همزمان و رفتار کنترلر.",
+      "customer": "Azarpakhsh Food Distribution Company (fictional)",
+      "reporter_node": "N-SW-SUP",
+      "owner_node": "N-SW-SUP",
+      "affected_nodes": [
+        "N-SW-WIN",
+        "N-HW-REP"
+      ],
+      "related_documents": [
+        "AR-ISS-024",
+        "AR-SW-022"
+      ],
+      "contract_ref": "AR-CNT-1402-118",
+      "category": "support_incident",
+      "severity": "medium",
+      "priority": "P2",
+      "status": "closed",
+      "resolution": "duplicate",
+      "duplicate_of": "AR-ISS-024",
+      "opened_on": "2024-10-01",
+      "due_on": null,
+      "urgency": 5,
+      "risk": 4,
+      "dependents": 0,
+      "tags": [
+        "azarpakhsh",
+        "hypothetical",
+        "synthetic-seed"
+      ],
+      "source_documents": [
+        "AR-ISS-024"
+      ],
+      "seed_origin": "hypothetical scenario stated in AR-ISS-024 s.9 (not a real incident)",
+      "sub_issues": []
+    }
+  ]
+}

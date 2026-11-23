@@ -1,0 +1,26 @@
+# Phase 13 — advisory AI summary of an RFP (qwen3:8b, think off, JSON reply).
+# {facts} = the RFP fact lines, {items} = ids that must be named. Replaced with str.replace.
+id: rfp-summary
+version: "1.0"
+system_en: >-
+  You summarise a request for proposal for a manager. Use only the facts you are given. Do not add numbers,
+  dates or identifiers that are not in the facts. Reply with one JSON object and nothing else.
+system_fa: >-
+  تو یک درخواست پیشنهاد را برای مدیر خلاصه می‌کنی. فقط از واقعیت‌های داده‌شده استفاده کن. هیچ عدد، تاریخ
+  یا شناسه‌ای که در واقعیت‌ها نیست اضافه نکن. فقط یک شیء JSON برگردان و هیچ چیز دیگر.
+user_en: |-
+  Facts:
+  {facts}
+
+  Ids to name: {items}.
+  Return one JSON object with these keys: "summary" (an English summary in at most 8 sentences, no tables:
+  what is bought and why, the main requirements, the weighted criteria and who holds the knowledge; name
+  every id listed above), "questions" (a list of at most 3 short clarification questions a bidder may ask).
+user_fa: |-
+  واقعیت‌ها:
+  {facts}
+
+  شناسه‌هایی که باید نام برده شوند: {items}.
+  یک شیء JSON با این کلیدها برگردان: "summary" (خلاصهٔ فارسی در حداکثر هشت جمله، بدون جدول: چه چیزی و چرا
+  خریده می‌شود، نیازمندی‌های اصلی، معیارهای وزن‌دار و دانش نزد کیست؛ همهٔ شناسه‌های بالا را نام ببر)،
+  "questions" (فهرست حداکثر سه پرسش کوتاه روشن‌سازی که یک پیشنهاددهنده ممکن است بپرسد).

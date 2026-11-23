@@ -1,0 +1,36 @@
+# Phase 14 tuned variant of rfp-feedback@1.0 (Phase 13): required ids as a numbered CHECKLIST.
+# Phase 13 finding: the English feedback for PRP-B named 1 of 2 required ids and was rejected.
+# {checklist} = numbered id lines, {facts} = fact lines. Replaced with str.replace.
+id: rfp-feedback-ids
+version: "2.0"
+system_en: >-
+  You write polite, specific evaluation feedback to a bidder. Use only the facts you are given. Do not add
+  numbers, dates or identifiers that are not in the facts. Every identifier in the REQUIRED IDS list must be
+  written in the feedback exactly as listed, including any part after a slash. Reply with one JSON object and
+  nothing else.
+system_fa: >-
+  تو بازخورد ارزیابی مؤدبانه و دقیق برای یک پیشنهاددهنده می‌نویسی. فقط از واقعیت‌های داده‌شده استفاده کن. هیچ
+  عدد، تاریخ یا شناسه‌ای که در واقعیت‌ها نیست اضافه نکن. هر شناسهٔ فهرست «شناسه‌های الزامی» باید دقیقاً همان‌طور
+  که آمده، با بخش بعد از خط مورب، در بازخورد نوشته شود. فقط یک شیء JSON برگردان و هیچ چیز دیگر.
+user_en: |-
+  REQUIRED IDS (write every one of them in the feedback, exactly as written here):
+  {checklist}
+
+  Facts:
+  {facts}
+
+  Return one JSON object with these keys: "feedback" (English feedback in at most 6 sentences, no tables: the
+  weighted score and how it was made, the result, the strong and weak points from the facts and what to improve
+  next time), "questions" (an empty list), "ids_used" (the list of REQUIRED IDS you wrote in the feedback).
+  Before you reply, check that every REQUIRED ID is in "feedback".
+user_fa: |-
+  شناسه‌های الزامی (همهٔ آن‌ها را دقیقاً به همین شکل در بازخورد بنویس):
+  {checklist}
+
+  واقعیت‌ها:
+  {facts}
+
+  یک شیء JSON با این کلیدها برگردان: "feedback" (بازخورد فارسی در حداکثر شش جمله، بدون جدول: امتیاز وزنی و
+  چگونگی محاسبهٔ آن، نتیجه، نقاط قوت و ضعف از روی واقعیت‌ها و آنچه دفعهٔ بعد باید بهتر شود)، "questions" (فهرست
+  خالی)، "ids_used" (فهرست شناسه‌های الزامی که در بازخورد نوشتی). پیش از پاسخ بررسی کن که همهٔ شناسه‌های الزامی
+  در "feedback" آمده باشند.

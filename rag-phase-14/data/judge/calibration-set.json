@@ -1,0 +1,420 @@
+{
+ "version": "1.0.0",
+ "note": "Phase 10 judge calibration set. Short source excerpts are quoted from the ArmanRayan corpus; labels (§n) are fixture labels. gold = what a careful human reviewer decides with the 18/20 rubric. Cases tagged rule_blind_spot are known limits of the rule judge and are excluded from its check.",
+ "cases": [
+  {
+   "id": "CAL-01",
+   "kind": "qa_answer",
+   "language": "fa",
+   "node": "N-SW-SUP",
+   "task": "زمان پاسخ و رفع موقت برای حادثهٔ اولویت ۱ (قطع کامل سرویس) چقدر است؟",
+   "output": "برای حادثهٔ اولویت ۱ (قطع کامل سرویس) پاسخ باید ظرف ۳۰ دقیقه و رفع موقت ظرف ۴ ساعت انجام شود [AR-SW-022 §4].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "correct, grounded, labelled",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-SW-022 §4",
+     "document_id": "AR-SW-022",
+     "order": 4,
+     "language": "fa",
+     "text": "اولویت ۱ قطع کامل سرویس است: پاسخ ۳۰ دقیقه و رفع موقت ۴ ساعت. اولویت ۲ پاسخ ۲ ساعت و رفع ۱۶ ساعت کاری دارد."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "30",
+      "سی"
+     ],
+     [
+      "4",
+      "چهار"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-02",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-SW-SUP",
+   "task": "What are the response and resolution targets for a Priority 2 incident?",
+   "output": "A Priority 2 incident requires a response within 2 hours and resolution within 16 business hours [AR-SW-022 §4].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "correct, grounded, labelled",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-SW-022 §4",
+     "document_id": "AR-SW-022",
+     "order": 4,
+     "language": "en",
+     "text": "Priority 1 is complete service outage: response within 30 minutes and temporary restoration within 4 hours. Priority 2 requires response within 2 hours and resolution within 16 business hours."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "2",
+      "two"
+     ],
+     [
+      "16",
+      "sixteen"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-03",
+   "kind": "qa_answer",
+   "language": "fa",
+   "node": "N-ADM-HR",
+   "task": "سقف مرخصی ساعتی در روز و در ماه چقدر است؟",
+   "output": "سقف مرخصی ساعتی ۴ ساعت در روز و ۱۶ ساعت در ماه است [AR-HR-005 §5].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "correct, grounded, labelled",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-HR-005 §5",
+     "document_id": "AR-HR-005",
+     "order": 5,
+     "language": "fa",
+     "text": "مرخصی ساعتی تا ۴ ساعت در روز و سقف ۱۶ ساعت در ماه است؛ برای جلوگیری از خطای پنهان تبدیل، جداگانه به ساعت ثبت می‌شود."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "4",
+      "چهار"
+     ],
+     [
+      "16",
+      "شانزده"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-04",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-HW-REP",
+   "task": "Within how many working hours must a Level 1 repair be completed?",
+   "output": "A Level 1 repair must be completed within 4 working hours of accepted intake [AR-HW-012 §2].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "the source writes four; 4 is the same number",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-HW-012 §2",
+     "document_id": "AR-HW-012",
+     "order": 2,
+     "language": "en",
+     "text": "Three repair levels are recognized. Level 1 is diagnosis and obvious correction, completed within four working hours of accepted intake. Level 2 is component-level repair or replacement that can be finished in the workshop, completed within three working days."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "4",
+      "four"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-05",
+   "kind": "qa_answer",
+   "language": "fa",
+   "node": "N-ADM-FIN",
+   "task": "پیش‌پرداخت قرارداد AR-CNT-1402-118 چند درصد و چه مبلغی بود؟",
+   "output": "پیش‌پرداخت قرارداد AR-CNT-1402-118 برابر ۳۰ درصد، یعنی ۶۵۴ میلیون تومان بود [AR-FIN-010 §3].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "correct, grounded, labelled; contract id copied exactly",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-FIN-010 §3",
+     "document_id": "AR-FIN-010",
+     "order": 3,
+     "language": "fa",
+     "text": "در AR-CNT-۱۴۰۲-۱۱۸ پیش‌پرداخت ۳۰ درصد و برابر ۶۵۴ میلیون تومان بود. تا پایان شهریور ۱۴۰۳ جمع صورت‌وضعیت‌ها شامل همان پیش‌پرداخت به ۹۴۰ میلیون تومان رسید."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "30",
+      "سی"
+     ],
+     [
+      "654"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-06",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-SW-WEB",
+   "task": "In the reporting RFP evaluation, what were the final weighted scores of proposals A and B?",
+   "output": "The final weighted scores were 78.8 for proposal A and 75.2 for proposal B [AR-RFP-025 §6].",
+   "status": "answered",
+   "gold": "accept",
+   "note": "correct, grounded, labelled",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-RFP-025 §6",
+     "document_id": "AR-RFP-025",
+     "order": 6,
+     "language": "en",
+     "text": "Weights are 60% technical and 40% financial. A: 82 × 0.6 + 74 × 0.4 = 49.2 + 29.6 = 78.8. B: 68 × 0.6 + 86 × 0.4 = 40.8 + 34.4 = 75.2. A leads by 3.6 points."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "78.8"
+     ],
+     [
+      "75.2"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-07",
+   "kind": "qa_refusal",
+   "language": "fa",
+   "node": "N-SW-WEB",
+   "task": "سقف مرخصی بدون حقوق با تأیید معاون چند روز است؟",
+   "output": "پاسخ این پرسش در دامنهٔ دانش گره N-SW-WEB نیست. پیشنهاد: پرسش به N-CEO ارجاع شود (evidence owned outside scope by N-ADM-HR).",
+   "status": "out_of_scope",
+   "escalation": "N-CEO",
+   "gold": "accept",
+   "note": "right refusal and escalation",
+   "tags": [],
+   "sources": [],
+   "expected": {
+    "status": "out_of_scope",
+    "escalation": "N-CEO"
+   }
+  },
+  {
+   "id": "CAL-08",
+   "kind": "qa_refusal",
+   "language": "en",
+   "node": "N-CEO",
+   "task": "What is the company policy on bringing pets to the office?",
+   "output": "INSUFFICIENT_CONTEXT The documents in the scope of node N-CEO do not mention any policy on pets in the office.",
+   "status": "insufficient_context",
+   "gold": "accept",
+   "note": "right refusal, says what is missing",
+   "tags": [],
+   "sources": [],
+   "expected": {
+    "status": "not_found"
+   }
+  },
+  {
+   "id": "CAL-N01",
+   "kind": "qa_answer",
+   "language": "fa",
+   "node": "N-SW-SUP",
+   "task": "زمان پاسخ و رفع موقت برای حادثهٔ اولویت ۱ (قطع کامل سرویس) چقدر است؟",
+   "output": "برای حادثهٔ اولویت ۱ پاسخ ظرف ۶۰ دقیقه و رفع موقت ظرف ۸ ساعت انجام می‌شود [AR-SW-022 §4].",
+   "status": "answered",
+   "gold": "reject",
+   "note": "invented numbers behind a valid label",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-SW-022 §4",
+     "document_id": "AR-SW-022",
+     "order": 4,
+     "language": "fa",
+     "text": "اولویت ۱ قطع کامل سرویس است: پاسخ ۳۰ دقیقه و رفع موقت ۴ ساعت. اولویت ۲ پاسخ ۲ ساعت و رفع ۱۶ ساعت کاری دارد."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "30",
+      "سی"
+     ],
+     [
+      "4",
+      "چهار"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-N02",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-SW-SUP",
+   "task": "What are the response and resolution targets for a Priority 2 incident?",
+   "output": "A Priority 2 incident needs a response within 2 hours and resolution within 16 business hours. Missed targets cost a penalty of 5 percent per hour.",
+   "status": "answered",
+   "gold": "reject",
+   "note": "no labels and an invented penalty",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-SW-022 §4",
+     "document_id": "AR-SW-022",
+     "order": 4,
+     "language": "en",
+     "text": "Priority 1 is complete service outage: response within 30 minutes and temporary restoration within 4 hours. Priority 2 requires response within 2 hours and resolution within 16 business hours."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "2",
+      "two"
+     ],
+     [
+      "16",
+      "sixteen"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-N03",
+   "kind": "qa_answer",
+   "language": "fa",
+   "node": "N-ADM-HR",
+   "task": "سقف مرخصی ساعتی در روز و در ماه چقدر است؟",
+   "output": "Hourly leave is limited to 4 hours per day and 16 hours per month [AR-HR-005 §5].",
+   "status": "answered",
+   "gold": "reject",
+   "note": "right facts, wrong language (the question is Persian)",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-HR-005 §5",
+     "document_id": "AR-HR-005",
+     "order": 5,
+     "language": "fa",
+     "text": "مرخصی ساعتی تا ۴ ساعت در روز و سقف ۱۶ ساعت در ماه است؛ برای جلوگیری از خطای پنهان تبدیل، جداگانه به ساعت ثبت می‌شود."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "4",
+      "چهار"
+     ],
+     [
+      "16",
+      "شانزده"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-N04",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-HW-REP",
+   "task": "Within how many working hours must a Level 1 repair be completed?",
+   "output": "A Level 1 repair must be completed within three working days of accepted intake [AR-HW-012 §2].",
+   "status": "answered",
+   "gold": "reject",
+   "note": "grounded in the source but the Level 2 target; wrong answer",
+   "tags": [],
+   "sources": [
+    {
+     "label": "AR-HW-012 §2",
+     "document_id": "AR-HW-012",
+     "order": 2,
+     "language": "en",
+     "text": "Three repair levels are recognized. Level 1 is diagnosis and obvious correction, completed within four working hours of accepted intake. Level 2 is component-level repair or replacement that can be finished in the workshop, completed within three working days."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "4",
+      "four"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "CAL-N05",
+   "kind": "qa_refusal",
+   "language": "fa",
+   "node": "N-SW-WEB",
+   "task": "سقف مرخصی بدون حقوق با تأیید معاون چند روز است؟",
+   "output": "مرخصی بدون حقوق تا ۳۰ روز با تأیید معاون مجاز است [AR-HR-005 §4].",
+   "status": "answered",
+   "gold": "reject",
+   "note": "answers outside its scope instead of escalating",
+   "tags": [],
+   "sources": [],
+   "expected": {
+    "status": "out_of_scope",
+    "escalation": "N-CEO"
+   }
+  },
+  {
+   "id": "CAL-N06",
+   "kind": "qa_answer",
+   "language": "en",
+   "node": "N-SW-WEB",
+   "task": "In the reporting RFP evaluation, what were the final weighted scores of proposals A and B?",
+   "output": "The final weighted scores were 75.2 for proposal A and 78.8 for proposal B [AR-RFP-025 §6].",
+   "status": "answered",
+   "gold": "reject",
+   "note": "both numbers exist but are swapped; the rule judge cannot see this",
+   "tags": [
+    "rule_blind_spot"
+   ],
+   "sources": [
+    {
+     "label": "AR-RFP-025 §6",
+     "document_id": "AR-RFP-025",
+     "order": 6,
+     "language": "en",
+     "text": "Weights are 60% technical and 40% financial. A: 82 × 0.6 + 74 × 0.4 = 49.2 + 29.6 = 78.8. B: 68 × 0.6 + 86 × 0.4 = 40.8 + 34.4 = 75.2. A leads by 3.6 points."
+    }
+   ],
+   "expected": {
+    "status": "answered",
+    "facts": [
+     [
+      "78.8"
+     ],
+     [
+      "75.2"
+     ]
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "note": "Registered proposals and the recorded decision. Numbers come from the evaluation sheet of AR-RFP-025 (fictional teaching corpus); component subscores are not recorded and are not invented.",
+  "rfp_id": "AR-RFP-1403-07",
+  "proposals": [
+    {"id": "PRP-A", "label_en": "A", "label_fa": "الف", "vendor_en": "Dadeh Pardaz Shafagh", "vendor_fa": "داده پرداز شفق",
+     "price_mtoman": 285, "duration_weeks": 7, "technology": "Django + React", "version": "1.0",
+     "scores": {"CRT-TECH": "82", "CRT-FIN": "74"}, "published_weighted": "78.8",
+     "sections": ["problem_understanding", "architecture", "work_plan", "team_roles", "employer_dependencies",
+                  "test_plan", "pricing"],
+     "clarifications_en": ["reproducible builds", "source handover", "assumptions behind the seven weeks"],
+     "clarifications_fa": ["بازتولید ساخت", "تحویل کد", "حدود برنامه هفت‌هفته‌ای"],
+     "feedback_en": "", "feedback_fa": "", "evidence": ["AR-RFP-025"]},
+    {"id": "PRP-B", "label_en": "B", "label_fa": "ب", "vendor_en": "Novin Gozaresh Pars", "vendor_fa": "نوین گزارش پارس",
+     "price_mtoman": 240, "duration_weeks": 5, "technology": "Node.js", "version": "1.0",
+     "scores": {"CRT-TECH": "68", "CRT-FIN": "86"}, "published_weighted": "75.2",
+     "sections": ["problem_understanding", "architecture", "work_plan", "team_roles", "employer_dependencies",
+                  "test_plan", "pricing"],
+     "clarifications_en": ["API contract tests", "error behavior", "report-data reconciliation"],
+     "clarifications_fa": ["آزمون قرارداد API", "رفتار خطا", "تطبیق داده گزارش"],
+     "feedback_en": "The shorter duration was attractive, but the test plan and integration with the existing API were inadequate.",
+     "feedback_fa": "زمان کوتاه‌تر جذاب بود اما طرح آزمون و یکپارچگی با API موجود ناکافی بود.",
+     "evidence": ["AR-RFP-025"]}
+  ],
+  "decision": {"selected": "PRP-A",
+               "reason_en": "Quality and compatibility with AR-SW-016 and the ArmanRayan Django codebase.",
+               "reason_fa": "کیفیت و سازگاری با استاندارد AR-SW-016 و کدبیس Django آرمان‌رایان.",
+               "evidence": ["AR-RFP-025"]}
+}
