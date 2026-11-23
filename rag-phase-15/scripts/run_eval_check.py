@@ -122,7 +122,7 @@ from rag_core.tuning.infrastructure.rag_acl import (  # noqa: E402
 )
 
 KIT = f"rag-core {__version__} (phase 14 prompt testing, model tuning, sample evaluation)"
-SEPARATOR_START = "======== PHASE 14 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 14 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 14 SUMMARY ========"
 LOAD_ERRORS = (DomainError, ValueError, KeyError, TypeError, OSError)
 Q06_ITEMS = ("GQ-P06-fa", "GQ-P06-en")

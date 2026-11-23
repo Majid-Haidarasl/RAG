@@ -93,7 +93,7 @@ from rag_core.transfer.infrastructure.sources_acl import (  # noqa: E402
 from rag_core.transfer.infrastructure.sqlite_store import SqliteTransferStore  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 11 cyclic processing + transfer)"
-SEPARATOR_START = "======== PHASE 11 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 11 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 11 SUMMARY ========"
 TOP_K = 8
 LANGS = ("fa", "en")

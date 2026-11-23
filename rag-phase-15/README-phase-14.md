@@ -108,7 +108,7 @@ cd ~/Desktop/RAG
 bash scripts/setup_and_test.sh
 ```
 
-ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱، پروژه‌های فاز ۱۲، RFP فاز ۱۳ و در آخر ارزیابی فاز ۱۴. آخرین بلوک بین دو خط `======== PHASE 14 SUMMARY (paste this block) ========` و `======== END PHASE 14 SUMMARY ========` چاپ می‌شود. **همان بلوک آخر را کامل کپی کن و بفرست.**
+ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱، پروژه‌های فاز ۱۲، RFP فاز ۱۳ و در آخر ارزیابی فاز ۱۴. آخرین بلوک بین دو خط `======== PHASE 14 SUMMARY ========` و `======== END PHASE 14 SUMMARY ========` چاپ می‌شود. عددهای بخش «نتیجه» از همین بلوک برداشته می‌شوند.
 
 اجرای جدا:
 
@@ -141,7 +141,7 @@ python scripts/run_eval_check.py --no-live  # فقط بخش آفلاین
 اجرا: ۳ آذر ۱۴۰۵، حدود ساعت ۰۰:۳۰ به وقت تهران، روی Fedora Linux با پایتون 3.15.2 و Ollama 0.40.17 با مدل‌های `qwen3:8b` و `bge-m3` (همان سخت‌افزار: i5-12400F، ۱۶ گیگابایت RAM، RTX 3060 با ۱۲ گیگابایت). نتیجه: **PASS**، هر ۱۲ بررسی `ok` و مرحلهٔ زنده `ok`.
 
 ```text
-======== PHASE 14 SUMMARY (paste this block) ========
+======== PHASE 14 SUMMARY ========
 status: PASS
 kit: rag-core 0.14.0 (phase 14 prompt testing, model tuning, sample evaluation)
 python: 3.15.2

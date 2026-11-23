@@ -46,7 +46,7 @@ def test_offline_cycle_passes(tmp_path: Path) -> None:
     assert data["update"]["changed_nodes"] == ["N-CEO", "N-HW", "N-HW-REP"]
     assert data["live"]["status"] == "skipped"
     out = proc.stdout
-    assert "======== PHASE 11 SUMMARY (paste this block) ========" in out
+    assert "======== PHASE 11 SUMMARY ========" in out
     assert "======== END PHASE 11 SUMMARY ========" in out
     assert (tmp_path / "exports" / "1403-Q2" / "latest-packages.csv").is_file()
     board = next(p for p in data["packages"] if p["source_node"] == "N-CEO")

@@ -1,0 +1,28 @@
+# Phase 15 — unit-test completion, coverage and release readiness.
+# Target system: Fedora Linux · Python 3.15.2 · Ollama 0.40.17 · i5-12400F · 16 GB RAM · RTX 3060 12 GB.
+config_version: 1.0.0
+
+coverage:
+  report_dir: results/phase-15      # coverage.json, coverage.txt, htmlcov/ and quality-check-<UTC>.json
+  json_file: coverage.json          # written by `python -m coverage json` in scripts/setup_and_test.sh
+  min_line_pct: 80                  # gate on total line coverage of src/rag_core (estimate before the first run: 85-90)
+  min_context_pct: 0                # 0 = per-context numbers are reported only, not gated
+  lowest: 10                        # least covered modules printed in the summary
+  min_statements: 20                # ... among modules with at least this many statements
+  package: rag_core
+
+release:
+  tag: v0.9
+  title: final trial core
+  checklist: config/release-checklist.yaml
+  docs: [docs/phase-15/unit-test-report.md, docs/phase-15/final-checklist.md]
+
+# Phase 14 carry-overs: what config/eval.yaml must select now; the Phase 14 live run (newest
+# eval/results/phase-14-check-*.json of the same setup run) should confirm each choice (agrees=yes).
+eval:
+  phase14_results: eval/results
+  expected:
+    retrieval: baseline
+    qa_prompt: qa.answer
+    judge_prompt: strict_precheck
+    ai_ids: baseline

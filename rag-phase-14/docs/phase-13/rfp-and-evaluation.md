@@ -161,7 +161,7 @@ With Ollama and `qwen3:8b`: an RFP summary (`summary` + up to 3 `questions`) and
 Run on 2 Azar 1405 at about 23:19 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, i5-12400F, 16 GB RAM, RTX 3060 12 GB, Ollama 0.40.17 with `qwen3:8b`. Status **PASS**, all 14 checks ok.
 
 ```text
-======== PHASE 13 SUMMARY (paste this block) ========
+======== PHASE 13 SUMMARY ========
 status: PASS
 kit: rag-core 0.13.0 (phase 13 rfp generation, proposal management)
 python: 3.15.2

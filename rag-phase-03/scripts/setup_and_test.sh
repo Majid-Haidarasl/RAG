@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-separator_start="======== PHASE 3 SUMMARY (paste this block) ========"
+separator_start="======== PHASE 3 SUMMARY ========"
 separator_end="======== END PHASE 3 SUMMARY ========"
 
 fail_summary() {

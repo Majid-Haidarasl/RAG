@@ -16,7 +16,7 @@ python3 experiments/phase-02/run_all.py            # تست کامل، حدود 
 python3 experiments/phase-02/run_all.py --only vram   # فقط سنجش VRAM هم‌زمان، حدود ۱ دقیقه
 ```
 
-در پایان، یک بلوک متنی بین دو خط چاپ می‌شود. آن را کامل کپی کن و بفرست. اگر توانستی فایل zip نتایج را هم بفرست؛ مسیرش در آخر خروجی چاپ می‌شود (`experiments/phase-02/results/phase02-results-<زمان>.zip`).
+در پایان، یک بلوک متنی بین دو خط چاپ می‌شود. این بلوک خلاصهٔ اجراست. همهٔ نتیجه‌ها در یک فایل zip هم ذخیره می‌شوند؛ مسیرش در آخر خروجی چاپ می‌شود (`experiments/phase-02/results/phase02-results-<زمان>.zip`).
 
 نکته‌ها:
 - اگر Ollama بالا نیست: `sudo systemctl start ollama`

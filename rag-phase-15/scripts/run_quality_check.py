@@ -70,7 +70,7 @@ from rag_core.tuning.infrastructure.ids_acl import IdJob  # noqa: E402
 from rag_core.tuning.infrastructure.judging_acl import derive_calibration  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 15 unit-test completion, hardening, coverage, release checklist)"
-SEPARATOR_START = "======== PHASE 15 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 15 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 15 SUMMARY ========"
 LOAD_ERRORS = (DomainError, ValueError, KeyError, TypeError, OSError)
 NEW_TEST_FOLDERS = ("hardening", "quality")

@@ -103,7 +103,7 @@ cd ~/Desktop/RAG
 bash scripts/setup_and_test.sh
 ```
 
-ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱ و در آخر بررسی پروژه‌ها در فاز ۱۲. آخرین بلوک بین دو خط `======== PHASE 12 SUMMARY (paste this block) ========` و `======== END PHASE 12 SUMMARY ========` چاپ می‌شود. **همان بلوک آخر را کامل کپی کن و بفرست.**
+ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱ و در آخر بررسی پروژه‌ها در فاز ۱۲. آخرین بلوک بین دو خط `======== PHASE 12 SUMMARY ========` و `======== END PHASE 12 SUMMARY ========` چاپ می‌شود. عددهای بخش «نتیجه» از همین بلوک برداشته می‌شوند.
 
 اجرای جدا:
 
@@ -138,7 +138,7 @@ python scripts/run_project_check.py --no-live  # فقط بخش آفلاین
 اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۲:۲۷ به وقت تهران، روی Fedora Linux با پایتون 3.15.2 (همان سخت‌افزار: i5-12400F، ۱۶ گیگابایت RAM، RTX 3060 با ۱۲ گیگابایت). نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
 
 ```text
-======== PHASE 12 SUMMARY (paste this block) ========
+======== PHASE 12 SUMMARY ========
 status: PASS
 kit: rag-core 0.12.0 (phase 12 projects, research gaps, prioritization)
 python: 3.15.2

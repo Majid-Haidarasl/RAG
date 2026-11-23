@@ -1,0 +1,118 @@
+# Release checklist: every deliverable of the 16-phase plan and its status.
+# status: done (in this kit; every path must exist) | external (own repository folder) |
+#         run (written when the kit runs) | planned (later step, with a note).
+# scripts/run_quality_check.py and scripts/run_release_check.py check it; docs/phase-15/final-checklist.md is the readable version.
+version: 1.0.0
+phases:
+  - phase: 1
+    deliverables:
+      - {spec: "docs/phase-01/domain-discovery.md", status: external, note: "repository folder rag-phase-01 (planning kit before the code base)"}
+      - {spec: "docs/phase-01/glossary.md", status: external, note: "repository folder rag-phase-01"}
+      - {spec: "docs/phase-01/bounded-contexts-draft.md", status: external, note: "repository folder rag-phase-01"}
+      - {spec: "data/registry/layer-registry.template.csv", status: external, note: "repository folder rag-phase-01; the filled registry is the Phase 6 data/registry/layer-registry.csv"}
+      - {spec: "data/registry/node-registry.template.csv", status: external, note: "repository folder rag-phase-01; the filled registry is the Phase 6 data/registry/node-registry.csv"}
+      - {spec: "docs/phase-01/evaluation-baseline.md", status: external, note: "repository folder rag-phase-01"}
+      - {spec: "docs/phase-01/unit-test-policy.md", status: external, note: "repository folder rag-phase-01"}
+      - {spec: "corpus/README.md (26 FA + 26 EN ArmanRayan docs + manifest)", status: done, paths: [corpus/README.md, corpus/manifest.md, corpus/fa, corpus/en]}
+  - phase: 2
+    deliverables:
+      - {spec: "docs/phase-02/offline-model-baseline.md", status: external, note: "repository folder rag-phase-02"}
+      - {spec: "docs/phase-02/model-usage-guide.md", status: external, note: "repository folder rag-phase-02"}
+      - {spec: "docs/phase-02/prompt-test-plan.md", status: external, note: "repository folder rag-phase-02"}
+      - {spec: "config/model-registry.yaml", status: external, note: "repository folder rag-phase-02; the kit's model settings live in config/rag.yaml and config/judge.yaml"}
+      - {spec: "experiments/phase-02/ (sample prompt runs + results)", status: external, note: "repository folder rag-phase-02"}
+  - phase: 3
+    deliverables:
+      - {spec: "docs/phase-03/ddd-architecture.md", status: done, paths: [docs/phase-03/ddd-architecture.md]}
+      - {spec: "docs/phase-03/domain-model-spec.md", status: done, paths: [docs/phase-03/domain-model-spec.md]}
+      - {spec: "docs/phase-03/context-map.md", status: done, paths: [docs/phase-03/context-map.md]}
+      - {spec: "docs/phase-03/unit-test-plan.md", status: done, paths: [docs/phase-03/unit-test-plan.md]}
+      - {spec: "src/ project skeleton (one package per bounded context)", status: done, paths: [src/rag_core/__init__.py, src/rag_core/shared_kernel]}
+      - {spec: "tests/ skeleton + pytest config", status: done, paths: [tests/unit, pyproject.toml]}
+  - phase: 4
+    deliverables:
+      - {spec: "src/ingestion/ (DOC/DOCX/PDF adapters)", status: done, paths: [src/rag_core/ingestion/infrastructure/parser_docx.py, src/rag_core/ingestion/infrastructure/dispatcher.py]}
+      - {spec: "docs/phase-04/metadata-schema.md + schemas/knowledge-metadata.json", status: done, paths: [docs/phase-04/metadata-schema.md, schemas/knowledge-metadata.json]}
+      - {spec: "docs/phase-04/source-reference-model.md", status: done, paths: [docs/phase-04/source-reference-model.md]}
+      - {spec: "docs/phase-04/chunking-spec.md", status: done, paths: [docs/phase-04/chunking-spec.md]}
+      - {spec: "tests/unit/ingestion/", status: done, paths: [tests/unit/ingestion]}
+  - phase: 5
+    deliverables:
+      - {spec: "src/knowledge/lifecycle/ (KnowledgeItem, KnowledgeVersion, KnowledgeChunk)", status: done, paths: [src/rag_core/knowledge/domain/model.py, src/rag_core/knowledge/domain/services.py]}
+      - {spec: "src/knowledge/dedup/ (exact, near-duplicate, overlap)", status: done, paths: [src/rag_core/knowledge/domain/dedup.py, src/rag_core/knowledge/domain/fingerprint.py]}
+      - {spec: "docs/phase-05/versioning-and-dedup.md", status: done, paths: [docs/phase-05/versioning-and-dedup.md]}
+      - {spec: "tests/unit/knowledge/ (version, chunk, dedup rules)", status: done, paths: [tests/unit/knowledge]}
+  - phase: 6
+    deliverables:
+      - {spec: "src/organization/ (Node, Layer, hierarchy)", status: done, paths: [src/rag_core/hierarchy/domain/model.py, src/rag_core/hierarchy/domain/scope.py]}
+      - {spec: "data/registry/layer-registry.csv + node-registry.csv (ArmanRayan L0–L4)", status: done, paths: [data/registry/layer-registry.csv, data/registry/node-registry.csv]}
+      - {spec: "docs/phase-06/hierarchy-workflows.md", status: done, paths: [docs/phase-06/hierarchy-workflows.md]}
+      - {spec: "tests/unit/organization/", status: done, paths: [tests/unit/hierarchy], note: "the organization context is named hierarchy in the code"}
+  - phase: 7
+    deliverables:
+      - {spec: "src/issues/ (Issue, SubIssue, status)", status: done, paths: [src/rag_core/issues/domain/model.py]}
+      - {spec: "src/issues/comparison.py", status: done, paths: [src/rag_core/issues/comparison.py]}
+      - {spec: "docs/phase-07/issue-model.md (Azarpakhsh case as reference)", status: done, paths: [docs/phase-07/issue-model.md]}
+      - {spec: "tests/unit/issues/", status: done, paths: [tests/unit/issues]}
+  - phase: 8
+    deliverables:
+      - {spec: "src/rag/ (embedding adapter, index, retriever, context assembler)", status: done, paths: [src/rag_core/rag/domain/retriever.py, src/rag_core/rag/domain/context.py, src/rag_core/rag/infrastructure/sqlite_store.py]}
+      - {spec: "src/qa/ (node-scoped Q&A + citations)", status: done, paths: [src/rag_core/qa/application/service.py, src/rag_core/qa/domain/fact_check.py]}
+      - {spec: "config/prompts/qa/*.yaml", status: done, paths: [config/prompts/qa/answer.yaml]}
+      - {spec: "docs/phase-08/rag-pipeline.md", status: done, paths: [docs/phase-08/rag-pipeline.md]}
+      - {spec: "tests/unit/rag/ (retrieval orchestration, prompt assembly)", status: done, paths: [tests/unit/rag, tests/unit/qa]}
+  - phase: 9
+    deliverables:
+      - {spec: "src/executors/ (profiles, expertise, matching)", status: done, paths: [src/rag_core/executors/domain/expertise.py]}
+      - {spec: "src/ike/ (relations + summary generation)", status: done, paths: [src/rag_core/ike]}
+      - {spec: "docs/phase-09/ike-model.md", status: done, paths: [docs/phase-09/ike-model.md]}
+      - {spec: "tests/unit/executors/ + tests/unit/ike/", status: done, paths: [tests/unit/executors, tests/unit/ike]}
+  - phase: 10
+    deliverables:
+      - {spec: "src/judge/ (rubric, parser, threshold)", status: done, paths: [src/rag_core/judging/domain/rubric.py, src/rag_core/judging/domain/parser.py, src/rag_core/judging/domain/threshold.py], note: "the context is named judging in the code"}
+      - {spec: "config/prompts/judge/*.yaml", status: done, paths: [config/prompts/judge/rubric.yaml, config/prompts/judge/qa.yaml]}
+      - {spec: "docs/phase-10/scoring-framework.md", status: done, paths: [docs/phase-10/scoring-framework.md]}
+      - {spec: "tests/unit/judge/ (score parsing, thresholds)", status: done, paths: [tests/unit/judge]}
+  - phase: 11
+    deliverables:
+      - {spec: "src/processing/ (cyclic node processing)", status: done, paths: [src/rag_core/processing/domain/cycle.py]}
+      - {spec: "src/transfer/ (TransferPackage, detail levels)", status: done, paths: [src/rag_core/transfer]}
+      - {spec: "exports/transfer-packages/*.csv + DB persistence", status: run, paths: [exports/transfer-packages], note: "written by scripts/run_transfer_check.py; the folder is not committed"}
+      - {spec: "docs/phase-11/transfer-workflow.md", status: done, paths: [docs/phase-11/transfer-workflow.md]}
+      - {spec: "tests/unit/transfer/", status: done, paths: [tests/unit/transfer]}
+  - phase: 12
+    deliverables:
+      - {spec: "src/projects/", status: done, paths: [src/rag_core/projects]}
+      - {spec: "src/research_gaps/", status: done, paths: [src/rag_core/research_gaps]}
+      - {spec: "src/prioritization/", status: done, paths: [src/rag_core/prioritization]}
+      - {spec: "docs/phase-12/project-knowledge.md", status: done, paths: [docs/phase-12/project-knowledge.md]}
+      - {spec: "tests/unit/projects/ + research_gaps/ + prioritization/", status: done, paths: [tests/unit/projects, tests/unit/research_gaps, tests/unit/prioritization]}
+  - phase: 13
+    deliverables:
+      - {spec: "src/rfp/ (generator)", status: done, paths: [src/rag_core/rfp/domain/generator.py]}
+      - {spec: "src/proposals/ (registry, evaluation, feedback)", status: done, paths: [src/rag_core/proposals]}
+      - {spec: "config/prompts/rfp/*.yaml", status: done, paths: [config/prompts/rfp/rfp_summary.yaml, config/prompts/rfp/feedback.yaml]}
+      - {spec: "docs/phase-13/rfp-and-evaluation.md", status: done, paths: [docs/phase-13/rfp-and-evaluation.md]}
+      - {spec: "tests/unit/rfp/ + proposals/", status: done, paths: [tests/unit/rfp, tests/unit/proposals]}
+  - phase: 14
+    deliverables:
+      - {spec: "docs/phase-14/model-and-prompt-evaluation.md", status: done, paths: [docs/phase-14/model-and-prompt-evaluation.md]}
+      - {spec: "config/prompts/ (tuned set)", status: done, paths: [config/prompts/qa/answer_complete.yaml, config/prompts/judge_strict, config/prompts/rfp_ids]}
+      - {spec: "eval/datasets/armanrayan-qa.jsonl (FA + EN questions)", status: done, paths: [eval/datasets/armanrayan-qa.jsonl]}
+      - {spec: "eval/results/", status: run, paths: [eval/results], note: "phase-14-check-*.json and updated-metrics-*.md per run; only the README is committed"}
+      - {spec: "docs/phase-14/updated-metrics.md", status: done, paths: [docs/phase-14/updated-metrics.md]}
+  - phase: 15
+    deliverables:
+      - {spec: "docs/phase-15/unit-test-report.md", status: done, paths: [docs/phase-15/unit-test-report.md]}
+      - {spec: "coverage report", status: run, paths: [results/phase-15], note: "coverage.json / coverage.txt / htmlcov written by scripts/setup_and_test.sh; not committed"}
+      - {spec: "release tag v0.9 (final trial core)", status: external, note: "git tag v0.9 on the Phase 15 commit of the repository"}
+      - {spec: "docs/phase-15/final-checklist.md", status: done, paths: [docs/phase-15/final-checklist.md]}
+  - phase: 16
+    deliverables:
+      - {spec: "README.md + docs/technical/", status: done, paths: [README.md, docs/technical/README.md, docs/technical/architecture.md, docs/technical/operations.md]}
+      - {spec: "docs/user-guide.md", status: done, paths: [docs/user-guide.md]}
+      - {spec: "docs/final-report.md", status: done, paths: [docs/final-report.md, docs/phase-16/final-checklist.md, CHANGELOG.md]}
+      - {spec: "eval/evidence/", status: done, paths: [eval/evidence/README.md]}
+      - {spec: "presentation/ (slides + demo script)", status: done, paths: [presentation/armanrayan-rag-core.pptx, presentation/build_slides.js, presentation/demo-script.md]}
+      - {spec: "training/ (learning material)", status: done, paths: [training/README.md, training/exercises.md]}
+      - {spec: "release tag v1.0", status: planned, note: "set on the pushed Phase 16 commit after the reference run passes"}

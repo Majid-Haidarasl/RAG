@@ -64,7 +64,7 @@ def test_no_live_passes_and_prints_the_summary(tmp_path: Path) -> None:
                      "--prior", "ingest=0,dedup=0,hierarchy=0,issues=0,rag=0,ike=0")
     assert proc.returncode == 0, proc.stdout[-3000:] + proc.stderr[-3000:]
     out = proc.stdout
-    assert "======== PHASE 10 SUMMARY (paste this block) ========" in out and "status: PASS" in out
+    assert "======== PHASE 10 SUMMARY ========" in out and "status: PASS" in out
     assert "prior_steps: ingest=0 dedup=0 hierarchy=0 issues=0 rag=0 ike=0" in out
     assert "rubric: judge.rubric@1.0.0 out_of=20 accept>=18" in out
     assert "live: skipped (disabled with --no-live)" in out

@@ -12,7 +12,7 @@ VENV_HINT="sudo apt install -y python3.12-venv"
 SOFFICE_HINT="sudo apt install -y libreoffice-writer --no-install-recommends"
 POPPLER_HINT="sudo apt install -y poppler-utils"
 
-separator_start="======== PHASE 5 SUMMARY (paste this block) ========"
+separator_start="======== PHASE 5 SUMMARY ========"
 separator_end="======== END PHASE 5 SUMMARY ========"
 
 fail_summary() {

@@ -38,7 +38,7 @@ from rag_core.shared_kernel.identifiers import NodeIdentifier  # noqa: E402
 from rag_core.shared_kernel.layer import LayerIndex  # noqa: E402
 
 KIT = "rag-core 0.6.0 (phase 6)"
-SEPARATOR_START = "======== PHASE 6 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 6 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 6 SUMMARY ========"
 N = NodeIdentifier
 

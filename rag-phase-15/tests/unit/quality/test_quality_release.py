@@ -128,7 +128,7 @@ def test_script_passes_with_coverage_and_a_phase14_pass(tmp_path: Path) -> None:
                      "--phase14-results", str(phase14_folder(tmp_path)))
     out = proc.stdout
     assert proc.returncode == 0, out[-4000:] + proc.stderr[-3000:]
-    assert "======== PHASE 15 SUMMARY (paste this block) ========" in out and "status: PASS" in out
+    assert "======== PHASE 15 SUMMARY ========" in out and "status: PASS" in out
     assert "coverage: line=90.0% (90/100) branch=75.0% (15/20) modules=1 gate>=80% ok tool=7.6.1" in out
     assert "checklist: deliverables=80 done=57 external=12 run=3 planned=8 phases=16 problems=0" in out
     assert "precheck_offline: cases=42 " in out and " false_flags=0 " in out

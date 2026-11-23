@@ -75,7 +75,7 @@ from rag_core.rag.infrastructure.ollama import OllamaChatModel, OllamaClient, Ol
 from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 10 llm-as-judge)"
-SEPARATOR_START = "======== PHASE 10 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 10 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 10 SUMMARY ========"
 CASE = "AR-ISS-024"
 TOP_K = 8

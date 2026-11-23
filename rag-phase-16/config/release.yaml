@@ -1,0 +1,85 @@
+# Phase 16 — release check of rag-core 1.0.0 (scripts/run_release_check.py).
+# Every check here is offline; the live confirmation of the evaluation defaults is read
+# from the Phase 14 result of the same setup run and reported next to the status.
+config_version: 1.0.0
+version: 1.0.0
+tag: v1.0
+title: first release
+
+# Every place that carries the kit version; all must equal `version`.
+versions:
+  pyproject.toml: pyproject
+  src/rag_core/__init__.py: package
+  config/eval.yaml: yaml:config_version
+  config/quality.yaml: yaml:config_version
+  config/release-checklist.yaml: yaml:version
+  config/release.yaml: yaml:version
+
+# Documents of the release: they must exist, be long enough and contain the markers.
+docs:
+  - {path: README.md, min_chars: 2000, markers: ["bash scripts/setup_and_test.sh", "docs/user-guide.md", "docs/final-report.md", "CHANGELOG.md"]}
+  - {path: README-phase-16.md, min_chars: 1500, markers: ["PHASE 16 SUMMARY", "scripts/run_release_check.py", "config/release.yaml"]}
+  - {path: CHANGELOG.md, min_chars: 1500, markers: ["## [1.0.0]", "## [0.15.0]"]}
+  - {path: docs/user-guide.md, min_chars: 3000, markers: ["sudo apt install", "wsl --install", "ollama pull bge-m3", "ollama pull qwen3:8b", "bash scripts/setup_and_test.sh"]}
+  - {path: docs/final-report.md, min_chars: 4000, markers: ["1643", "96.3", "AR-ISS-024", "ai_ids"]}
+  - {path: docs/technical/README.md, min_chars: 600, markers: ["architecture.md", "operations.md"]}
+  - {path: docs/technical/architecture.md, min_chars: 2000, markers: ["src/rag_core", "shared_kernel"]}
+  - {path: docs/technical/operations.md, min_chars: 1500, markers: ["setup_and_test.sh", "results/"]}
+  - {path: docs/phase-16/final-checklist.md, min_chars: 1500, markers: ["release tag v1.0", "done 63"]}
+  - {path: eval/evidence/README.md, min_chars: 1500, markers: ["results/phase-08", "eval/results", "results/phase-15"]}
+  - {path: presentation/README.md, min_chars: 300, markers: ["build_slides.js", "armanrayan-rag-core.pptx"]}
+  - {path: presentation/demo-script.md, min_chars: 1000, markers: ["bash scripts/setup_and_test.sh"]}
+  - {path: training/README.md, min_chars: 1500, markers: ["exercises.md"]}
+  - {path: training/exercises.md, min_chars: 1000, markers: ["pytest"]}
+
+changelog:
+  path: CHANGELOG.md
+  versions: [0.3.0, 0.4.0, 0.5.0, 0.6.0, 0.7.0, 0.8.0, 0.9.0, 0.10.0, 0.11.0, 0.12.0, 0.13.0, 0.14.0, 0.15.0, 1.0.0]
+
+presentation:
+  path: presentation/armanrayan-rag-core.pptx
+  source: presentation/build_slides.js
+  min_slides: 10
+  max_slides: 12
+
+# Result files of one full run (scripts/setup_and_test.sh writes them before this check).
+evidence:
+  - {name: ingest, pattern: "results/phase-04/ingest-*.json"}
+  - {name: dedup, pattern: "results/phase-05/dedup-*.json"}
+  - {name: hierarchy, pattern: "results/phase-06/hierarchy-*.json"}
+  - {name: issues, pattern: "results/phase-07/issue-check-*.json"}
+  - {name: rag, pattern: "results/phase-08/rag-demo-*.json"}
+  - {name: ike, pattern: "results/phase-09/ike-check-*.json"}
+  - {name: judge, pattern: "results/phase-10/judge-check-*.json"}
+  - {name: transfer, pattern: "results/phase-11/transfer-check-*.json"}
+  - {name: projects, pattern: "results/phase-12/project-check-*.json"}
+  - {name: rfp, pattern: "results/phase-13/rfp-check-*.json"}
+  - {name: eval, pattern: "eval/results/phase-14-check-*.json"}
+  - {name: quality, pattern: "results/phase-15/quality-check-*.json"}
+  - {name: coverage, pattern: "results/phase-15/coverage.json"}
+
+# Text left over from drafting must not ship. The list lives here (and only here) so the
+# check does not find itself; matching ignores case.
+scan:
+  suffixes: [.md, .py, .sh, .yaml, .yml, .toml, .txt, .js]
+  exclude: [corpus, results, eval/results, exports, config/release.yaml]
+  phrases:
+    - "paste this"
+    - "copy-paste"
+    - "copy paste"
+    - "send it back"
+    - "send me the"
+    - "کپی کن و بفرست"
+    - "بلوک را کامل کپی"
+    - "as requested"
+    - "i hope this helps"
+    - "let me know if"
+    - "todo: fill"
+
+# What config/eval.yaml must select (the same four kinds as config/quality.yaml).
+eval:
+  expected:
+    retrieval: baseline
+    qa_prompt: qa.answer
+    judge_prompt: strict_precheck
+    ai_ids: baseline

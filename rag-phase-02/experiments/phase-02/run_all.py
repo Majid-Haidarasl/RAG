@@ -155,7 +155,7 @@ def build_summary(R) -> tuple[str, str]:
         L.append(f"- peak during {st}: {p['peak_used_mib']:.0f} MiB, util {p['peak_util_pct']:.0f}%")
     md = "\n".join(L) + "\n"
 
-    # compact copy-paste block
+    # compact summary block
     C = [f"P2 {R['run_id']} {'QUICK' if R['quick'] else 'FULL'} {fmt(R['total_minutes'])}min "
          f"ollama={env.get('ollama', {}).get('version')} gpu={gname}"]
     if emb.get("status") == "ok":
@@ -282,12 +282,12 @@ def main():
         for f in sorted(out.iterdir()):
             z.write(f, f"{run_id}/{f.name}")
     print("\n" + "=" * 70)
-    print("COPY EVERYTHING BETWEEN THE LINES AND SEND IT BACK  /  این بخش را کپی کن و بفرست")
+    print("RUN SUMMARY  /  خلاصهٔ اجرا")
     print("-" * 70)
     print(block)
     print("-" * 70)
     print(f"Full results: {out}")
-    print(f"Zip to send:  {zpath}")
+    print(f"Results zip:  {zpath}")
     print("=" * 70)
 
 

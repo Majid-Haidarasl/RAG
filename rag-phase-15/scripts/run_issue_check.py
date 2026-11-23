@@ -45,7 +45,7 @@ from rag_core.issues.infrastructure.registry_json import issue_from_sample  # no
 from rag_core.shared_kernel.errors import DomainError  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 7 issues)"
-SEPARATOR_START = "======== PHASE 7 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 7 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 7 SUMMARY ========"
 CASE = "AR-ISS-024"
 

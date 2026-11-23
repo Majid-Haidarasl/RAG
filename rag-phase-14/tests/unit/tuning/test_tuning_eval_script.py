@@ -29,7 +29,7 @@ def test_no_live_passes_and_prints_the_summary(tmp_path: Path) -> None:
     proc, data = run(tmp_path, "--no-live", "--pytest-exit", "0", "--prior", "projects=0,rfp=0")
     out = proc.stdout
     assert proc.returncode == 0, out[-4000:] + proc.stderr[-3000:]
-    assert "======== PHASE 14 SUMMARY (paste this block) ========" in out and "status: PASS" in out
+    assert "======== PHASE 14 SUMMARY ========" in out and "status: PASS" in out
     assert "prior_steps: projects=0 rfp=0" in out
     assert "gold: items=32 pairs=16 fa=16 en=16 answered=28 refusals=4 phase8=10/10 new_pairs=6 problems=0" in out
     assert "calibration: base=14 derived=28 total=42" in out

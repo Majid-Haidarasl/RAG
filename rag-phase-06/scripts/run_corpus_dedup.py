@@ -38,7 +38,7 @@ from rag_core.shared_kernel.identifiers import DocumentId  # noqa: E402
 
 KIT = "rag-core 0.5.1 (phase 5)"
 FORMATS = (".docx", ".doc", ".pdf")
-SEPARATOR_START = "======== PHASE 5 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 5 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 5 SUMMARY ========"
 UPDATE_DOC = "AR-HW-012"
 CORPUS_EFFECTIVE = date(2024, 10, 1)  # catalog: 1403-07 / 2024-10

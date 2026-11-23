@@ -58,7 +58,7 @@ from rag_core.rag.infrastructure.ollama import (  # noqa: E402
 from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 8 rag + qa)"
-SEPARATOR_START = "======== PHASE 8 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 8 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 8 SUMMARY ========"
 
 

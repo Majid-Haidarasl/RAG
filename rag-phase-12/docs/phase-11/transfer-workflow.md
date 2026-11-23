@@ -97,7 +97,7 @@ Re-run check (scratch database, every run): run the cycle twice — the second r
 
 ## 8. Summary block and checks
 
-`scripts/run_transfer_check.py` prints `======== PHASE 11 SUMMARY (paste this block) ========` … `======== END PHASE 11 SUMMARY ========` and writes `results/phase-11/transfer-check-<UTC>.json`.
+`scripts/run_transfer_check.py` prints `======== PHASE 11 SUMMARY ========` … `======== END PHASE 11 SUMMARY ========` and writes `results/phase-11/transfer-check-<UTC>.json`.
 
 Checks (all must be ok for PASS): `pytest`, `prior_steps` (ingest, dedup, hierarchy, issues, rag, ike, judge), `registry_loaded`, `records_built`, `plan_bottom_up`, `detail_levels_match_registry`, `packages_built`, `packages_grounded`, `packages_accepted`, `l0_required_fields`, `word_limits`, `negative_controls_rejected`, `store_idempotent`, `update_revision_history`, `csv_round_trip`.
 

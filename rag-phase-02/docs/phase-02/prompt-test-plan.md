@@ -93,7 +93,7 @@ All data comes from the ArmanRayan corpus v1.0. See `experiments/phase-02/data/R
 
 1. Run `bash setup.sh`. It runs the unit tests and the environment check.
 2. Run `run_all.py --quick` to catch setup problems. Then run the full `run_all.py` with the GPU otherwise idle.
-3. Send back the copy-paste block and `phase02-results-<run>.zip`.
+3. Keep the summary block and `phase02-results-<run>.zip` with the run notes.
 4. Human review:
    - Read `llm_runs.jsonl` for decompositions (MP-04), summaries (MP-03) and every failed QA case.
    - Mark each one accept or reject and give a reason.

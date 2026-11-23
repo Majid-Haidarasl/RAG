@@ -102,7 +102,7 @@ cd ~/Desktop/RAG
 bash scripts/setup_and_test.sh
 ```
 
-ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱، پروژه‌های فاز ۱۲ و در آخر RFP فاز ۱۳. آخرین بلوک بین دو خط `======== PHASE 13 SUMMARY (paste this block) ========` و `======== END PHASE 13 SUMMARY ========` چاپ می‌شود. **همان بلوک آخر را کامل کپی کن و بفرست.**
+ترتیب اجرا: `pytest`، فازهای ۴ تا ۷، RAG فاز ۸، IKE فاز ۹، داور فاز ۱۰، انتقال فاز ۱۱، پروژه‌های فاز ۱۲ و در آخر RFP فاز ۱۳. آخرین بلوک بین دو خط `======== PHASE 13 SUMMARY ========` و `======== END PHASE 13 SUMMARY ========` چاپ می‌شود. عددهای بخش «نتیجه» از همین بلوک برداشته می‌شوند.
 
 اجرای جدا:
 
@@ -140,7 +140,7 @@ python scripts/run_rfp_check.py --no-live  # فقط بخش آفلاین
 اجرا: ۲ آذر ۱۴۰۵، حدود ساعت ۲۳:۱۹ به وقت تهران، روی Fedora Linux با پایتون 3.15.2، LibreOffice 26.8.3.1، pdftotext 26.08.0 و Ollama 0.40.17 با مدل `qwen3:8b` (همان سخت‌افزار: i5-12400F، ۱۶ گیگابایت RAM، RTX 3060 با ۱۲ گیگابایت). نتیجه: **PASS**، هر ۱۴ بررسی `ok`.
 
 ```text
-======== PHASE 13 SUMMARY (paste this block) ========
+======== PHASE 13 SUMMARY ========
 status: PASS
 kit: rag-core 0.13.0 (phase 13 rfp generation, proposal management)
 python: 3.15.2

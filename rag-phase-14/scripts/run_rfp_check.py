@@ -91,7 +91,7 @@ from rag_core.shared_kernel.errors import DomainError  # noqa: E402
 from rag_core.transfer.infrastructure.sources_acl import document_versions  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 13 rfp generation, proposal management)"
-SEPARATOR_START = "======== PHASE 13 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 13 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 13 SUMMARY ========"
 LOAD_ERRORS = (DomainError, ValueError, KeyError, TypeError, ArithmeticError)
 

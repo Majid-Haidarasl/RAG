@@ -107,7 +107,7 @@ Live step (optional): `qwen3:8b`, think off, JSON format, `num_predict` 768. The
 Run on 2 Azar 1405 at about 22:27 Tehran time (UTC+3:30) on Fedora Linux, Python 3.15.2, i5-12400F, 16 GB RAM, RTX 3060 12 GB, Ollama with `qwen3:8b`. Status **PASS**, all 14 checks ok.
 
 ```text
-======== PHASE 12 SUMMARY (paste this block) ========
+======== PHASE 12 SUMMARY ========
 status: PASS
 kit: rag-core 0.12.0 (phase 12 projects, research gaps, prioritization)
 python: 3.15.2

@@ -99,7 +99,7 @@ from rag_core.shared_kernel.errors import DomainError  # noqa: E402
 from rag_core.transfer.infrastructure.sources_acl import document_versions  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 12 projects, research gaps, prioritization)"
-SEPARATOR_START = "======== PHASE 12 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 12 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 12 SUMMARY ========"
 TOP_K = 8
 LANGS = ("fa", "en")

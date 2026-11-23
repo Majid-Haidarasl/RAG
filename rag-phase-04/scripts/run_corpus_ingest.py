@@ -23,7 +23,7 @@ from rag_core.ingestion.domain.model import IngestedDocument  # noqa: E402
 
 
 FORMATS = (".docx", ".doc", ".pdf")
-SEPARATOR_START = "======== PHASE 4 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 4 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 4 SUMMARY ========"
 
 

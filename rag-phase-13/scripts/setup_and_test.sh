@@ -33,7 +33,7 @@ else
 fi
 OLLAMA_HINT="ollama pull bge-m3 && ollama pull qwen3:8b"
 
-separator_start="======== PHASE 13 SUMMARY (paste this block) ========"
+separator_start="======== PHASE 13 SUMMARY ========"
 separator_end="======== END PHASE 13 SUMMARY ========"
 
 fail_summary() {

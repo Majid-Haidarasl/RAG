@@ -22,7 +22,7 @@ SOFFICE_HINT="sudo apt install -y libreoffice-writer --no-install-recommends"
 POPPLER_HINT="sudo apt install -y poppler-utils"
 OLLAMA_HINT="ollama pull bge-m3 && ollama pull qwen3:8b"
 
-separator_start="======== PHASE 10 SUMMARY (paste this block) ========"
+separator_start="======== PHASE 10 SUMMARY ========"
 separator_end="======== END PHASE 10 SUMMARY ========"
 
 fail_summary() {

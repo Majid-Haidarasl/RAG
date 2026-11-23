@@ -72,7 +72,7 @@ from rag_core.rag.infrastructure.ollama import (  # noqa: E402
 from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
 
 KIT = f"rag-core {__version__} (phase 9 executors + ike)"
-SEPARATOR_START = "======== PHASE 9 SUMMARY (paste this block) ========"
+SEPARATOR_START = "======== PHASE 9 SUMMARY ========"
 SEPARATOR_END = "======== END PHASE 9 SUMMARY ========"
 CASE = "AR-ISS-024"
 TOP_K = 8
