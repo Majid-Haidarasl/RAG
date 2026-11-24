@@ -16,9 +16,17 @@ pytestmark = pytest.mark.rag
 
 
 def test_grounded_answer_requires_citation() -> None:
-    session = RetrievalSession(RetrievalQuery("زمان پاسخ اولویت ۱؟", NodeIdentifier("N-SW-SUP"), LanguageCode.FA))
+    session = RetrievalSession(
+        RetrievalQuery(
+            "زمان پاسخ اولویت ۱؟", NodeIdentifier("N-SW-SUP"), LanguageCode.FA
+        )
+    )
     session.record_hits(
-        [RetrievedChunk("c1", "AR-SW-022", SimilarityScore(0.91), "۳۰ دقیقه", allowed=True)]
+        [
+            RetrievedChunk(
+                "c1", "AR-SW-022", SimilarityScore(0.91), "۳۰ دقیقه", allowed=True
+            )
+        ]
     )
     with pytest.raises(InvariantError, match="citation"):
         session.ground("۳۰ دقیقه", [])
@@ -30,10 +38,14 @@ def test_grounded_answer_requires_citation() -> None:
 
 
 def test_session_drops_disallowed_chunks_and_can_abstain() -> None:
-    session = RetrievalSession(RetrievalQuery("حقوق پرسنل؟", NodeIdentifier("N-HW-SAL")))
+    session = RetrievalSession(
+        RetrievalQuery("حقوق پرسنل؟", NodeIdentifier("N-HW-SAL"))
+    )
     session.record_hits(
         [
-            RetrievedChunk("hr", "AR-EXE-023", SimilarityScore(0.8), "salary", allowed=False),
+            RetrievedChunk(
+                "hr", "AR-EXE-023", SimilarityScore(0.8), "salary", allowed=False
+            ),
         ]
     )
     assert session.hits == []

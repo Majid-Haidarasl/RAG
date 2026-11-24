@@ -50,10 +50,14 @@ def id_checklist(required: Sequence[str]) -> str:
 def retry_note(missing: Sequence[str], language: str) -> str:
     ids = ", ".join(missing)
     if language == "fa":
-        return (f"در پاسخ قبلی این شناسه‌ها نیامده بود: {ids}. همان شیء JSON را دوباره بنویس و هر شناسهٔ الزامی را "
-                "دقیقاً به همان شکل در متن بیاور. عدد یا شناسهٔ تازه‌ای اضافه نکن.")
-    return (f"Your previous reply did not name these ids: {ids}. Write the same JSON object again and put every "
-            "required id in the text exactly as listed. Do not add new numbers or ids.")
+        return (
+            f"در پاسخ قبلی این شناسه‌ها نیامده بود: {ids}. همان شیء JSON را دوباره بنویس و هر شناسهٔ الزامی را "
+            "دقیقاً به همان شکل در متن بیاور. عدد یا شناسهٔ تازه‌ای اضافه نکن."
+        )
+    return (
+        f"Your previous reply did not name these ids: {ids}. Write the same JSON object again and put every "
+        "required id in the text exactly as listed. Do not add new numbers or ids."
+    )
 
 
 @dataclass(frozen=True)
@@ -77,10 +81,21 @@ class IdRun:
         return self.expected > 0 and self.mentioned == self.expected
 
     def to_dict(self) -> dict[str, object]:
-        return {"task": self.task, "subject": self.subject, "language": self.language, "variant": self.variant,
-                "mentioned": f"{self.mentioned}/{self.expected}", "all_ids": self.all_ids, "grounded": self.grounded,
-                "invented": list(self.invented), "accepted": self.accepted, "attempts": self.attempts,
-                "seconds": round(self.seconds, 3), "error": self.error, "rule_total": self.rule_total}
+        return {
+            "task": self.task,
+            "subject": self.subject,
+            "language": self.language,
+            "variant": self.variant,
+            "mentioned": f"{self.mentioned}/{self.expected}",
+            "all_ids": self.all_ids,
+            "grounded": self.grounded,
+            "invented": list(self.invented),
+            "accepted": self.accepted,
+            "attempts": self.attempts,
+            "seconds": round(self.seconds, 3),
+            "error": self.error,
+            "rule_total": self.rule_total,
+        }
 
 
 def summarize_id_runs(rows: Iterable[IdRun]) -> dict[str, dict[str, object]]:
@@ -101,7 +116,9 @@ def summarize_id_runs(rows: Iterable[IdRun]) -> dict[str, dict[str, object]]:
             "grounded": sum(1 for r in runs if r.grounded),
             "invented_ids": sum(len(r.invented) for r in runs),
             "accepted": sum(1 for r in runs if r.accepted),
-            "accept_rate": round(sum(1 for r in runs if r.accepted) / n, 3) if n else None,
+            "accept_rate": round(sum(1 for r in runs if r.accepted) / n, 3)
+            if n
+            else None,
             "retries": sum(r.attempts - 1 for r in runs),
             "seconds_avg": round(sum(r.seconds for r in runs) / n, 3) if n else None,
         }

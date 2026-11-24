@@ -26,4 +26,3 @@ class InMemoryKnowledgeItemRepository:
 
     def all(self) -> list[KnowledgeItem]:
         return list(self._items.values())
-

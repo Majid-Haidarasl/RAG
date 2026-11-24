@@ -72,7 +72,9 @@ def test_rfp_id() -> None:
 
 def test_knowledge_item_id_prefers_document_shape() -> None:
     item = KnowledgeItemId("ar-fin-008")
-    assert item.value == "AR-FIN-008" and item.as_document_id() == DocumentId("AR-FIN-008")
+    assert item.value == "AR-FIN-008" and item.as_document_id() == DocumentId(
+        "AR-FIN-008"
+    )
     assert KnowledgeItemId("KI-ALPHA.1").value == "KI-ALPHA.1"
 
 
@@ -98,7 +100,9 @@ def test_layer_index_code_and_adjacency() -> None:
     assert not LayerIndex(1).is_adjacent_parent_of(LayerIndex(3))
 
 
-@pytest.mark.parametrize(("value", "code"), [(" Farsi ", LanguageCode.FA), ("ENG", LanguageCode.EN)])
+@pytest.mark.parametrize(
+    ("value", "code"), [(" Farsi ", LanguageCode.FA), ("ENG", LanguageCode.EN)]
+)
 def test_language_aliases(value: str, code: LanguageCode) -> None:
     assert LanguageCode.parse(value) is code
 
@@ -110,5 +114,12 @@ def test_language_rejects(value: object) -> None:
 
 
 def test_confidentiality_values_and_error_hierarchy() -> None:
-    assert {c.value for c in Confidentiality} == {"restricted", "internal", "per_item", "public"}
-    assert issubclass(InvariantError, DomainError) and issubclass(NotFoundError, DomainError)
+    assert {c.value for c in Confidentiality} == {
+        "restricted",
+        "internal",
+        "per_item",
+        "public",
+    }
+    assert issubclass(InvariantError, DomainError) and issubclass(
+        NotFoundError, DomainError
+    )

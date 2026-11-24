@@ -20,8 +20,12 @@ from tests.fixtures.issues.seed import samples, seed_issues
 pytestmark = [pytest.mark.issues, pytest.mark.issue_model]
 
 
-def _profile(key="Q", text="", nodes=(), docs=(), category=None, contract=None) -> IssueProfile:
-    return IssueProfile(key, "issue", text, frozenset(nodes), frozenset(docs), category, contract)
+def _profile(
+    key="Q", text="", nodes=(), docs=(), category=None, contract=None
+) -> IssueProfile:
+    return IssueProfile(
+        key, "issue", text, frozenset(nodes), frozenset(docs), category, contract
+    )
 
 
 def test_thresholds_are_the_documented_values() -> None:
@@ -64,8 +68,21 @@ def test_persian_duplicate_matches_bilingual_record_through_its_persian_text() -
 
 def test_metadata_alone_never_makes_a_duplicate() -> None:
     comparator = IssueComparator()
-    q = _profile(text="alpha beta", nodes={"N-SW-WIN"}, docs={"AR-SW-019"}, category="software", contract="AR-CNT-1402-118")
-    o = _profile("O", text="gamma delta", nodes={"N-SW-WIN"}, docs={"AR-SW-019"}, category="software", contract="AR-CNT-1402-118")
+    q = _profile(
+        text="alpha beta",
+        nodes={"N-SW-WIN"},
+        docs={"AR-SW-019"},
+        category="software",
+        contract="AR-CNT-1402-118",
+    )
+    o = _profile(
+        "O",
+        text="gamma delta",
+        nodes={"N-SW-WIN"},
+        docs={"AR-SW-019"},
+        category="software",
+        contract="AR-CNT-1402-118",
+    )
     b = comparator.score(q, o)
     assert b.meta == 1.0 and b.text == 0.0
     assert comparator.label(b) is MatchLabel.RELATED
@@ -74,24 +91,36 @@ def test_metadata_alone_never_makes_a_duplicate() -> None:
 def test_identical_text_and_metadata_is_a_duplicate() -> None:
     comparator = IssueComparator()
     q = _profile(text="windows client driver mismatch", nodes={"N-SW-WIN"})
-    b = comparator.score(q, _profile("O", text="windows client driver mismatch", nodes={"N-SW-WIN"}))
+    b = comparator.score(
+        q, _profile("O", text="windows client driver mismatch", nodes={"N-SW-WIN"})
+    )
     assert b.score == 1.0 and comparator.label(b) is MatchLabel.DUPLICATE
 
 
 def test_empty_metadata_fields_are_skipped_not_counted_as_zero() -> None:
     comparator = IssueComparator()
-    b = comparator.score(_profile(text="a1 b2", nodes={"N-SW"}), _profile("O", text="zz yy", nodes={"N-SW"}))
+    b = comparator.score(
+        _profile(text="a1 b2", nodes={"N-SW"}),
+        _profile("O", text="zz yy", nodes={"N-SW"}),
+    )
     assert b.documents is None and b.contract is None and b.category is None
     assert b.meta == 1.0
 
 
 def test_one_sided_contract_counts_as_mismatch() -> None:
-    b = IssueComparator().score(_profile(text="x1", contract="AR-CNT-1402-118"), _profile("O", text="x1"))
+    b = IssueComparator().score(
+        _profile(text="x1", contract="AR-CNT-1402-118"), _profile("O", text="x1")
+    )
     assert b.contract == 0.0
 
 
 def test_unrelated_issue_is_new() -> None:
-    q = Issue.create(IssueId("AR-ISS-070"), "Office chair procurement for reception", NodeIdentifier("N-ADM-SRV"), category=IssueCategory.PROCUREMENT)
+    q = Issue.create(
+        IssueId("AR-ISS-070"),
+        "Office chair procurement for reception",
+        NodeIdentifier("N-ADM-SRV"),
+        category=IssueCategory.PROCUREMENT,
+    )
     result = IssueComparator().compare(q, seed_issues())
     assert result.label is MatchLabel.NEW
     assert result.by_label(MatchLabel.DUPLICATE) == []
@@ -107,14 +136,18 @@ def test_ranking_is_deterministic_and_order_independent() -> None:
     q = issue_from_sample(samples()[1])
     a = IssueComparator().compare(q, seed_issues())
     b = IssueComparator().compare(q, list(reversed(seed_issues())))
-    assert [(c.key, c.score) for c in a.candidates] == [(c.key, c.score) for c in b.candidates]
+    assert [(c.key, c.score) for c in a.candidates] == [
+        (c.key, c.score) for c in b.candidates
+    ]
     scores = [c.score for c in a.candidates]
     assert scores == sorted(scores, reverse=True)
 
 
 def test_subissues_can_be_excluded() -> None:
     q = issue_from_sample(samples()[1])
-    result = IssueComparator(ComparisonConfig(include_subissues=False)).compare(q, seed_issues())
+    result = IssueComparator(ComparisonConfig(include_subissues=False)).compare(
+        q, seed_issues()
+    )
     assert all(c.kind == "issue" for c in result.candidates)
     assert result.best.key == "AR-ISS-024"
 
@@ -127,8 +160,10 @@ def test_query_and_its_own_subissues_are_excluded() -> None:
 
 def test_closed_duplicate_is_folded_into_its_canonical_issue() -> None:
     q = Issue.create(
-        IssueId("AR-ISS-071"), "Outbound recording is slow while one station still works",
-        NodeIdentifier("N-SW-SUP"), affected_nodes=(NodeIdentifier("N-SW-WIN"),),
+        IssueId("AR-ISS-071"),
+        "Outbound recording is slow while one station still works",
+        NodeIdentifier("N-SW-SUP"),
+        affected_nodes=(NodeIdentifier("N-SW-WIN"),),
     )
     result = IssueComparator().compare(q, seed_issues())
     keys = [c.key for c in result.candidates]
@@ -137,15 +172,21 @@ def test_closed_duplicate_is_folded_into_its_canonical_issue() -> None:
 
 
 def test_top_k_limits_candidates() -> None:
-    result = IssueComparator(ComparisonConfig(top_k=2)).compare(issue_from_sample(samples()[0]), seed_issues())
+    result = IssueComparator(ComparisonConfig(top_k=2)).compare(
+        issue_from_sample(samples()[0]), seed_issues()
+    )
     assert len(result.candidates) == 2
 
 
 def test_minhash_prefilter_does_not_change_the_result() -> None:
     q = issue_from_sample(samples()[0])
     plain = IssueComparator().compare(q, seed_issues())
-    filtered = IssueComparator(ComparisonConfig(prefilter_min_candidates=1)).compare(q, seed_issues())
-    assert plain.best.key == filtered.best.key and plain.best.score == filtered.best.score
+    filtered = IssueComparator(ComparisonConfig(prefilter_min_candidates=1)).compare(
+        q, seed_issues()
+    )
+    assert (
+        plain.best.key == filtered.best.key and plain.best.score == filtered.best.score
+    )
 
 
 class FakeEmbedder:
@@ -156,12 +197,17 @@ class FakeEmbedder:
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         self.calls += 1
-        return [[1.0 if "windows" in t.lower() or "ویندوز" in t else 0.0, 1.0] for t in texts]
+        return [
+            [1.0 if "windows" in t.lower() or "ویندوز" in t else 0.0, 1.0]
+            for t in texts
+        ]
 
 
 def test_optional_embedding_port_adds_a_semantic_component() -> None:
     fake = FakeEmbedder()
-    result = IssueComparator(embedder=fake).compare(issue_from_sample(samples()[1]), seed_issues())
+    result = IssueComparator(embedder=fake).compare(
+        issue_from_sample(samples()[1]), seed_issues()
+    )
     assert fake.calls == 1
     best = result.best
     assert best.breakdown.semantic is not None and 0.0 <= best.breakdown.semantic <= 1.0
@@ -169,5 +215,7 @@ def test_optional_embedding_port_adds_a_semantic_component() -> None:
 
 
 def test_without_embedder_semantic_is_none() -> None:
-    best = IssueComparator().compare(issue_from_sample(samples()[1]), seed_issues()).best
+    best = (
+        IssueComparator().compare(issue_from_sample(samples()[1]), seed_issues()).best
+    )
     assert best.breakdown.semantic is None

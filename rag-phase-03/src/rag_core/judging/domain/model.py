@@ -66,14 +66,21 @@ class JudgeEvaluation:
     events: list[DomainEvent] = field(default_factory=list)
 
     @classmethod
-    def from_raw(cls, raw_output: str, rubric: JudgeRubric | None = None) -> JudgeEvaluation:
+    def from_raw(
+        cls, raw_output: str, rubric: JudgeRubric | None = None
+    ) -> JudgeEvaluation:
         rubric = rubric or JudgeRubric("default")
         score = parse_judge_output(raw_output)
         verdict = rubric.threshold.verdict(score)
-        evaluation = cls(rubric=rubric, raw_output=raw_output, score=score, verdict=verdict)
+        evaluation = cls(
+            rubric=rubric, raw_output=raw_output, score=score, verdict=verdict
+        )
         if verdict is Verdict.FAIL:
             evaluation.events.append(
-                DomainEvent("JudgeScoreBelowThreshold", {"score": score.value, "minimum": rubric.threshold.minimum})
+                DomainEvent(
+                    "JudgeScoreBelowThreshold",
+                    {"score": score.value, "minimum": rubric.threshold.minimum},
+                )
             )
         return evaluation
 

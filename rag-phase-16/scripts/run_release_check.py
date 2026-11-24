@@ -46,7 +46,12 @@ from rag_core.quality.application.services import (  # noqa: E402
     newest_eval_result,
     readiness,
 )
-from rag_core.quality.domain.checklist import by_phase, checklist_problems, phase_status, status_counts  # noqa: E402
+from rag_core.quality.domain.checklist import (
+    by_phase,
+    checklist_problems,
+    phase_status,
+    status_counts,
+)  # noqa: E402
 from rag_core.quality.domain.release import (  # noqa: E402
     DocRequirement,
     changelog_problems,
@@ -58,7 +63,10 @@ from rag_core.quality.domain.release import (  # noqa: E402
     version_problems,
 )
 from rag_core.quality.infrastructure.checklist_yaml import load_deliverables  # noqa: E402
-from rag_core.quality.infrastructure.release_config import ReleaseCheckSettings, load_release_settings  # noqa: E402
+from rag_core.quality.infrastructure.release_config import (
+    ReleaseCheckSettings,
+    load_release_settings,
+)  # noqa: E402
 from rag_core.quality.infrastructure.release_files import (  # noqa: E402
     evidence_matches,
     kit_texts,
@@ -81,43 +89,89 @@ def find_root(explicit: Path | None) -> Path:
     if explicit is not None:
         return explicit.resolve()
     for cand in (Path.cwd().resolve(), ROOT_CANDIDATE):
-        if (cand / "pyproject.toml").is_file() and (cand / "config" / "release.yaml").is_file():
+        if (cand / "pyproject.toml").is_file() and (
+            cand / "config" / "release.yaml"
+        ).is_file():
             return cand
     return ROOT_CANDIDATE
 
 
-def negative_controls(rset: ReleaseCheckSettings, found_versions: dict[str, str | None]) -> dict[str, Any]:
+def negative_controls(
+    rset: ReleaseCheckSettings, found_versions: dict[str, str | None]
+) -> dict[str, Any]:
     """Each control plants one known fault; the check must catch every one."""
     phrases = list(rset.scan.phrases)
-    planted = [(f"planted/{i}.md", f"# Notes\n\nfirst line\nsee {p.upper()} below\n") for i, p in enumerate(phrases)]
+    planted = [
+        (f"planted/{i}.md", f"# Notes\n\nfirst line\nsee {p.upper()} below\n")
+        for i, p in enumerate(phrases)
+    ]
     hits = scan_texts(planted, phrases)
     caught_phrases = len({h.path for h in hits})
     req = rset.docs[0] if rset.docs else DocRequirement("README.md", 400, ("x",))
     short_doc = not check_doc(req, "# Title\n").ok
     missing_doc = not check_doc(req, None).ok
-    wrong_version = bool(version_problems(rset.version, {**found_versions, "planted": "0.0.1"}))
+    wrong_version = bool(
+        version_problems(rset.version, {**found_versions, "planted": "0.0.1"})
+    )
     old_log = "# Changelog\n\n## [0.15.0]\n- quality\n"
     changelog = bool(changelog_problems(old_log, rset.changelog.versions, rset.version))
     few = ["[Content_Types].xml", "ppt/presentation.xml", "ppt/slides/slide1.xml"]
-    deck = bool(presentation_problems(few, rset.presentation.min_slides, rset.presentation.max_slides))
-    ok = (bool(phrases) and caught_phrases == len(phrases) and short_doc and missing_doc and wrong_version
-          and changelog and deck)
-    return {"ok": ok, "phrases": f"{caught_phrases}/{len(phrases)}", "short_doc": short_doc,
-            "missing_doc": missing_doc, "wrong_version": wrong_version, "changelog": changelog, "deck": deck}
+    deck = bool(
+        presentation_problems(
+            few, rset.presentation.min_slides, rset.presentation.max_slides
+        )
+    )
+    ok = (
+        bool(phrases)
+        and caught_phrases == len(phrases)
+        and short_doc
+        and missing_doc
+        and wrong_version
+        and changelog
+        and deck
+    )
+    return {
+        "ok": ok,
+        "phrases": f"{caught_phrases}/{len(phrases)}",
+        "short_doc": short_doc,
+        "missing_doc": missing_doc,
+        "wrong_version": wrong_version,
+        "changelog": changelog,
+        "deck": deck,
+    }
 
 
 def report_markdown(payload: dict[str, Any]) -> str:
-    lines = [f"# Phase 16 release check — {payload['run_at']}", "", f"Status: **{payload['status']}**", "",
-             "| Check | Result |", "|---|---|"]
-    lines += [f"| {k} | {'ok' if v else 'FAIL'} |" for k, v in payload["checks"].items()]
+    lines = [
+        f"# Phase 16 release check — {payload['run_at']}",
+        "",
+        f"Status: **{payload['status']}**",
+        "",
+        "| Check | Result |",
+        "|---|---|",
+    ]
+    lines += [
+        f"| {k} | {'ok' if v else 'FAIL'} |" for k, v in payload["checks"].items()
+    ]
     lines += ["", "## Documents", "", "| File | Result |", "|---|---|"]
     lines += [f"| `{d['path']}` | {d['reason']} |" for d in payload["docs"]]
     lines += ["", "## Evidence", "", "| Step | Files | Newest |", "|---|---|---|"]
-    lines += [f"| {e['name']} | {e['count']} | `{e['newest'] or '-'}` |" for e in payload["evidence"]]
-    lines += ["", "## Evaluation defaults", "", "| Kind | Expected | Configured | Measured | Agrees |",
-              "|---|---|---|---|---|"]
-    lines += [f"| {c['kind']} | {c['expected']} | {c['configured']} | {c['measured'] or '-'} | "
-              f"{'-' if c['agrees'] is None else ('yes' if c['agrees'] else 'no')} |" for c in payload["choices"]]
+    lines += [
+        f"| {e['name']} | {e['count']} | `{e['newest'] or '-'}` |"
+        for e in payload["evidence"]
+    ]
+    lines += [
+        "",
+        "## Evaluation defaults",
+        "",
+        "| Kind | Expected | Configured | Measured | Agrees |",
+        "|---|---|---|---|---|",
+    ]
+    lines += [
+        f"| {c['kind']} | {c['expected']} | {c['configured']} | {c['measured'] or '-'} | "
+        f"{'-' if c['agrees'] is None else ('yes' if c['agrees'] else 'no')} |"
+        for c in payload["choices"]
+    ]
     return "\n".join(lines) + "\n"
 
 
@@ -125,10 +179,24 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     parser = argparse.ArgumentParser(description="Phase 16 release check.")
     parser.add_argument("--root", type=Path, default=None)
     parser.add_argument("--config", type=Path, default=None, help="config/release.yaml")
-    parser.add_argument("--eval-config", type=Path, default=None, help="config/eval.yaml")
-    parser.add_argument("--phase14-results", type=Path, default=None, help="folder with phase-14-check-*.json")
-    parser.add_argument("--phase15-results", type=Path, default=None, help="folder with quality-check-*.json")
-    parser.add_argument("--out", type=Path, default=None, help="folder for release-check-*.json")
+    parser.add_argument(
+        "--eval-config", type=Path, default=None, help="config/eval.yaml"
+    )
+    parser.add_argument(
+        "--phase14-results",
+        type=Path,
+        default=None,
+        help="folder with phase-14-check-*.json",
+    )
+    parser.add_argument(
+        "--phase15-results",
+        type=Path,
+        default=None,
+        help="folder with quality-check-*.json",
+    )
+    parser.add_argument(
+        "--out", type=Path, default=None, help="folder for release-check-*.json"
+    )
     for name in ("passed", "failed", "errors", "skipped", "exit", "line"):
         parser.add_argument(f"--pytest-{name}", default=None)
     parser.add_argument("--python-version", default=None)
@@ -137,7 +205,9 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
 
     root = find_root(args.root)
     rset = load_release_settings(args.config or root / "config" / "release.yaml")
-    eset: EvalSettings = load_eval_settings(args.eval_config or root / "config" / "eval.yaml")
+    eset: EvalSettings = load_eval_settings(
+        args.eval_config or root / "config" / "eval.yaml"
+    )
     out_dir = args.out or root / "results" / "phase-16"
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -164,10 +234,15 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     hits = scan_texts(texts, rset.scan.phrases) if rset.scan.phrases else []
     log_text = read_text(root, rset.changelog.path)
     log_versions = changelog_versions(log_text or "")
-    log_problems = (changelog_problems(log_text, rset.changelog.versions, rset.version)
-                    if log_text is not None else ["missing"])
+    log_problems = (
+        changelog_problems(log_text, rset.changelog.versions, rset.version)
+        if log_text is not None
+        else ["missing"]
+    )
     names = zip_names(root / rset.presentation.path)
-    deck_problems = presentation_problems(names, rset.presentation.min_slides, rset.presentation.max_slides)
+    deck_problems = presentation_problems(
+        names, rset.presentation.min_slides, rset.presentation.max_slides
+    )
     source_ok = (root / rset.presentation.source).is_file()
     controls = negative_controls(rset, found_versions)
 
@@ -175,8 +250,14 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     evidence = []
     for item in rset.evidence:
         files = evidence_matches(root, item.pattern)
-        evidence.append({"name": item.name, "pattern": item.pattern, "count": len(files),
-                         "newest": files[-1] if files else None})
+        evidence.append(
+            {
+                "name": item.name,
+                "pattern": item.pattern,
+                "count": len(files),
+                "newest": files[-1] if files else None,
+            }
+        )
     evidence_missing = [e["name"] for e in evidence if not e["count"]]
 
     # ---- checklist
@@ -194,9 +275,15 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     # ---- evaluation defaults and the earlier results of this run
     configured = {k: s.variant for k, s in eset.selection.items()}
     expected = rset.eval_expected
-    defaults_wrong = [f"{k}={configured.get(k, '-')}!={v}" for k, v in expected.items() if configured.get(k) != v]
+    defaults_wrong = [
+        f"{k}={configured.get(k, '-')}!={v}"
+        for k, v in expected.items()
+        if configured.get(k) != v
+    ]
     sel_problems = selection_problems(eset.selection, eset.known_variants())
-    p15_path = newest_eval_result(args.phase15_results or root / "results" / "phase-15", "quality-check-*.json")
+    p15_path = newest_eval_result(
+        args.phase15_results or root / "results" / "phase-15", "quality-check-*.json"
+    )
     p14_path = newest_eval_result(args.phase14_results or root / eset.files.results_dir)
     p15: dict[str, Any] | None = None
     p14: dict[str, Any] | None = None
@@ -206,14 +293,19 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     except LOAD_ERRORS as exc:
         errors.append(f"results: {type(exc).__name__}: {exc}")
     choices = choice_checks(p14, expected, configured)
-    live_status = str(((p14 or {}).get("live") or {}).get("status", "missing")) if p14 else "missing"
+    live_status = (
+        str(((p14 or {}).get("live") or {}).get("status", "missing"))
+        if p14
+        else "missing"
+    )
 
     # ---- checks
     prior = parse_prior(args.prior)
     checks = {
         "pytest": args.pytest_exit in (None, "0", 0),
         "prior_steps": all(v == "0" for v in prior.values()),
-        "version_consistent": not wrong_versions and not any(e.startswith("version") for e in errors),
+        "version_consistent": not wrong_versions
+        and not any(e.startswith("version") for e in errors),
         "docs_complete": bool(docs) and not bad_docs,
         "phrase_scan": bool(rset.scan.phrases) and bool(texts) and not hits,
         "negative_controls": bool(controls["ok"]),
@@ -236,30 +328,72 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
         "checks": checks,
         "errors": errors,
         "python": args.python_version,
-        "pytest": {"passed": args.pytest_passed, "failed": args.pytest_failed, "errors": args.pytest_errors,
-                   "skipped": args.pytest_skipped, "exit": args.pytest_exit, "result_line": args.pytest_line},
+        "pytest": {
+            "passed": args.pytest_passed,
+            "failed": args.pytest_failed,
+            "errors": args.pytest_errors,
+            "skipped": args.pytest_skipped,
+            "exit": args.pytest_exit,
+            "result_line": args.pytest_line,
+        },
         "prior_steps": prior,
-        "version": {"expected": rset.version, "found": found_versions, "wrong": wrong_versions},
-        "docs": [{"path": d.path, "ok": d.ok, "chars": d.chars, "reason": d.reason} for d in docs],
-        "phrase_scan": {"files": len(texts), "phrases": len(rset.scan.phrases), "hits": [str(h) for h in hits]},
+        "version": {
+            "expected": rset.version,
+            "found": found_versions,
+            "wrong": wrong_versions,
+        },
+        "docs": [
+            {"path": d.path, "ok": d.ok, "chars": d.chars, "reason": d.reason}
+            for d in docs
+        ],
+        "phrase_scan": {
+            "files": len(texts),
+            "phrases": len(rset.scan.phrases),
+            "hits": [str(h) for h in hits],
+        },
         "negative_controls": controls,
         "changelog": {"versions": log_versions, "problems": log_problems},
-        "presentation": {"path": rset.presentation.path, "slides": slides, "source": source_ok,
-                         "problems": deck_problems},
+        "presentation": {
+            "path": rset.presentation.path,
+            "slides": slides,
+            "source": source_ok,
+            "problems": deck_problems,
+        },
         "evidence": evidence,
-        "checklist": {"deliverables": len(items), "counts": counts, "problems": [str(p) for p in problems],
-                      "phases": {str(k): v for k, v in phases.items()}, "planned": planned},
-        "eval_defaults": {"configured": configured, "expected": expected, "wrong": defaults_wrong,
-                          "selection_problems": sel_problems},
-        "phase15": {"file": rel(root, p15_path) if p15_path else None, "status": (p15 or {}).get("status")},
-        "phase14": {"file": rel(root, p14_path) if p14_path else None, "status": (p14 or {}).get("status"),
-                    "live": live_status},
+        "checklist": {
+            "deliverables": len(items),
+            "counts": counts,
+            "problems": [str(p) for p in problems],
+            "phases": {str(k): v for k, v in phases.items()},
+            "planned": planned,
+        },
+        "eval_defaults": {
+            "configured": configured,
+            "expected": expected,
+            "wrong": defaults_wrong,
+            "selection_problems": sel_problems,
+        },
+        "phase15": {
+            "file": rel(root, p15_path) if p15_path else None,
+            "status": (p15 or {}).get("status"),
+        },
+        "phase14": {
+            "file": rel(root, p14_path) if p14_path else None,
+            "status": (p14 or {}).get("status"),
+            "live": live_status,
+        },
         "choices": [c.to_dict() for c in choices],
         "readiness": ready.to_dict(),
-        "release": {"tag": rset.tag, "title": rset.title, "plan": "set on the pushed Phase 16 commit"},
+        "release": {
+            "tag": rset.tag,
+            "title": rset.title,
+            "plan": "set on the pushed Phase 16 commit",
+        },
         "timings": {"total_s": round(time.perf_counter() - t0, 2)},
     }
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
+    )
     out_md.write_text(report_markdown(payload), encoding="utf-8")
 
     # ---- summary block
@@ -273,37 +407,76 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     print("prior_steps: " + (" ".join(f"{k}={v}" for k, v in prior.items()) or "none"))
     if errors:
         print("errors: " + " | ".join(errors))
-    print(f"version: {rset.version} places={len(found_versions) - len(wrong_versions)}/{len(found_versions)}"
-          + (f" wrong={','.join(wrong_versions)}" if wrong_versions else ""))
-    print(f"docs: complete={len(docs) - len(bad_docs)}/{len(docs)}"
-          + (" problems=" + ",".join(f"{d.path}:{d.reason}" for d in bad_docs[:5]) if bad_docs else ""))
-    print(f"phrase_scan: files={len(texts)} phrases={len(rset.scan.phrases)} hits={len(hits)}"
-          + (" first=" + ",".join(str(h) for h in hits[:3]) if hits else ""))
-    print(f"negative_controls: phrases={controls['phrases']} short_doc={'caught' if controls['short_doc'] else 'MISSED'} "
-          f"missing_doc={'caught' if controls['missing_doc'] else 'MISSED'} "
-          f"wrong_version={'caught' if controls['wrong_version'] else 'MISSED'} "
-          f"changelog={'caught' if controls['changelog'] else 'MISSED'} deck={'caught' if controls['deck'] else 'MISSED'}")
-    print(f"changelog: versions={len(log_versions)} newest={log_versions[0] if log_versions else '-'} "
-          f"problems={len(log_problems)}" + (f" first={log_problems[0]}" if log_problems else ""))
-    print(f"presentation: {rset.presentation.path} slides={slides} source={'yes' if source_ok else 'no'} "
-          f"problems={len(deck_problems)}" + (f" first={deck_problems[0]}" if deck_problems else ""))
-    print(f"evidence: present={len(evidence) - len(evidence_missing)}/{len(evidence)}"
-          + (f" missing={','.join(evidence_missing)}" if evidence_missing else ""))
-    print(f"checklist: deliverables={len(items)} " + " ".join(f"{k}={v}" for k, v in counts.items())
-          + f" phases={len(phases)} problems={len(problems)}" + (f" first={problems[0]}" if problems else ""))
+    print(
+        f"version: {rset.version} places={len(found_versions) - len(wrong_versions)}/{len(found_versions)}"
+        + (f" wrong={','.join(wrong_versions)}" if wrong_versions else "")
+    )
+    print(
+        f"docs: complete={len(docs) - len(bad_docs)}/{len(docs)}"
+        + (
+            " problems=" + ",".join(f"{d.path}:{d.reason}" for d in bad_docs[:5])
+            if bad_docs
+            else ""
+        )
+    )
+    print(
+        f"phrase_scan: files={len(texts)} phrases={len(rset.scan.phrases)} hits={len(hits)}"
+        + (" first=" + ",".join(str(h) for h in hits[:3]) if hits else "")
+    )
+    print(
+        f"negative_controls: phrases={controls['phrases']} short_doc={'caught' if controls['short_doc'] else 'MISSED'} "
+        f"missing_doc={'caught' if controls['missing_doc'] else 'MISSED'} "
+        f"wrong_version={'caught' if controls['wrong_version'] else 'MISSED'} "
+        f"changelog={'caught' if controls['changelog'] else 'MISSED'} deck={'caught' if controls['deck'] else 'MISSED'}"
+    )
+    print(
+        f"changelog: versions={len(log_versions)} newest={log_versions[0] if log_versions else '-'} "
+        f"problems={len(log_problems)}"
+        + (f" first={log_problems[0]}" if log_problems else "")
+    )
+    print(
+        f"presentation: {rset.presentation.path} slides={slides} source={'yes' if source_ok else 'no'} "
+        f"problems={len(deck_problems)}"
+        + (f" first={deck_problems[0]}" if deck_problems else "")
+    )
+    print(
+        f"evidence: present={len(evidence) - len(evidence_missing)}/{len(evidence)}"
+        + (f" missing={','.join(evidence_missing)}" if evidence_missing else "")
+    )
+    print(
+        f"checklist: deliverables={len(items)} "
+        + " ".join(f"{k}={v}" for k, v in counts.items())
+        + f" phases={len(phases)} problems={len(problems)}"
+        + (f" first={problems[0]}" if problems else "")
+    )
     print("checklist_phases: " + " ".join(f"{k}={v}" for k, v in phases.items()))
-    print("eval_defaults: " + " ".join(f"{k}={configured.get(k, '-')}" for k in expected)
-          + f" expected={len(expected) - len(defaults_wrong)}/{len(expected)} problems={len(sel_problems)}")
-    print(f"phase15_result: {rel(root, p15_path) if p15_path else '-'} status={(p15 or {}).get('status', '-')}")
-    print(f"phase14_result: {rel(root, p14_path) if p14_path else '-'} status={(p14 or {}).get('status', '-')} "
-          f"live={live_status}")
+    print(
+        "eval_defaults: "
+        + " ".join(f"{k}={configured.get(k, '-')}" for k in expected)
+        + f" expected={len(expected) - len(defaults_wrong)}/{len(expected)} problems={len(sel_problems)}"
+    )
+    print(
+        f"phase15_result: {rel(root, p15_path) if p15_path else '-'} status={(p15 or {}).get('status', '-')}"
+    )
+    print(
+        f"phase14_result: {rel(root, p14_path) if p14_path else '-'} status={(p14 or {}).get('status', '-')} "
+        f"live={live_status}"
+    )
     for c in choices:
-        print(f"live_confirm: {c.kind} expected={c.expected} configured={c.configured} measured={c.measured or '-'} "
-              f"agrees={'-' if c.agrees is None else ('yes' if c.agrees else 'NO')}")
-    print(f"readiness: ready={'yes' if ready.ready else 'no'} live_confirmed={confirmed}/{len(choices)}"
-          + (f" advisories={','.join(ready.advisories)}" if ready.advisories else ""))
-    print(f"release: tag={rset.tag} ({rset.title}) on the pushed Phase 16 commit after a PASS")
-    print("checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items()))
+        print(
+            f"live_confirm: {c.kind} expected={c.expected} configured={c.configured} measured={c.measured or '-'} "
+            f"agrees={'-' if c.agrees is None else ('yes' if c.agrees else 'NO')}"
+        )
+    print(
+        f"readiness: ready={'yes' if ready.ready else 'no'} live_confirmed={confirmed}/{len(choices)}"
+        + (f" advisories={','.join(ready.advisories)}" if ready.advisories else "")
+    )
+    print(
+        f"release: tag={rset.tag} ({rset.title}) on the pushed Phase 16 commit after a PASS"
+    )
+    print(
+        "checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items())
+    )
     print(f"results_json: {rel(root, out_json)}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1

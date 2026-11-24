@@ -47,7 +47,9 @@ class SqliteIndexStore:
         self._db.commit()
 
     def get_meta(self, key: str) -> str | None:
-        row = self._db.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
+        row = self._db.execute(
+            "SELECT value FROM meta WHERE key = ?", (key,)
+        ).fetchone()
         return None if row is None else row[0]
 
     # records
@@ -56,7 +58,10 @@ class SqliteIndexStore:
             self._db.execute("DELETE FROM chunks")
             self._db.executemany(
                 "INSERT INTO chunks VALUES (?, ?, ?)",
-                [(r.key, r.content_hash, json.dumps(r.to_dict(), ensure_ascii=False)) for r in records],
+                [
+                    (r.key, r.content_hash, json.dumps(r.to_dict(), ensure_ascii=False))
+                    for r in records
+                ],
             )
 
     def records(self) -> list[ChunkRecord]:
@@ -65,19 +70,28 @@ class SqliteIndexStore:
 
     # vectors
     def vector_fingerprints(self, model: str) -> dict[str, str]:
-        rows = self._db.execute("SELECT key, content_hash FROM vectors WHERE model = ?", (model,)).fetchall()
+        rows = self._db.execute(
+            "SELECT key, content_hash FROM vectors WHERE model = ?", (model,)
+        ).fetchall()
         return {k: h for k, h in rows}
 
-    def put_vectors(self, model: str, items: list[tuple[str, str, list[float]]]) -> None:
+    def put_vectors(
+        self, model: str, items: list[tuple[str, str, list[float]]]
+    ) -> None:
         with self._db:
             self._db.executemany(
                 "INSERT OR REPLACE INTO vectors VALUES (?, ?, ?, ?, ?)",
-                [(key, model, h, len(v), array("f", v).tobytes()) for key, h, v in items],
+                [
+                    (key, model, h, len(v), array("f", v).tobytes())
+                    for key, h, v in items
+                ],
             )
 
     def delete_vectors(self, keys: list[str]) -> None:
         with self._db:
-            self._db.executemany("DELETE FROM vectors WHERE key = ?", [(k,) for k in keys])
+            self._db.executemany(
+                "DELETE FROM vectors WHERE key = ?", [(k,) for k in keys]
+            )
 
     def delete_other_models(self, model: str) -> int:
         with self._db:
@@ -86,7 +100,9 @@ class SqliteIndexStore:
 
     def load_vectors(self, model: str) -> InMemoryVectorIndex:
         index = InMemoryVectorIndex()
-        for key, blob in self._db.execute("SELECT key, vec FROM vectors WHERE model = ? ORDER BY key", (model,)):
+        for key, blob in self._db.execute(
+            "SELECT key, vec FROM vectors WHERE model = ? ORDER BY key", (model,)
+        ):
             vec = array("f")
             vec.frombytes(blob)
             index.upsert(key, vec)

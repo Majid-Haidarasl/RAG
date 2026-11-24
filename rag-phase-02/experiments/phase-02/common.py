@@ -2,6 +2,7 @@
 
 Standard library only. Talks to the local Ollama HTTP API (no internet needed).
 """
+
 from __future__ import annotations
 
 import http.client
@@ -18,8 +19,8 @@ import urllib.request
 from pathlib import Path
 
 KIT_VERSION = "0.2.1"
-HERE = Path(__file__).resolve().parent            # experiments/phase-02
-ROOT = HERE.parent.parent                          # kit root
+HERE = Path(__file__).resolve().parent  # experiments/phase-02
+ROOT = HERE.parent.parent  # kit root
 DATA = HERE / "data"
 RESULTS = HERE / "results"
 CONFIG = ROOT / "config"
@@ -57,10 +58,12 @@ def normalize(text: str) -> str:
     t = t.replace("ي", "ی").replace("ك", "ک").replace("ة", "ه").replace("ۀ", "ه")
     t = t.replace("\u200c", " ").replace("\u200f", "").replace("\u200e", "")
     t = t.replace("٫", ".").replace("ـ", "")
-    t = re.sub(r"(?<=\d)[٬,،'](?=\d{3}(?!\d))", "", t)  # thousands separators incl. Arabic comma U+060C
+    t = re.sub(
+        r"(?<=\d)[٬,،'](?=\d{3}(?!\d))", "", t
+    )  # thousands separators incl. Arabic comma U+060C
     t = re.sub(r"(?<=\d)\s*[٪%]", "%", t)
     t = t.lower()
-    t = re.sub(r"[\u064B-\u0652]", "", t)              # Arabic diacritics
+    t = re.sub(r"[\u064B-\u0652]", "", t)  # Arabic diacritics
     t = re.sub(r"\s+", " ", t)
     return t.strip()
 
@@ -69,7 +72,7 @@ def strip_think(text: str) -> str:
     if not text:
         return ""
     t = _THINK_RE.sub("", text)
-    if "</think>" in t:                                   # unterminated opening tag cases
+    if "</think>" in t:  # unterminated opening tag cases
         t = t.split("</think>", 1)[1]
     return t.strip()
 
@@ -128,7 +131,7 @@ def extract_json(text: str):
                 depth -= 1
                 if depth == 0:
                     try:
-                        return json.loads(t[start:i + 1]), None
+                        return json.loads(t[start : i + 1]), None
                     except Exception as e:
                         return None, f"malformed-json: {e}"[:160]
         return None, "unterminated-json"
@@ -215,7 +218,9 @@ class OllamaError(RuntimeError):
 
 
 class Ollama:
-    def __init__(self, host: str = DEFAULT_HOST, timeout: float = 300, retries: int = 2):
+    def __init__(
+        self, host: str = DEFAULT_HOST, timeout: float = 300, retries: int = 2
+    ):
         self.host = host.rstrip("/")
         self.timeout = timeout
         self.retries = retries
@@ -224,8 +229,9 @@ class Ollama:
     def _req(self, method, path, payload=None, timeout=None, stream=False):
         url = self.host + path
         data = json.dumps(payload).encode("utf-8") if payload is not None else None
-        req = urllib.request.Request(url, data=data, method=method,
-                                     headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(
+            url, data=data, method=method, headers={"Content-Type": "application/json"}
+        )
         return urllib.request.urlopen(req, timeout=timeout or self.timeout)
 
     def _call(self, method, path, payload=None, timeout=None):
@@ -237,11 +243,17 @@ class Ollama:
                     return json.loads(body) if body.strip() else {}
             except urllib.error.HTTPError as e:
                 detail = e.read().decode("utf-8", "replace")[:500]
-                if e.code in (400, 404):                  # not retryable
+                if e.code in (400, 404):  # not retryable
                     raise OllamaError(f"HTTP {e.code} {path}: {detail}") from None
                 last = OllamaError(f"HTTP {e.code} {path}: {detail}")
-            except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError,
-                    http.client.HTTPException, json.JSONDecodeError) as e:
+            except (
+                urllib.error.URLError,
+                socket.timeout,
+                TimeoutError,
+                ConnectionError,
+                http.client.HTTPException,
+                json.JSONDecodeError,
+            ) as e:
                 last = OllamaError(f"{path}: {type(e).__name__}: {e}")
             if attempt < self.retries:
                 time.sleep(2 * (attempt + 1))
@@ -265,16 +277,34 @@ class Ollama:
 
     def embed(self, model, texts, keep_alive="10m", num_ctx=8192):
         t0 = time.perf_counter()
-        r = self._call("POST", "/api/embed", {"model": model, "input": texts, "keep_alive": keep_alive,
-                                              "options": {"num_ctx": num_ctx}})
+        r = self._call(
+            "POST",
+            "/api/embed",
+            {
+                "model": model,
+                "input": texts,
+                "keep_alive": keep_alive,
+                "options": {"num_ctx": num_ctx},
+            },
+        )
         return r.get("embeddings", []), time.perf_counter() - t0, r
 
     def _unload_request(self, model):
         try:
             if "embed" in model or "bge" in model:
-                self._call("POST", "/api/embed", {"model": model, "input": "x", "keep_alive": 0}, timeout=30)
+                self._call(
+                    "POST",
+                    "/api/embed",
+                    {"model": model, "input": "x", "keep_alive": 0},
+                    timeout=30,
+                )
             else:
-                self._call("POST", "/api/generate", {"model": model, "keep_alive": 0}, timeout=30)
+                self._call(
+                    "POST",
+                    "/api/generate",
+                    {"model": model, "keep_alive": 0},
+                    timeout=30,
+                )
         except OllamaError:
             pass
 
@@ -301,14 +331,28 @@ class Ollama:
                 stuck.append(name)
         return stuck
 
-    def chat(self, model, messages, think=None, fmt=None, options=None, keep_alive="10m", timeout=None):
+    def chat(
+        self,
+        model,
+        messages,
+        think=None,
+        fmt=None,
+        options=None,
+        keep_alive="10m",
+        timeout=None,
+    ):
         """Streaming chat. Returns dict with content, thinking, timings and Ollama counters.
 
         think: True/False/None. If the server rejects the `think` field (old Ollama),
         falls back to the qwen3 soft switch (/think or /no_think appended to the last user turn).
         """
-        payload = {"model": model, "messages": messages, "stream": True, "keep_alive": keep_alive,
-                   "options": options or {}}
+        payload = {
+            "model": model,
+            "messages": messages,
+            "stream": True,
+            "keep_alive": keep_alive,
+            "options": options or {},
+        }
         if fmt is not None:
             payload["format"] = fmt
         think_mode = "none"
@@ -334,8 +378,14 @@ class Ollama:
                 if e.code in (400, 404):
                     raise OllamaError(f"HTTP {e.code} /api/chat: {detail}") from None
                 last_err = OllamaError(f"HTTP {e.code} /api/chat: {detail}")
-            except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError,
-                    http.client.HTTPException, json.JSONDecodeError) as e:
+            except (
+                urllib.error.URLError,
+                socket.timeout,
+                TimeoutError,
+                ConnectionError,
+                http.client.HTTPException,
+                json.JSONDecodeError,
+            ) as e:
                 last_err = OllamaError(f"/api/chat: {type(e).__name__}: {e}")
             if attempt < self.retries:
                 time.sleep(2 * (attempt + 1))
@@ -345,8 +395,12 @@ class Ollama:
         t0 = time.perf_counter()
         first_any = first_content = None
         content, thinking, final = [], [], {}
-        inline_think = False   # old servers / soft switch put <think>...</think> inside content
-        with self._req("POST", "/api/chat", payload, timeout=timeout or self.timeout) as r:
+        inline_think = (
+            False  # old servers / soft switch put <think>...</think> inside content
+        )
+        with self._req(
+            "POST", "/api/chat", payload, timeout=timeout or self.timeout
+        ) as r:
             for raw in r:
                 line = raw.decode("utf-8").strip()
                 if not line:
@@ -394,8 +448,12 @@ class Ollama:
             "eval_count": ev_n,
             "prompt_eval_count": pe_n,
             "tokens_per_s": round(ev_n / (ev_d / 1e9), 2) if ev_n and ev_d else None,
-            "prompt_tokens_per_s": round(pe_n / (pe_d / 1e9), 2) if pe_n and pe_d else None,
-            "load_s": round(final.get("load_duration", 0) / 1e9, 3) if final.get("load_duration") else None,
+            "prompt_tokens_per_s": round(pe_n / (pe_d / 1e9), 2)
+            if pe_n and pe_d
+            else None,
+            "load_s": round(final.get("load_duration", 0) / 1e9, 3)
+            if final.get("load_duration")
+            else None,
             "done_reason": final.get("done_reason"),
         }
 
@@ -405,8 +463,12 @@ def nvidia_smi():
     """Return list of GPU dicts or {'error': ...}."""
     q = "name,memory.total,memory.used,utilization.gpu,driver_version,temperature.gpu"
     try:
-        out = subprocess.run(["nvidia-smi", f"--query-gpu={q}", "--format=csv,noheader,nounits"],
-                             capture_output=True, text=True, timeout=10)
+        out = subprocess.run(
+            ["nvidia-smi", f"--query-gpu={q}", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
     except FileNotFoundError:
         return {"error": "nvidia-smi not found"}
     except Exception as e:  # noqa
@@ -417,8 +479,16 @@ def nvidia_smi():
     for line in out.stdout.strip().splitlines():
         p = [x.strip() for x in line.split(",")]
         if len(p) >= 6:
-            gpus.append({"name": p[0], "mem_total_mib": _num(p[1]), "mem_used_mib": _num(p[2]),
-                         "util_pct": _num(p[3]), "driver": p[4], "temp_c": _num(p[5])})
+            gpus.append(
+                {
+                    "name": p[0],
+                    "mem_total_mib": _num(p[1]),
+                    "mem_used_mib": _num(p[2]),
+                    "util_pct": _num(p[3]),
+                    "driver": p[4],
+                    "temp_c": _num(p[5]),
+                }
+            )
     return gpus
 
 
@@ -431,17 +501,25 @@ def _num(x):
 
 def vram_snapshot(client: Ollama, label: str, settle_s: float = 0.0) -> dict:
     if settle_s:
-        time.sleep(settle_s)          # let freed CUDA memory show up in nvidia-smi
+        time.sleep(settle_s)  # let freed CUDA memory show up in nvidia-smi
     ps = client.ps()
     names = [m.get("name") for m in ps]
     return {
         "duplicates": sorted({n for n in names if names.count(n) > 1}),
-        "partially_offloaded": [m.get("name") for m in ps if m.get("size_vram", 0) < m.get("size", 0)],
+        "partially_offloaded": [
+            m.get("name") for m in ps if m.get("size_vram", 0) < m.get("size", 0)
+        ],
         "label": label,
         "time": time.strftime("%H:%M:%S"),
-        "ollama_ps": [{"name": m.get("name"), "size_mb": round(m.get("size", 0) / 2**20),
-                       "size_vram_mb": round(m.get("size_vram", 0) / 2**20),
-                       "context_length": m.get("context_length")} for m in ps],
+        "ollama_ps": [
+            {
+                "name": m.get("name"),
+                "size_mb": round(m.get("size", 0) / 2**20),
+                "size_vram_mb": round(m.get("size_vram", 0) / 2**20),
+                "context_length": m.get("context_length"),
+            }
+            for m in ps
+        ],
         "nvidia_smi": nvidia_smi(),
     }
 

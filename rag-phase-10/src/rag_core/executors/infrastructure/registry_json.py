@@ -24,7 +24,9 @@ def executor_from_record(rec: dict[str, Any]) -> Executor:
         role=rec.get("role_en", ""),
         role_fa=rec.get("role_fa", ""),
         specialty=tuple(rec.get("specialty", [])),
-        knowledge_documents=tuple(DocumentId(d) for d in rec.get("knowledge_documents", [])),
+        knowledge_documents=tuple(
+            DocumentId(d) for d in rec.get("knowledge_documents", [])
+        ),
         outputs=tuple(rec.get("outputs", [])),
         authority_limits=tuple(rec.get("authority_limits", [])),
         aliases=tuple(rec.get("aliases", [])),
@@ -42,4 +44,7 @@ class JsonExecutorRegistry:
         return list(data["executors"])
 
     def load(self, records: list[dict[str, Any]] | None = None) -> list[Executor]:
-        return [executor_from_record(r) for r in (records if records is not None else self.records())]
+        return [
+            executor_from_record(r)
+            for r in (records if records is not None else self.records())
+        ]

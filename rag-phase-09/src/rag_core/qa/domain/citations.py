@@ -34,7 +34,11 @@ class ParsedCitation:
 
     @property
     def label(self) -> str:
-        base = self.document_id if self.order is None else f"{self.document_id} §{self.order}"
+        base = (
+            self.document_id
+            if self.order is None
+            else f"{self.document_id} §{self.order}"
+        )
         return f"{base}/{self.language}" if self.language else base
 
 
@@ -48,8 +52,12 @@ class VerifiedCitation:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "label": self.citation.label, "raw": self.citation.raw, "valid": self.valid,
-            "granularity": self.granularity, "blocks": list(self.block_labels), "reason": self.reason,
+            "label": self.citation.label,
+            "raw": self.citation.raw,
+            "valid": self.valid,
+            "granularity": self.granularity,
+            "blocks": list(self.block_labels),
+            "reason": self.reason,
         }
 
 
@@ -91,20 +99,36 @@ def _matches(block: ContextBlock, cit: ParsedCitation) -> bool:
     return True
 
 
-def verify_citations(citations: list[ParsedCitation], context: AssembledContext) -> list[VerifiedCitation]:
+def verify_citations(
+    citations: list[ParsedCitation], context: AssembledContext
+) -> list[VerifiedCitation]:
     out: list[VerifiedCitation] = []
     for cit in citations:
         blocks = [b for b in context.blocks if _matches(b, cit)]
         if blocks:
-            out.append(VerifiedCitation(cit, True, "chunk" if cit.order is not None else "document",
-                                        tuple(b.label for b in blocks)))
+            out.append(
+                VerifiedCitation(
+                    cit,
+                    True,
+                    "chunk" if cit.order is not None else "document",
+                    tuple(b.label for b in blocks),
+                )
+            )
             continue
-        same_doc = any(b.hit.record.document_id == cit.document_id for b in context.blocks)
-        reason = "section not in retrieved context" if same_doc else "document not in retrieved context"
+        same_doc = any(
+            b.hit.record.document_id == cit.document_id for b in context.blocks
+        )
+        reason = (
+            "section not in retrieved context"
+            if same_doc
+            else "document not in retrieved context"
+        )
         out.append(VerifiedCitation(cit, False, "none", (), reason))
     return out
 
 
-def cited_blocks(verified: list[VerifiedCitation], context: AssembledContext) -> list[ContextBlock]:
+def cited_blocks(
+    verified: list[VerifiedCitation], context: AssembledContext
+) -> list[ContextBlock]:
     labels = {lab for v in verified if v.valid for lab in v.block_labels}
     return [b for b in context.blocks if b.label in labels]

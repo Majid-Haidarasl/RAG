@@ -41,7 +41,9 @@ class PromptSet:
 
 @dataclass(frozen=True)
 class RfpPrompts:
-    headings: dict[str, tuple[str, str]] = field(default_factory=lambda: dict(DEFAULT_HEADINGS))
+    headings: dict[str, tuple[str, str]] = field(
+        default_factory=lambda: dict(DEFAULT_HEADINGS)
+    )
     rfp_summary: PromptSet | None = None
     feedback: PromptSet | None = None
 
@@ -58,14 +60,24 @@ def prompt_set(data: dict[str, Any], name: str) -> PromptSet:
     unknown = sorted(set(data) - PROMPT_KEYS)
     if unknown:
         raise InvariantError(f"{name}: unknown keys {', '.join(unknown)}")
-    missing = [k for k in ("system_en", "system_fa", "user_en", "user_fa") if not str(data.get(k, "")).strip()]
+    missing = [
+        k
+        for k in ("system_en", "system_fa", "user_en", "user_fa")
+        if not str(data.get(k, "")).strip()
+    ]
     if missing:
         raise InvariantError(f"{name}: missing {', '.join(missing)}")
     for k in ("user_en", "user_fa"):
         if "{facts}" not in str(data[k]):
             raise InvariantError(f"{name}: {k} must contain the {{facts}} placeholder")
-    return PromptSet(str(data.get("id", name)), str(data.get("version", "1.0")), str(data["system_en"]).strip(),
-                     str(data["system_fa"]).strip(), str(data["user_en"]).strip(), str(data["user_fa"]).strip())
+    return PromptSet(
+        str(data.get("id", name)),
+        str(data.get("version", "1.0")),
+        str(data["system_en"]).strip(),
+        str(data["system_fa"]).strip(),
+        str(data["user_en"]).strip(),
+        str(data["user_fa"]).strip(),
+    )
 
 
 def headings_from(data: dict[str, Any]) -> dict[str, tuple[str, str]]:
@@ -75,7 +87,11 @@ def headings_from(data: dict[str, Any]) -> dict[str, tuple[str, str]]:
         raise InvariantError(f"sections.yaml: unknown headings {', '.join(unknown)}")
     out = dict(DEFAULT_HEADINGS)
     for key, rec in raw.items():
-        if not isinstance(rec, dict) or not str(rec.get("en", "")).strip() or not str(rec.get("fa", "")).strip():
+        if (
+            not isinstance(rec, dict)
+            or not str(rec.get("en", "")).strip()
+            or not str(rec.get("fa", "")).strip()
+        ):
             raise InvariantError(f"sections.yaml: heading {key} needs en and fa")
         out[key] = (str(rec["en"]).strip(), str(rec["fa"]).strip())
     return out
@@ -83,6 +99,8 @@ def headings_from(data: dict[str, Any]) -> dict[str, tuple[str, str]]:
 
 def load_rfp_prompts(folder: Path) -> RfpPrompts:
     folder = Path(folder)
-    return RfpPrompts(headings_from(_yaml(folder / "sections.yaml")),
-                      prompt_set(_yaml(folder / "rfp_summary.yaml"), "rfp_summary.yaml"),
-                      prompt_set(_yaml(folder / "feedback.yaml"), "feedback.yaml"))
+    return RfpPrompts(
+        headings_from(_yaml(folder / "sections.yaml")),
+        prompt_set(_yaml(folder / "rfp_summary.yaml"), "rfp_summary.yaml"),
+        prompt_set(_yaml(folder / "feedback.yaml"), "feedback.yaml"),
+    )

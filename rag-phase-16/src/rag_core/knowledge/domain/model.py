@@ -25,7 +25,11 @@ from rag_core.knowledge.domain.fingerprint import normalized_hash
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.events import DomainEvent
-from rag_core.shared_kernel.identifiers import DocumentId, KnowledgeItemId, NodeIdentifier
+from rag_core.shared_kernel.identifiers import (
+    DocumentId,
+    KnowledgeItemId,
+    NodeIdentifier,
+)
 from rag_core.shared_kernel.language import LanguageCode
 from rag_core.shared_kernel.numerals import normalize_digits
 
@@ -144,7 +148,9 @@ class KnowledgeVersion:
     def qualified_chunk_id(self, document_id: DocumentId, chunk: KnowledgeChunk) -> str:
         return f"{document_id}@{self.tag}/{self.language.value}#{chunk.chunk_id.split('#')[-1]}"
 
-    def _set_chunk_status(self, status: ChunkStatus, *, only: ChunkStatus | None = None) -> int:
+    def _set_chunk_status(
+        self, status: ChunkStatus, *, only: ChunkStatus | None = None
+    ) -> int:
         changed = 0
         updated: list[KnowledgeChunk] = []
         for chunk in self.chunks:
@@ -208,12 +214,20 @@ class KnowledgeItem:
         item.events.append(
             DomainEvent("KnowledgeItemRegistered", {"document_id": str(document_id)})
         )
-        item.add_version(version, language, chunks, file_sha256=file_sha256, effective_from=effective_from)
+        item.add_version(
+            version,
+            language,
+            chunks,
+            file_sha256=file_sha256,
+            effective_from=effective_from,
+        )
         return item
 
     # ------------------------------------------------------------ queries
     def versions_for(self, language: LanguageCode) -> list[KnowledgeVersion]:
-        return sorted((v for v in self.versions if v.language == language), key=lambda v: v.tag)
+        return sorted(
+            (v for v in self.versions if v.language == language), key=lambda v: v.tag
+        )
 
     def active_version(self, language: LanguageCode) -> KnowledgeVersion:
         for version in self.versions:
@@ -299,7 +313,9 @@ class KnowledgeItem:
         if active is not None:
             stale = active._set_chunk_status(ChunkStatus.STALE, only=ChunkStatus.ACTIVE)
             if stale:
-                self.events.append(self._event("ChunksMarkedStale", active, count=stale))
+                self.events.append(
+                    self._event("ChunksMarkedStale", active, count=stale)
+                )
         return draft
 
     def activate(
@@ -311,18 +327,26 @@ class KnowledgeItem:
     ) -> KnowledgeVersion:
         draft = self.get_version(version, language)
         if draft.status is not VersionStatus.DRAFT:
-            raise InvariantError(f"only a draft can be activated, {version} is {draft.status}")
+            raise InvariantError(
+                f"only a draft can be activated, {version} is {draft.status}"
+            )
         on = effective_from or date.today()
         previous = self.find_active(language)
         if previous is not None:
             if previous.effective_from and on < previous.effective_from:
-                raise InvariantError("effective_from cannot precede the version it supersedes")
+                raise InvariantError(
+                    "effective_from cannot precede the version it supersedes"
+                )
             previous.status = VersionStatus.SUPERSEDED
             previous.effective_to = on
             retired = previous._set_chunk_status(ChunkStatus.RETIRED)
-            self.events.append(self._event("KnowledgeVersionSuperseded", previous, by=str(version)))
+            self.events.append(
+                self._event("KnowledgeVersionSuperseded", previous, by=str(version))
+            )
             if retired:
-                self.events.append(self._event("ChunksRetired", previous, count=retired))
+                self.events.append(
+                    self._event("ChunksRetired", previous, count=retired)
+                )
         draft.status = VersionStatus.ACTIVE
         draft.effective_from = on
         self.events.append(self._event("KnowledgeVersionActivated", draft))
@@ -337,13 +361,17 @@ class KnowledgeItem:
         active = self.find_active(language)
         if active is not None:
             active._set_chunk_status(ChunkStatus.ACTIVE, only=ChunkStatus.STALE)
-        self.events.append(self._event("KnowledgeVersionArchived", draft, reason="draft discarded"))
+        self.events.append(
+            self._event("KnowledgeVersionArchived", draft, reason="draft discarded")
+        )
         return draft
 
     def archive(self, version: VersionTag, language: LanguageCode) -> KnowledgeVersion:
         target = self.get_version(version, language)
         if target.status is VersionStatus.ACTIVE:
-            raise InvariantError("an active version cannot be archived; withdraw or supersede it first")
+            raise InvariantError(
+                "an active version cannot be archived; withdraw or supersede it first"
+            )
         if target.status is VersionStatus.DRAFT:
             return self.discard_draft(language)
         if target.status is VersionStatus.ARCHIVED:
@@ -352,13 +380,17 @@ class KnowledgeItem:
         self.events.append(self._event("KnowledgeVersionArchived", target))
         return target
 
-    def withdraw(self, language: LanguageCode, *, on: date | None = None) -> KnowledgeVersion:
+    def withdraw(
+        self, language: LanguageCode, *, on: date | None = None
+    ) -> KnowledgeVersion:
         """Take the active version out of use without a replacement."""
         active = self.active_version(language)
         active.status = VersionStatus.ARCHIVED
         active.effective_to = on or date.today()
         retired = active._set_chunk_status(ChunkStatus.RETIRED)
-        self.events.append(self._event("KnowledgeVersionArchived", active, reason="withdrawn"))
+        self.events.append(
+            self._event("KnowledgeVersionArchived", active, reason="withdrawn")
+        )
         if retired:
             self.events.append(self._event("ChunksRetired", active, count=retired))
         return active
@@ -384,9 +416,17 @@ class KnowledgeItem:
             return None
         latest = self.latest_tag(language)
         tag = latest.bump_minor() if latest else VersionTag(1, 0)
-        return self.add_version(tag, language, chunks, file_sha256=file_sha256, effective_from=effective_from)
+        return self.add_version(
+            tag,
+            language,
+            chunks,
+            file_sha256=file_sha256,
+            effective_from=effective_from,
+        )
 
-    def active_chunks(self, language: LanguageCode | None = None) -> list[KnowledgeChunk]:
+    def active_chunks(
+        self, language: LanguageCode | None = None
+    ) -> list[KnowledgeChunk]:
         """Chunks the retriever may use (ACTIVE or STALE of an active version)."""
         out: list[KnowledgeChunk] = []
         for version in self.versions:
@@ -398,7 +438,9 @@ class KnowledgeItem:
         return out
 
     # ------------------------------------------------------------ helpers
-    def _event(self, name: str, version: KnowledgeVersion, **extra: object) -> DomainEvent:
+    def _event(
+        self, name: str, version: KnowledgeVersion, **extra: object
+    ) -> DomainEvent:
         payload: dict[str, object] = {
             "document_id": str(self.document_id),
             "version": str(version.tag),

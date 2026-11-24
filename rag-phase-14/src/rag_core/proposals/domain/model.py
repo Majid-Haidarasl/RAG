@@ -21,9 +21,9 @@ class ProposalRecord:
     proposal_id: str
     vendor_en: str
     vendor_fa: str
-    price_mtoman: Decimal                  # million toman, as written in the evaluation sheet
+    price_mtoman: Decimal  # million toman, as written in the evaluation sheet
     duration_weeks: int
-    scores: Mapping[str, Decimal]          # criterion id -> 0..100
+    scores: Mapping[str, Decimal]  # criterion id -> 0..100
     label_en: str = ""
     label_fa: str = ""
     technology: str = ""
@@ -47,9 +47,15 @@ class ProposalRecord:
             raise InvariantError(f"{self.proposal_id}: duration must be positive")
         object.__setattr__(self, "price_mtoman", price)
         object.__setattr__(self, "duration_weeks", int(self.duration_weeks))
-        object.__setattr__(self, "scores", {str(k): Decimal(str(v)) for k, v in dict(self.scores).items()})
+        object.__setattr__(
+            self,
+            "scores",
+            {str(k): Decimal(str(v)) for k, v in dict(self.scores).items()},
+        )
         if self.published_weighted is not None:
-            object.__setattr__(self, "published_weighted", Decimal(str(self.published_weighted)))
+            object.__setattr__(
+                self, "published_weighted", Decimal(str(self.published_weighted))
+            )
         for name in ("sections", "clarifications_en", "clarifications_fa", "evidence"):
             object.__setattr__(self, name, tuple(str(v) for v in getattr(self, name)))
 
@@ -57,7 +63,9 @@ class ProposalRecord:
         return self.vendor_fa if language == "fa" else self.vendor_en
 
     def label(self, language: str) -> str:
-        return (self.label_fa if language == "fa" else self.label_en) or self.proposal_id
+        return (
+            self.label_fa if language == "fa" else self.label_en
+        ) or self.proposal_id
 
     def feedback(self, language: str) -> str:
         return self.feedback_fa if language == "fa" else self.feedback_en

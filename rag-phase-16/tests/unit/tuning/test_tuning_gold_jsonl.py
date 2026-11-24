@@ -6,7 +6,13 @@ from pathlib import Path
 import pytest
 
 from rag_core.shared_kernel.errors import InvariantError
-from rag_core.tuning.infrastructure.gold_jsonl import dump_gold, item_from_dict, item_to_dict, load_gold, parse_gold
+from rag_core.tuning.infrastructure.gold_jsonl import (
+    dump_gold,
+    item_from_dict,
+    item_to_dict,
+    load_gold,
+    parse_gold,
+)
 from tests.fixtures.tuning.samples import answered_item, refusal_item
 
 pytestmark = [pytest.mark.tuning, pytest.mark.eval_gold]
@@ -61,7 +67,9 @@ def test_bad_fact_groups() -> None:
 def test_bad_evidence() -> None:
     data = item_to_dict(answered_item())
     with pytest.raises(InvariantError, match="evidence needs exactly"):
-        item_from_dict({**data, "evidence": [{"document_id": "AR-SW-022", "quote": "x"}]})
+        item_from_dict(
+            {**data, "evidence": [{"document_id": "AR-SW-022", "quote": "x"}]}
+        )
 
 
 def test_not_an_object() -> None:

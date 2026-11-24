@@ -107,7 +107,8 @@ class MinHasher:
         rng = random.Random(seed)
         self.num_perm = num_perm
         self._coeffs = [
-            (rng.randrange(1, _MERSENNE), rng.randrange(0, _MERSENNE)) for _ in range(num_perm)
+            (rng.randrange(1, _MERSENNE), rng.randrange(0, _MERSENNE))
+            for _ in range(num_perm)
         ]
 
     def signature(self, shingle_set: frozenset[str] | set[str]) -> tuple[int, ...]:
@@ -124,7 +125,9 @@ class MinHasher:
         return sum(1 for x, y in zip(sig_a, sig_b) if x == y) / len(sig_a)
 
 
-def lsh_buckets(signature: tuple[int, ...], bands: int) -> list[tuple[int, tuple[int, ...]]]:
+def lsh_buckets(
+    signature: tuple[int, ...], bands: int
+) -> list[tuple[int, tuple[int, ...]]]:
     """Split a signature into ``bands`` bands; each (band, values) is a bucket key."""
     if bands < 1 or len(signature) % bands:
         raise ValueError("signature length must be divisible by bands")

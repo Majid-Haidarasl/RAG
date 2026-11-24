@@ -17,13 +17,18 @@ from typing import Any
 
 from rag_core.rfp.infrastructure.prompts_yaml import PromptSet
 from rag_core.shared_kernel.errors import InvariantError
-from rag_core.tuning.domain.required_ids import LISTED_VARIANTS, IdVariant, id_checklist, required_ids
+from rag_core.tuning.domain.required_ids import (
+    LISTED_VARIANTS,
+    IdVariant,
+    id_checklist,
+    required_ids,
+)
 
 
 @dataclass(frozen=True)
 class IdJob:
-    task: str                 # rfp_summary | feedback
-    subject: str              # RFP id or proposal id
+    task: str  # rfp_summary | feedback
+    subject: str  # RFP id or proposal id
     language: str
     facts: tuple[str, ...]
     items: tuple[str, ...]
@@ -51,7 +56,9 @@ def _strings(value: Any) -> tuple[str, ...]:
     return tuple(str(v) for v in value) if isinstance(value, list) else ()
 
 
-def jobs_from_phase13(payload: dict[str, Any], languages: Sequence[str] = ("fa", "en")) -> list[IdJob]:
+def jobs_from_phase13(
+    payload: dict[str, Any], languages: Sequence[str] = ("fa", "en")
+) -> list[IdJob]:
     """Same jobs as the Phase 13 live step: summary gaps are the items after the first one."""
     rfps = ((payload.get("rfp") or {}).get("rfps")) or {}
     if not isinstance(rfps, dict):
@@ -65,15 +72,29 @@ def jobs_from_phase13(payload: dict[str, Any], languages: Sequence[str] = ("fa",
         d = (rfps.get(rid) or {}).get(lang)
         if isinstance(d, dict) and d.get("facts"):
             items = _strings(d.get("items"))
-            jobs.append(IdJob("rfp_summary", rid, lang, _strings(d.get("facts")), items, items[1:]))
+            jobs.append(
+                IdJob(
+                    "rfp_summary", rid, lang, _strings(d.get("facts")), items, items[1:]
+                )
+            )
         f = (feedback.get(runner_up) or {}).get(lang) if runner_up else None
         if isinstance(f, dict) and f.get("facts"):
-            jobs.append(IdJob("feedback", runner_up, lang, _strings(f.get("facts")), _strings(f.get("items")),
-                              _strings(f.get("gaps"))))
+            jobs.append(
+                IdJob(
+                    "feedback",
+                    runner_up,
+                    lang,
+                    _strings(f.get("facts")),
+                    _strings(f.get("items")),
+                    _strings(f.get("gaps")),
+                )
+            )
     return jobs
 
 
-def load_jobs(folder: Path, languages: Sequence[str] = ("fa", "en")) -> tuple[list[IdJob], Path | None]:
+def load_jobs(
+    folder: Path, languages: Sequence[str] = ("fa", "en")
+) -> tuple[list[IdJob], Path | None]:
     path = newest_results(folder)
     if path is None:
         return [], None
@@ -81,12 +102,23 @@ def load_jobs(folder: Path, languages: Sequence[str] = ("fa", "en")) -> tuple[li
     return jobs_from_phase13(payload, languages), path
 
 
-def render_job(job: IdJob, variant: str, baseline: dict[str, PromptSet], listed: dict[str, PromptSet]) -> tuple[str, str]:
+def render_job(
+    job: IdJob,
+    variant: str,
+    baseline: dict[str, PromptSet],
+    listed: dict[str, PromptSet],
+) -> tuple[str, str]:
     """(system, user) for one job. ``baseline`` / ``listed`` map task -> prompt set."""
     facts = "\n".join(job.facts)
     if variant == IdVariant.BASELINE:
-        return baseline[job.task].render(job.language, facts=facts, items=", ".join(job.required))
+        return baseline[job.task].render(
+            job.language, facts=facts, items=", ".join(job.required)
+        )
     if variant in LISTED_VARIANTS:
-        return listed[job.task].render(job.language, facts=facts, checklist=id_checklist(job.required),
-                                       items=", ".join(job.required))
+        return listed[job.task].render(
+            job.language,
+            facts=facts,
+            checklist=id_checklist(job.required),
+            items=", ".join(job.required),
+        )
     raise InvariantError(f"unknown id variant {variant}")

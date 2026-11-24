@@ -4,7 +4,12 @@ from decimal import Decimal
 
 import pytest
 
-from rag_core.shared_kernel.numerals import extract_numbers, normalize_digits, parse_decimal, strip_thousands_separators
+from rag_core.shared_kernel.numerals import (
+    extract_numbers,
+    normalize_digits,
+    parse_decimal,
+    strip_thousands_separators,
+)
 
 pytestmark = [pytest.mark.hardening, pytest.mark.shared_kernel]
 
@@ -23,12 +28,15 @@ def test_strip_thousands_separators(text: str) -> None:
     assert strip_thousands_separators(text) == "2180"
 
 
-@pytest.mark.parametrize(("text", "value"), [
-    ("2 180", Decimal("2180")),
-    ("1,234.5", Decimal("1234.5")),
-    ("\u0667\u0668\u066b\u0668", Decimal("78.8")),
-    ("-5", Decimal("-5")),
-])
+@pytest.mark.parametrize(
+    ("text", "value"),
+    [
+        ("2 180", Decimal("2180")),
+        ("1,234.5", Decimal("1234.5")),
+        ("\u0667\u0668\u066b\u0668", Decimal("78.8")),
+        ("-5", Decimal("-5")),
+    ],
+)
 def test_parse_decimal_accepts(text: str, value: Decimal) -> None:
     assert parse_decimal(text) == value
 

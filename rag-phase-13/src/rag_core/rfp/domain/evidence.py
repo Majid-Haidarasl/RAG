@@ -22,8 +22,14 @@ LANGUAGES = ("fa", "en")
 OK = {FactVerdict.CONFIRMED, FactVerdict.CORRECTED}
 
 
-def ground_statement(ref: str, statement: str, documents: tuple[str, ...], language: str, texts: DocumentTexts,
-                     validator: FactValidator) -> GroundingResult:
+def ground_statement(
+    ref: str,
+    statement: str,
+    documents: tuple[str, ...],
+    language: str,
+    texts: DocumentTexts,
+    validator: FactValidator,
+) -> GroundingResult:
     if not statement.strip():
         return GroundingResult(ref, language, False, ("no statement",))
     sources = texts_for(documents, language, texts)
@@ -53,26 +59,54 @@ class BlueprintEvidence:
         return bool(self.statements) and not self.failures()
 
     def to_dict(self) -> dict[str, object]:
-        return {"statements": [r.to_dict() for r in self.statements], "weights": [r.to_dict() for r in self.weights]}
+        return {
+            "statements": [r.to_dict() for r in self.statements],
+            "weights": [r.to_dict() for r in self.weights],
+        }
 
 
-def ground_blueprint(bp: Blueprint, texts: DocumentTexts, validator: FactValidator, numbers_in: NumberExtractor,
-                     languages: Iterable[str] = LANGUAGES) -> BlueprintEvidence:
+def ground_blueprint(
+    bp: Blueprint,
+    texts: DocumentTexts,
+    validator: FactValidator,
+    numbers_in: NumberExtractor,
+    languages: Iterable[str] = LANGUAGES,
+) -> BlueprintEvidence:
     out = BlueprintEvidence()
     for lang in languages:
         for r in bp.requirements:
-            out.statements.append(ground_statement(f"{bp.blueprint_id}/{r.requirement_id}", r.statement(lang),
-                                                   r.evidence, lang, texts, validator))
+            out.statements.append(
+                ground_statement(
+                    f"{bp.blueprint_id}/{r.requirement_id}",
+                    r.statement(lang),
+                    r.evidence,
+                    lang,
+                    texts,
+                    validator,
+                )
+            )
         for link in bp.links:
-            out.statements.append(ground_statement(f"{bp.blueprint_id}/{link.link_id}", link.role(lang),
-                                                   link.evidence, lang, texts, validator))
+            out.statements.append(
+                ground_statement(
+                    f"{bp.blueprint_id}/{link.link_id}",
+                    link.role(lang),
+                    link.evidence,
+                    lang,
+                    texts,
+                    validator,
+                )
+            )
         for c in bp.criteria:
             ref = f"{bp.blueprint_id}/{c.criterion_id}"
             sources = texts_for(c.evidence, lang, texts)
             if not sources:
-                out.weights.append(GroundingResult(ref, lang, False, ("no evidence text",)))
+                out.weights.append(
+                    GroundingResult(ref, lang, False, ("no evidence text",))
+                )
                 continue
             found = numbers_in(sources)
             ok = Decimal(c.percent).normalize() in found
-            out.weights.append(GroundingResult(ref, lang, ok, () if ok else (f"weight={c.percent}%",)))
+            out.weights.append(
+                GroundingResult(ref, lang, ok, () if ok else (f"weight={c.percent}%",))
+            )
     return out

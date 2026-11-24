@@ -39,7 +39,13 @@ from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.numerals import normalize_digits
 from rag_core.tuning.domain.gold import GoldItem, pairs
 
-MUTATIONS = ("drop_fact", "wrong_number", "wrong_language", "fake_label", "refuse_answerable")
+MUTATIONS = (
+    "drop_fact",
+    "wrong_number",
+    "wrong_language",
+    "fake_label",
+    "refuse_answerable",
+)
 DECOY_DOCS = ("AR-HR-011", "AR-HR-004")
 REFUSALS = {
     "fa": "INSUFFICIENT_CONTEXT در منابع این گره پاسخی برای این پرسش پیدا نشد.",
@@ -53,20 +59,42 @@ _LABEL_DOC_RE = re.compile(r"AR-[A-Z]{2,5}-\d{2,4}")
 
 
 def source_blocks(item: GoldItem) -> tuple[SourceBlock, ...]:
-    return tuple(SourceBlock(label, e.quote, e.document_id, i, e.language)
-                 for i, (label, e) in enumerate(zip(item.labels, item.evidence), 1))
+    return tuple(
+        SourceBlock(label, e.quote, e.document_id, i, e.language)
+        for i, (label, e) in enumerate(zip(item.labels, item.evidence), 1)
+    )
 
 
-def answer_case(item: GoldItem, output: str, *, case_id: str, gold: str, origin: str,
-                status: str = "answered", tags: tuple[str, ...] = ()) -> JudgeCase:
+def answer_case(
+    item: GoldItem,
+    output: str,
+    *,
+    case_id: str,
+    gold: str,
+    origin: str,
+    status: str = "answered",
+    tags: tuple[str, ...] = (),
+) -> JudgeCase:
     return JudgeCase(
-        case_id=case_id, kind=OutputKind.QA_ANSWER, language=item.language, task=item.question, output=output,
-        sources=source_blocks(item), expectation=Expectation(status="answered", facts=item.expected_facts),
-        status=status, node=item.node, origin=origin, gold=gold, tags=tags)
+        case_id=case_id,
+        kind=OutputKind.QA_ANSWER,
+        language=item.language,
+        task=item.question,
+        output=output,
+        sources=source_blocks(item),
+        expectation=Expectation(status="answered", facts=item.expected_facts),
+        status=status,
+        node=item.node,
+        origin=origin,
+        gold=gold,
+        tags=tags,
+    )
 
 
 def _protected(text: str) -> list[tuple[int, int]]:
-    return [(m.start(), m.end()) for r in (_BRACKET_RE, _ID_RE) for m in r.finditer(text)]
+    return [
+        (m.start(), m.end()) for r in (_BRACKET_RE, _ID_RE) for m in r.finditer(text)
+    ]
 
 
 def _to_text(value: Decimal, like: str) -> str:
@@ -87,17 +115,23 @@ def _to_text(value: Decimal, like: str) -> str:
 def wrong_number(text: str, sources: Sequence[str]) -> str | None:
     """``text`` with its last number (outside labels and ids) replaced by a value not in ``sources``."""
     blocked = _protected(text)
-    spans = [m for m in _NUMBER_RE.finditer(text) if not any(a <= m.start() < b for a, b in blocked)]
+    spans = [
+        m
+        for m in _NUMBER_RE.finditer(text)
+        if not any(a <= m.start() < b for a, b in blocked)
+    ]
     if not spans:
         return None
     m = spans[-1]
-    raw = normalize_digits(m.group(0)).replace(",", "").replace("٬", "").replace("٫", ".")
+    raw = (
+        normalize_digits(m.group(0)).replace(",", "").replace("٬", "").replace("٫", ".")
+    )
     value = Decimal(raw)
     known = source_numbers(list(sources))
     for offset in (7, 11, 13, 17, 19):
         new = value + offset
         if new.normalize() not in known:
-            return text[: m.start()] + _to_text(new, m.group(0)) + text[m.end():]
+            return text[: m.start()] + _to_text(new, m.group(0)) + text[m.end() :]
     return None
 
 
@@ -113,12 +147,18 @@ def mutate(item: GoldItem, kind: str, other: GoldItem | None) -> tuple[str, str]
     """(output, system status) of one mutation, or ``None`` when it does not apply to the item."""
     ref = item.reference_answer
     if kind == "drop_fact":
-        return (item.partial_answer, "answered") if item.partial_answer.strip() else None
+        return (
+            (item.partial_answer, "answered") if item.partial_answer.strip() else None
+        )
     if kind == "wrong_number":
         out = wrong_number(ref, [e.quote for e in item.evidence])
         return (out, "answered") if out else None
     if kind == "wrong_language":
-        if other is None or other.language == item.language or not other.reference_answer.strip():
+        if (
+            other is None
+            or other.language == item.language
+            or not other.reference_answer.strip()
+        ):
             return None
         return other.reference_answer, "answered"
     if kind == "fake_label":
@@ -137,27 +177,55 @@ class DerivedCase:
 
 def derive_calibration(items: Iterable[GoldItem]) -> list[DerivedCase]:
     out: list[DerivedCase] = []
-    answered = [(p, by) for p, by in pairs(items).items() if set(by) == {"fa", "en"} and by["fa"].answered]
+    answered = [
+        (p, by)
+        for p, by in pairs(items).items()
+        if set(by) == {"fa", "en"} and by["fa"].answered
+    ]
     for i, (pair_id, by) in enumerate(answered):
         good_lang = "fa" if i % 2 == 0 else "en"
         bad_lang = "en" if good_lang == "fa" else "fa"
         good, bad = by[good_lang], by[bad_lang]
-        out.append(DerivedCase(answer_case(good, good.reference_answer, case_id=f"CAL14-{pair_id}-{good_lang}-ok",
-                                           gold="accept", origin="calibration-derived", tags=("derived",)), ""))
-        rotation = MUTATIONS[i % len(MUTATIONS):] + MUTATIONS[: i % len(MUTATIONS)]
+        out.append(
+            DerivedCase(
+                answer_case(
+                    good,
+                    good.reference_answer,
+                    case_id=f"CAL14-{pair_id}-{good_lang}-ok",
+                    gold="accept",
+                    origin="calibration-derived",
+                    tags=("derived",),
+                ),
+                "",
+            )
+        )
+        rotation = MUTATIONS[i % len(MUTATIONS) :] + MUTATIONS[: i % len(MUTATIONS)]
         for kind in rotation:
             made = mutate(bad, kind, good)
             if made is None:
                 continue
             output, status = made
-            out.append(DerivedCase(answer_case(bad, output, case_id=f"CAL14-{pair_id}-{bad_lang}-{kind}",
-                                               gold="reject", origin=f"negative:{kind}", status=status,
-                                               tags=("derived", kind)), kind))
+            out.append(
+                DerivedCase(
+                    answer_case(
+                        bad,
+                        output,
+                        case_id=f"CAL14-{pair_id}-{bad_lang}-{kind}",
+                        gold="reject",
+                        origin=f"negative:{kind}",
+                        status=status,
+                        tags=("derived", kind),
+                    ),
+                    kind,
+                )
+            )
             break
     return out
 
 
-def expanded_calibration(base: Sequence[JudgeCase], items: Iterable[GoldItem]) -> list[JudgeCase]:
+def expanded_calibration(
+    base: Sequence[JudgeCase], items: Iterable[GoldItem]
+) -> list[JudgeCase]:
     cases = [*base, *(d.case for d in derive_calibration(items))]
     ids = [c.case_id for c in cases]
     if len(ids) != len(set(ids)):
@@ -175,21 +243,31 @@ def checklist_lines(case: JudgeCase) -> list[str]:
             lines.append(f"The output states: {alts}")
         if not exp.facts:
             lines.append("Every statement of the output is supported by the SOURCES")
-        lines.append("Every number, name and document id in the output appears in the SOURCES")
-        lines.append("Every factual sentence ends with a bracket label of a SOURCES block")
+        lines.append(
+            "Every number, name and document id in the output appears in the SOURCES"
+        )
+        lines.append(
+            "Every factual sentence ends with a bracket label of a SOURCES block"
+        )
     elif case.kind is OutputKind.QA_REFUSAL:
-        lines.append("The output declines to answer and states no facts from outside its scope")
+        lines.append(
+            "The output declines to answer and states no facts from outside its scope"
+        )
         if exp.status == "out_of_scope" and exp.escalation:
             lines.append(f"The output suggests escalation to {exp.escalation}")
         else:
             lines.append("The output says briefly what is missing")
     else:
-        required = list(dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads), *exp.gaps]))
+        required = list(
+            dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads), *exp.gaps])
+        )
         lines.extend(f"The summary writes the id {r}" for r in required)
         for item, names in exp.item_leads:
             lines.append(f"{item} is named with its lead: {' | '.join(names)}")
         lines.append("Every identifier and number in the summary appears in the FACTS")
-    lines.append(f"The output is written in {'Persian' if case.language == 'fa' else 'English'}")
+    lines.append(
+        f"The output is written in {'Persian' if case.language == 'fa' else 'English'}"
+    )
     return [f"{i}. {line}" for i, line in enumerate(lines, 1)]
 
 
@@ -198,9 +276,13 @@ class ChecklistJudgePrompt(JudgePromptSet):
     def __post_init__(self) -> None:
         super().__post_init__()
         if "${checklist}" not in self.system + self.user:
-            raise InvariantError(f"{self.prompt_id}: a strict prompt must use ${{checklist}}")
+            raise InvariantError(
+                f"{self.prompt_id}: a strict prompt must use ${{checklist}}"
+            )
 
-    def variables(self, case: JudgeCase, rubric: Rubric, sources_char_budget: int) -> dict[str, str]:
+    def variables(
+        self, case: JudgeCase, rubric: Rubric, sources_char_budget: int
+    ) -> dict[str, str]:
         values = super().variables(case, rubric, sources_char_budget)
         values["checklist"] = "\n".join(checklist_lines(case))
         return values
@@ -208,8 +290,16 @@ class ChecklistJudgePrompt(JudgePromptSet):
 
 def strict_prompt_from_dict(data: dict) -> ChecklistJudgePrompt:
     base = prompt_from_dict(data)
-    return ChecklistJudgePrompt(base.prompt_id, base.version, base.kinds, base.system, base.user, base.retry_note,
-                                base.scope_notes, base.language_names)
+    return ChecklistJudgePrompt(
+        base.prompt_id,
+        base.version,
+        base.kinds,
+        base.system,
+        base.user,
+        base.retry_note,
+        base.scope_notes,
+        base.language_names,
+    )
 
 
 def load_strict_prompts(directory: Path) -> dict[str, ChecklistJudgePrompt]:

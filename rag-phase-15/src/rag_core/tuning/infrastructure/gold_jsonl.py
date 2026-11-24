@@ -11,8 +11,17 @@ from rag_core.shared_kernel.errors import InvariantError
 from rag_core.tuning.domain.gold import Evidence, GoldItem
 
 REQUIRED = ("id", "pair", "language", "node", "question", "expected_status")
-OPTIONAL = ("expected_docs", "expected_outside_docs", "expected_escalation", "expected_facts", "evidence",
-            "reference_answer", "partial_answer", "detail", "origin")
+OPTIONAL = (
+    "expected_docs",
+    "expected_outside_docs",
+    "expected_escalation",
+    "expected_facts",
+    "evidence",
+    "reference_answer",
+    "partial_answer",
+    "detail",
+    "origin",
+)
 EVIDENCE_KEYS = {"document_id", "language", "quote"}
 
 
@@ -42,29 +51,52 @@ def item_from_dict(data: dict[str, Any], where: str = "item") -> GoldItem:
     evidence = []
     for e in data.get("evidence") or []:
         if not isinstance(e, dict) or set(e) != EVIDENCE_KEYS:
-            raise InvariantError(f"{where}: evidence needs exactly {', '.join(sorted(EVIDENCE_KEYS))}")
-        evidence.append(Evidence(str(e["document_id"]), str(e["language"]), str(e["quote"])))
+            raise InvariantError(
+                f"{where}: evidence needs exactly {', '.join(sorted(EVIDENCE_KEYS))}"
+            )
+        evidence.append(
+            Evidence(str(e["document_id"]), str(e["language"]), str(e["quote"]))
+        )
     return GoldItem(
-        id=str(data["id"]), pair=str(data["pair"]), language=str(data["language"]), node=str(data["node"]),
-        question=str(data["question"]), expected_status=str(data["expected_status"]),
+        id=str(data["id"]),
+        pair=str(data["pair"]),
+        language=str(data["language"]),
+        node=str(data["node"]),
+        question=str(data["question"]),
+        expected_status=str(data["expected_status"]),
         expected_docs=_strings(data.get("expected_docs"), f"{where}: expected_docs"),
-        expected_outside_docs=_strings(data.get("expected_outside_docs"), f"{where}: expected_outside_docs"),
+        expected_outside_docs=_strings(
+            data.get("expected_outside_docs"), f"{where}: expected_outside_docs"
+        ),
         expected_escalation=str(data.get("expected_escalation") or ""),
-        expected_facts=groups, evidence=tuple(evidence),
+        expected_facts=groups,
+        evidence=tuple(evidence),
         reference_answer=str(data.get("reference_answer") or ""),
         partial_answer=str(data.get("partial_answer") or ""),
-        detail=str(data.get("detail") or "short"), origin=str(data.get("origin") or ""),
+        detail=str(data.get("detail") or "short"),
+        origin=str(data.get("origin") or ""),
     )
 
 
 def item_to_dict(item: GoldItem) -> dict[str, Any]:
     return {
-        "id": item.id, "pair": item.pair, "language": item.language, "node": item.node, "question": item.question,
-        "expected_status": item.expected_status, "expected_docs": list(item.expected_docs),
-        "expected_outside_docs": list(item.expected_outside_docs), "expected_escalation": item.expected_escalation,
+        "id": item.id,
+        "pair": item.pair,
+        "language": item.language,
+        "node": item.node,
+        "question": item.question,
+        "expected_status": item.expected_status,
+        "expected_docs": list(item.expected_docs),
+        "expected_outside_docs": list(item.expected_outside_docs),
+        "expected_escalation": item.expected_escalation,
         "expected_facts": [list(g) for g in item.expected_facts],
-        "evidence": [{"document_id": e.document_id, "language": e.language, "quote": e.quote} for e in item.evidence],
-        "reference_answer": item.reference_answer, "partial_answer": item.partial_answer, "detail": item.detail,
+        "evidence": [
+            {"document_id": e.document_id, "language": e.language, "quote": e.quote}
+            for e in item.evidence
+        ],
+        "reference_answer": item.reference_answer,
+        "partial_answer": item.partial_answer,
+        "detail": item.detail,
         "origin": item.origin,
     }
 
@@ -77,7 +109,9 @@ def parse_gold(text: str, name: str = "dataset") -> list[GoldItem]:
         try:
             data = json.loads(line)
         except json.JSONDecodeError as exc:
-            raise InvariantError(f"{name} line {no}: invalid JSON ({exc.msg})") from None
+            raise InvariantError(
+                f"{name} line {no}: invalid JSON ({exc.msg})"
+            ) from None
         items.append(item_from_dict(data, f"{name} line {no}"))
     if not items:
         raise InvariantError(f"{name}: no items")
@@ -90,4 +124,6 @@ def load_gold(path: Path) -> list[GoldItem]:
 
 
 def dump_gold(items: Iterable[GoldItem]) -> str:
-    return "".join(json.dumps(item_to_dict(i), ensure_ascii=False) + "\n" for i in items)
+    return "".join(
+        json.dumps(item_to_dict(i), ensure_ascii=False) + "\n" for i in items
+    )

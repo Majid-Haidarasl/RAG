@@ -90,7 +90,9 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             failures.append(
                 {
-                    "path": str(path.relative_to(root) if path.is_relative_to(root) else path),
+                    "path": str(
+                        path.relative_to(root) if path.is_relative_to(root) else path
+                    ),
                     "format": suffix,
                     "reason": str(exc),
                     "error_type": type(exc).__name__,
@@ -145,7 +147,9 @@ def main() -> int:
             "result_line": args.pytest_line,
         },
     }
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     pytest_ok = args.pytest_exit in (None, "0", 0)
     status = "PASS" if (not failures and success and pytest_ok) else "FAIL"
@@ -176,9 +180,15 @@ def main() -> int:
     print(f"normalization_id_digits: {norm.get('id_digits', 0)}")
     print(f"normalization_arabic_indic: {norm.get('arabic_indic', 0)}")
     print(f"id_digit_fix_docs: {','.join(sorted(set(id_fix_docs))) or '(none)'}")
-    print(f"pdftotext: {shutil.which('pdftotext') or 'MISSING (sudo apt install -y poppler-utils)'}")
-    print(f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(engines.items())) or 'none'}")
-    print(f"pdf_text_quality: {', '.join(f'{k}={v}' for k, v in sorted(quality.items())) or 'none'}")
+    print(
+        f"pdftotext: {shutil.which('pdftotext') or 'MISSING (sudo apt install -y poppler-utils)'}"
+    )
+    print(
+        f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(engines.items())) or 'none'}"
+    )
+    print(
+        f"pdf_text_quality: {', '.join(f'{k}={v}' for k, v in sorted(quality.items())) or 'none'}"
+    )
     garbled_fail = sum(1 for f in failures if f.get("error_type") == "GarbledTextError")
     print(f"pdf_garbled_failures: {garbled_fail}")
     print(f"results_json: {out_json}")

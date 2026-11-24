@@ -6,7 +6,11 @@ from pathlib import Path
 import pytest
 
 from rag_core.ingestion.application.metadata import bilingual_pair_name, find_repo_root
-from rag_core.ingestion.infrastructure.files import document_id_from_name, language_from_path, sha256_file
+from rag_core.ingestion.infrastructure.files import (
+    document_id_from_name,
+    language_from_path,
+    sha256_file,
+)
 from rag_core.shared_kernel.language import LanguageCode
 
 pytestmark = [pytest.mark.hardening, pytest.mark.ingestion]
@@ -21,21 +25,27 @@ def test_sha256_file(tmp_path: Path) -> None:
     assert sha256_file(empty) == hashlib.sha256(b"").hexdigest()
 
 
-@pytest.mark.parametrize(("name", "doc_id"), [
-    ("AR-FIN-008-report.docx", "AR-FIN-008"),
-    ("ar-hr-۰۰۵-x.pdf", "AR-HR-005"),
-    ("notes-2024.txt", "notes"),
-])
+@pytest.mark.parametrize(
+    ("name", "doc_id"),
+    [
+        ("AR-FIN-008-report.docx", "AR-FIN-008"),
+        ("ar-hr-۰۰۵-x.pdf", "AR-HR-005"),
+        ("notes-2024.txt", "notes"),
+    ],
+)
 def test_document_id_from_name(name: str, doc_id: str) -> None:
     assert document_id_from_name(Path(name)) == doc_id
 
 
-@pytest.mark.parametrize(("path", "language"), [
-    ("corpus/fa/x.docx", "fa"),
-    ("corpus/EN/x.docx", "en"),
-    ("x-fa.docx", "fa"),
-    ("doc.pdf", None),
-])
+@pytest.mark.parametrize(
+    ("path", "language"),
+    [
+        ("corpus/fa/x.docx", "fa"),
+        ("corpus/EN/x.docx", "en"),
+        ("x-fa.docx", "fa"),
+        ("doc.pdf", None),
+    ],
+)
 def test_language_from_path(path: str, language: str | None) -> None:
     assert language_from_path(Path(path)) == language
 
@@ -43,7 +53,9 @@ def test_language_from_path(path: str, language: str | None) -> None:
 def test_find_repo_root_walks_upward(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
     (tmp_path / "schemas").mkdir()
-    (tmp_path / "schemas" / "knowledge-metadata.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "schemas" / "knowledge-metadata.json").write_text(
+        "{}", encoding="utf-8"
+    )
     deep = tmp_path / "a" / "b"
     deep.mkdir(parents=True)
     assert find_repo_root(deep) == tmp_path.resolve()

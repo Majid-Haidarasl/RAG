@@ -11,8 +11,19 @@ import yaml
 from rag_core.quality.domain.release import DocRequirement, require_version
 from rag_core.shared_kernel.errors import InvariantError
 
-TOP_KEYS = {"config_version", "version", "tag", "title", "docs", "changelog", "presentation", "evidence",
-            "scan", "versions", "eval"}
+TOP_KEYS = {
+    "config_version",
+    "version",
+    "tag",
+    "title",
+    "docs",
+    "changelog",
+    "presentation",
+    "evidence",
+    "scan",
+    "versions",
+    "eval",
+}
 
 
 @dataclass(frozen=True)
@@ -32,13 +43,13 @@ class PresentationSettings:
 @dataclass(frozen=True)
 class EvidenceItem:
     name: str
-    pattern: str          # glob relative to the kit root, e.g. results/phase-08/rag-demo-*.json
+    pattern: str  # glob relative to the kit root, e.g. results/phase-08/rag-demo-*.json
 
 
 @dataclass(frozen=True)
 class ScanSettings:
     suffixes: tuple[str, ...] = (".md", ".py", ".sh", ".yaml", ".yml", ".toml", ".txt")
-    exclude: tuple[str, ...] = ()     # folder or file paths relative to the kit root
+    exclude: tuple[str, ...] = ()  # folder or file paths relative to the kit root
     phrases: tuple[str, ...] = ()
 
 
@@ -53,7 +64,9 @@ class ReleaseCheckSettings:
     presentation: PresentationSettings = field(default_factory=PresentationSettings)
     evidence: tuple[EvidenceItem, ...] = ()
     scan: ScanSettings = field(default_factory=ScanSettings)
-    versions: dict[str, str] = field(default_factory=dict)   # where -> how ("pyproject", "package", "yaml:<key>")
+    versions: dict[str, str] = field(
+        default_factory=dict
+    )  # where -> how ("pyproject", "package", "yaml:<key>")
     eval_expected: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -69,7 +82,9 @@ def _mapping(data: Any, where: str, keys: set[str]) -> dict[str, Any]:
         raise InvariantError(f"release config {where} must be a mapping")
     unknown = sorted(set(data) - keys)
     if unknown:
-        raise InvariantError(f"unknown keys in release config {where}: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in release config {where}: {', '.join(unknown)}"
+        )
     return data
 
 
@@ -88,10 +103,19 @@ def release_settings_from_dict(data: Any) -> ReleaseCheckSettings:
     docs = []
     for i, d in enumerate(top.get("docs") or []):
         d = _mapping(d, f"docs[{i}]", {"path", "min_chars", "markers"})
-        docs.append(DocRequirement(str(d.get("path", "")), int(d.get("min_chars", 400)),
-                                   _strings(d.get("markers"), f"docs[{i}].markers")))
+        docs.append(
+            DocRequirement(
+                str(d.get("path", "")),
+                int(d.get("min_chars", 400)),
+                _strings(d.get("markers"), f"docs[{i}].markers"),
+            )
+        )
     ch = _mapping(top.get("changelog"), "changelog", {"path", "versions"})
-    pr = _mapping(top.get("presentation"), "presentation", {"path", "source", "min_slides", "max_slides"})
+    pr = _mapping(
+        top.get("presentation"),
+        "presentation",
+        {"path", "source", "min_slides", "max_slides"},
+    )
     sc = _mapping(top.get("scan"), "scan", {"suffixes", "exclude", "phrases"})
     evidence = []
     for i, e in enumerate(top.get("evidence") or []):
@@ -102,10 +126,15 @@ def release_settings_from_dict(data: Any) -> ReleaseCheckSettings:
     versions = top.get("versions") or {}
     if not isinstance(versions, dict):
         raise InvariantError("release config versions must map file -> source")
-    bad = sorted(str(k) for k, v in versions.items() if str(v) not in ("pyproject", "package")
-                 and not str(v).startswith("yaml:"))
+    bad = sorted(
+        str(k)
+        for k, v in versions.items()
+        if str(v) not in ("pyproject", "package") and not str(v).startswith("yaml:")
+    )
     if bad:
-        raise InvariantError(f"release config versions: unknown source for {', '.join(bad)}")
+        raise InvariantError(
+            f"release config versions: unknown source for {', '.join(bad)}"
+        )
     ev = _mapping(top.get("eval"), "eval", {"expected"})
     expected = ev.get("expected") or {}
     if not isinstance(expected, dict):
@@ -116,13 +145,22 @@ def release_settings_from_dict(data: Any) -> ReleaseCheckSettings:
         tag=str(top.get("tag", "")),
         title=str(top.get("title", "")),
         docs=tuple(docs),
-        changelog=ChangelogSettings(str(ch.get("path", "CHANGELOG.md")), _strings(ch.get("versions"), "changelog.versions")),
-        presentation=PresentationSettings(str(pr.get("path", PresentationSettings.path)),
-                                          str(pr.get("source", PresentationSettings.source)),
-                                          int(pr.get("min_slides", 10)), int(pr.get("max_slides", 12))),
+        changelog=ChangelogSettings(
+            str(ch.get("path", "CHANGELOG.md")),
+            _strings(ch.get("versions"), "changelog.versions"),
+        ),
+        presentation=PresentationSettings(
+            str(pr.get("path", PresentationSettings.path)),
+            str(pr.get("source", PresentationSettings.source)),
+            int(pr.get("min_slides", 10)),
+            int(pr.get("max_slides", 12)),
+        ),
         evidence=tuple(evidence),
-        scan=ScanSettings(_strings(sc.get("suffixes"), "scan.suffixes") or ScanSettings.suffixes,
-                          _strings(sc.get("exclude"), "scan.exclude"), _strings(sc.get("phrases"), "scan.phrases")),
+        scan=ScanSettings(
+            _strings(sc.get("suffixes"), "scan.suffixes") or ScanSettings.suffixes,
+            _strings(sc.get("exclude"), "scan.exclude"),
+            _strings(sc.get("phrases"), "scan.phrases"),
+        ),
         versions={str(k): str(v) for k, v in versions.items()},
         eval_expected={str(k): str(v) for k, v in expected.items()},
     )

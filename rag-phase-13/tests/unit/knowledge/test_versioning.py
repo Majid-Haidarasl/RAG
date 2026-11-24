@@ -16,10 +16,18 @@ pytestmark = pytest.mark.knowledge
 
 
 def _chunks(*texts: str) -> list[KnowledgeChunk]:
-    return [KnowledgeChunk(chunk_id=f"c{i}", order=i, text=text, heading_path="s") for i, text in enumerate(texts, start=1)]
+    return [
+        KnowledgeChunk(chunk_id=f"c{i}", order=i, text=text, heading_path="s")
+        for i, text in enumerate(texts, start=1)
+    ]
 
 
-def _item(doc: str, language: LanguageCode, chunks: list[KnowledgeChunk], node: str = "N-HW-REP") -> KnowledgeItem:
+def _item(
+    doc: str,
+    language: LanguageCode,
+    chunks: list[KnowledgeChunk],
+    node: str = "N-HW-REP",
+) -> KnowledgeItem:
     return KnowledgeItem.register(
         document_id=DocumentId(doc),
         owning_node=NodeIdentifier(node),
@@ -64,7 +72,10 @@ def test_chunks_keep_document_id_version_heading_path_and_order() -> None:
     version = item.active_version(LanguageCode.EN)
     assert item.document_id.value == "AR-ORG-002"
     assert str(version.tag) == "1.0"
-    assert [c.heading_path for c in version.chunks] == ["AR-ORG-002 > 1", "AR-ORG-002 > 2"]
+    assert [c.heading_path for c in version.chunks] == [
+        "AR-ORG-002 > 1",
+        "AR-ORG-002 > 2",
+    ]
     assert [c.order for c in version.chunks] == [1, 2]
 
 
@@ -88,7 +99,14 @@ def test_fa_en_pair_of_same_document_is_not_a_duplicate() -> None:
 
 
 def test_shared_chunk_hash_is_overlap_not_exact() -> None:
-    left = _item("AR-FIN-008", LanguageCode.FA, _chunks("contract split 2180", "board only"))
-    right = _item("AR-ISS-024", LanguageCode.FA, _chunks("contract split 2180", "issue only"), node="N-LIB")
+    left = _item(
+        "AR-FIN-008", LanguageCode.FA, _chunks("contract split 2180", "board only")
+    )
+    right = _item(
+        "AR-ISS-024",
+        LanguageCode.FA,
+        _chunks("contract split 2180", "issue only"),
+        node="N-LIB",
+    )
     verdict = DuplicateDetector().classify_versions(left.versions[0], right.versions[0])
     assert verdict.kind is DuplicateKind.OVERLAP

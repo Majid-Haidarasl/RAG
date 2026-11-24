@@ -34,13 +34,18 @@ def acceptance(results: Iterable[JudgeResult]) -> dict[str, object]:
         "rate": round(len(accepted) / len(rows), 3) if rows else None,
         "mean_total": _mean([float(r.total) for r in scored]),
         "min_total": min((r.total for r in scored), default=None),
-        "criterion_means": {k: _mean([float(r.scores[k]) for r in scored if k in r.scores]) for k in keys},
+        "criterion_means": {
+            k: _mean([float(r.scores[k]) for r in scored if k in r.scores])
+            for k in keys
+        },
         "by_origin": {k: {"accepted": v[0], "n": v[1]} for k, v in by_origin.items()},
         "rejected_cases": [f"{r.case_id}({r.total})" for r in rows if not r.accepted],
     }
 
 
-def gold_metrics(results: Iterable[JudgeResult], *, exclude_tags: tuple[str, ...] = ()) -> dict[str, object]:
+def gold_metrics(
+    results: Iterable[JudgeResult], *, exclude_tags: tuple[str, ...] = ()
+) -> dict[str, object]:
     rows = [r for r in results if r.gold and not set(exclude_tags) & set(r.tags)]
     positives = [r for r in rows if r.gold == "accept"]
     negatives = [r for r in rows if r.gold == "reject"]
@@ -54,7 +59,11 @@ def gold_metrics(results: Iterable[JudgeResult], *, exclude_tags: tuple[str, ...
         "negatives": len(negatives),
         "negatives_rejected": sum(1 for r in negatives if not r.accepted),
         "errors": sum(1 for r in rows if r.decision is Decision.ERROR),
-        "disagreements": [f"{r.case_id}:{r.decision.value}({r.total})" for r in rows if not r.agrees_with_gold],
+        "disagreements": [
+            f"{r.case_id}:{r.decision.value}({r.total})"
+            for r in rows
+            if not r.agrees_with_gold
+        ],
     }
 
 
@@ -76,7 +85,9 @@ def rejection_rate(results: Iterable[JudgeResult]) -> dict[str, object]:
     }
 
 
-def agreement(first: Iterable[JudgeResult], second: Iterable[JudgeResult]) -> dict[str, object]:
+def agreement(
+    first: Iterable[JudgeResult], second: Iterable[JudgeResult]
+) -> dict[str, object]:
     """Accept/reject agreement of two judges on the same cases, with Cohen's kappa."""
     other = {r.case_id: r for r in second}
     pairs = [(r, other[r.case_id]) for r in first if r.case_id in other]
@@ -89,6 +100,14 @@ def agreement(first: Iterable[JudgeResult], second: Iterable[JudgeResult]) -> di
     pb = sum(1 for _, b in pairs if b.accepted) / n
     p_e = pa * pb + (1 - pa) * (1 - pb)
     kappa = round((p_o - p_e) / (1 - p_e), 3) if 1 - p_e > 1e-9 else None
-    return {"n": n, "agree": agree, "rate": round(p_o, 3), "kappa": kappa,
-            "disagreements": [f"{a.case_id}:{a.decision.value}/{b.decision.value}" for a, b in pairs
-                              if a.accepted != b.accepted]}
+    return {
+        "n": n,
+        "agree": agree,
+        "rate": round(p_o, 3),
+        "kappa": kappa,
+        "disagreements": [
+            f"{a.case_id}:{a.decision.value}/{b.decision.value}"
+            for a, b in pairs
+            if a.accepted != b.accepted
+        ],
+    }

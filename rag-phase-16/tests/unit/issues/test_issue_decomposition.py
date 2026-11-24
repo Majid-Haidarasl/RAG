@@ -3,7 +3,12 @@
 import pytest
 
 from rag_core.issues.application.services import IssueService
-from rag_core.issues.domain.decomposition import ARMANRAYAN_RULES, CausePathRule, RuleBasedDecomposer, SubIssueDraft
+from rag_core.issues.domain.decomposition import (
+    ARMANRAYAN_RULES,
+    CausePathRule,
+    RuleBasedDecomposer,
+    SubIssueDraft,
+)
 from rag_core.issues.domain.model import Issue
 from rag_core.issues.domain.status import IssueStatus, Resolution
 from rag_core.issues.infrastructure.memory import InMemoryIssueRepository
@@ -22,14 +27,27 @@ def _fresh_azarpakhsh() -> Issue:
     return issue
 
 
-def _issue(title: str, description: str = "", owner: str = "N-SW-SUP", affected=()) -> Issue:
-    return Issue.create(IssueId("AR-ISS-080"), title, N(owner), description=description, affected_nodes=tuple(N(a) for a in affected))
+def _issue(
+    title: str, description: str = "", owner: str = "N-SW-SUP", affected=()
+) -> Issue:
+    return Issue.create(
+        IssueId("AR-ISS-080"),
+        title,
+        N(owner),
+        description=description,
+        affected_nodes=tuple(N(a) for a in affected),
+    )
 
 
 def test_azarpakhsh_produces_the_four_cause_paths() -> None:
-    drafts = RuleBasedDecomposer(directory=org_directory()).decompose(_fresh_azarpakhsh())
+    drafts = RuleBasedDecomposer(directory=org_directory()).decompose(
+        _fresh_azarpakhsh()
+    )
     assert [(d.code, d.owner_node) for d in drafts] == [
-        ("HW", "N-HW-REP"), ("WIN", "N-SW-WIN"), ("WEB", "N-SW-WEB"), ("LEG", "N-ADM-LEG"),
+        ("HW", "N-HW-REP"),
+        ("WIN", "N-SW-WIN"),
+        ("WEB", "N-SW-WEB"),
+        ("LEG", "N-ADM-LEG"),
     ]
 
 
@@ -79,7 +97,12 @@ def test_persian_only_text_decomposes_the_same_way() -> None:
         "ناهماهنگی کنترلر RAID و حافظه سرور با کلاینت ویندوزی",
         "تأخیر ماژول گزارش‌گیری وب و تأخیر تحویل قرارداد",
     )
-    assert [d.code for d in RuleBasedDecomposer().decompose(issue)] == ["HW", "WIN", "WEB", "LEG"]
+    assert [d.code for d in RuleBasedDecomposer().decompose(issue)] == [
+        "HW",
+        "WIN",
+        "WEB",
+        "LEG",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -96,11 +119,19 @@ def test_persian_only_text_decomposes_the_same_way() -> None:
     ],
 )
 def test_single_cause_paths(text: str, codes: list[str]) -> None:
-    assert [d.code for d in RuleBasedDecomposer(per_unit_fallback=False).decompose(_issue(text))] == codes
+    assert [
+        d.code
+        for d in RuleBasedDecomposer(per_unit_fallback=False).decompose(_issue(text))
+    ] == codes
 
 
 def test_generic_server_problem_is_not_a_hardware_trigger() -> None:
-    assert RuleBasedDecomposer(per_unit_fallback=False).decompose(_issue("Vague server problem at the customer")) == []
+    assert (
+        RuleBasedDecomposer(per_unit_fallback=False).decompose(
+            _issue("Vague server problem at the customer")
+        )
+        == []
+    )
 
 
 def test_dependencies_are_dropped_when_the_path_is_absent() -> None:
@@ -109,7 +140,9 @@ def test_dependencies_are_dropped_when_the_path_is_absent() -> None:
 
 
 def test_per_unit_fallback_for_uncovered_affected_nodes() -> None:
-    issue = _issue("Windows driver mismatch", owner="N-SW-WIN", affected=("N-ADM-SEC", "N-SW-WIN"))
+    issue = _issue(
+        "Windows driver mismatch", owner="N-SW-WIN", affected=("N-ADM-SEC", "N-SW-WIN")
+    )
     drafts = RuleBasedDecomposer().decompose(issue)
     assert [d.code for d in drafts] == ["WIN", "UADMSEC"]
     assert drafts[1].owner_node == "N-ADM-SEC" and drafts[1].rule == "per_unit"
@@ -118,7 +151,9 @@ def test_per_unit_fallback_for_uncovered_affected_nodes() -> None:
 def test_owner_missing_from_registry_is_rejected() -> None:
     rules = (CausePathRule("AI", "AI team", "تیم هوش مصنوعی", "N-SW-AI", ("model",)),)
     with pytest.raises(NotFoundError, match="N-SW-AI"):
-        RuleBasedDecomposer(rules=rules, directory=org_directory()).decompose(_issue("model drift"))
+        RuleBasedDecomposer(rules=rules, directory=org_directory()).decompose(
+            _issue("model drift")
+        )
 
 
 def test_every_default_rule_owner_exists_in_the_registry() -> None:
@@ -145,11 +180,25 @@ class StubLlmDecomposer:
     """Implements the optional IssueDecomposer port; no model is called."""
 
     def decompose(self, issue: Issue) -> list[SubIssueDraft]:
-        return [SubIssueDraft("UX", "Report readability", "خوانایی گزارش", "N-SW-UX", (), (), (), False, ("stub",))]
+        return [
+            SubIssueDraft(
+                "UX",
+                "Report readability",
+                "خوانایی گزارش",
+                "N-SW-UX",
+                (),
+                (),
+                (),
+                False,
+                ("stub",),
+            )
+        ]
 
 
 def test_service_accepts_an_alternative_decomposer_port() -> None:
-    service = IssueService(InMemoryIssueRepository(), org_directory(), decomposer=StubLlmDecomposer())
+    service = IssueService(
+        InMemoryIssueRepository(), org_directory(), decomposer=StubLlmDecomposer()
+    )
     issue = _issue("anything")
     added = service.decompose(issue)
     assert [s.code for s in added] == ["UX"] and str(added[0].owner_node) == "N-SW-UX"

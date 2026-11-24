@@ -29,7 +29,7 @@ def context_of(path: str) -> str:
     parts = [p for p in path.replace("\\", "/").split("/") if p]
     if "rag_core" not in parts:
         return "other"
-    rest = parts[parts.index("rag_core") + 1:]
+    rest = parts[parts.index("rag_core") + 1 :]
     if len(rest) <= 1:
         return "rag_core"
     return rest[0]
@@ -48,9 +48,13 @@ class ModuleCoverage:
         if not self.path.strip():
             raise InvariantError("a module needs a path")
         if not 0 <= self.covered <= self.statements:
-            raise InvariantError(f"{self.path}: covered lines {self.covered} outside 0..{self.statements}")
+            raise InvariantError(
+                f"{self.path}: covered lines {self.covered} outside 0..{self.statements}"
+            )
         if not 0 <= self.covered_branches <= self.branches:
-            raise InvariantError(f"{self.path}: covered branches {self.covered_branches} outside 0..{self.branches}")
+            raise InvariantError(
+                f"{self.path}: covered branches {self.covered_branches} outside 0..{self.branches}"
+            )
 
     @property
     def context(self) -> str:
@@ -86,15 +90,26 @@ class CoverageTotals:
         return percent(self.covered_branches, self.branches)
 
     def to_dict(self) -> dict[str, object]:
-        return {"modules": self.modules, "statements": self.statements, "covered": self.covered,
-                "line_pct": self.line_pct, "branches": self.branches, "covered_branches": self.covered_branches,
-                "branch_pct": self.branch_pct}
+        return {
+            "modules": self.modules,
+            "statements": self.statements,
+            "covered": self.covered,
+            "line_pct": self.line_pct,
+            "branches": self.branches,
+            "covered_branches": self.covered_branches,
+            "branch_pct": self.branch_pct,
+        }
 
 
 def totals(modules: Iterable[ModuleCoverage]) -> CoverageTotals:
     mods = list(modules)
-    return CoverageTotals(sum(m.statements for m in mods), sum(m.covered for m in mods),
-                          sum(m.branches for m in mods), sum(m.covered_branches for m in mods), len(mods))
+    return CoverageTotals(
+        sum(m.statements for m in mods),
+        sum(m.covered for m in mods),
+        sum(m.branches for m in mods),
+        sum(m.covered_branches for m in mods),
+        len(mods),
+    )
 
 
 @dataclass(frozen=True)
@@ -122,7 +137,11 @@ class CoverageReport:
         """The ``n`` least covered modules with at least ``min_statements`` statements (most missed lines first on ties)."""
         if n < 0 or min_statements < 0:
             raise InvariantError("n and min_statements must be >= 0")
-        big = [m for m in self.modules if m.statements >= min_statements and m.line_pct is not None]
+        big = [
+            m
+            for m in self.modules
+            if m.statements >= min_statements and m.line_pct is not None
+        ]
         return sorted(big, key=lambda m: (m.line_pct, -m.missed, m.path))[:n]
 
 
@@ -135,12 +154,22 @@ class GateResult:
     weak_contexts: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, object]:
-        return {"passed": self.passed, "line_pct": self.line_pct, "min_line_pct": self.min_line_pct,
-                "reasons": list(self.reasons), "weak_contexts": list(self.weak_contexts)}
+        return {
+            "passed": self.passed,
+            "line_pct": self.line_pct,
+            "min_line_pct": self.min_line_pct,
+            "reasons": list(self.reasons),
+            "weak_contexts": list(self.weak_contexts),
+        }
 
 
-def coverage_gate(report: CoverageReport | None, min_line_pct: float, *, min_context_pct: float = 0.0,
-                  min_modules: int = 1) -> GateResult:
+def coverage_gate(
+    report: CoverageReport | None,
+    min_line_pct: float,
+    *,
+    min_context_pct: float = 0.0,
+    min_modules: int = 1,
+) -> GateResult:
     """Pass when total line coverage >= ``min_line_pct``; contexts under ``min_context_pct`` are reported
     (and fail the gate only when ``min_context_pct`` > 0)."""
     if not 0 <= min_line_pct <= 100 or not 0 <= min_context_pct <= 100:
@@ -164,4 +193,3 @@ def coverage_gate(report: CoverageReport | None, min_line_pct: float, *, min_con
         if weak:
             reasons.append(f"contexts below {min_context_pct}: {', '.join(weak)}")
     return GateResult(not reasons, pct, min_line_pct, tuple(reasons), tuple(weak))
-

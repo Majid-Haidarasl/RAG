@@ -5,7 +5,10 @@ from rag_core.hierarchy.domain.model import (
     NodeType,
     Organization,
 )
-from rag_core.hierarchy.domain.repositories import LayerRegistryRepository, OrganizationRepository
+from rag_core.hierarchy.domain.repositories import (
+    LayerRegistryRepository,
+    OrganizationRepository,
+)
 
 __all__ = [
     "FORBIDDEN_CAPABILITY_NAMES",

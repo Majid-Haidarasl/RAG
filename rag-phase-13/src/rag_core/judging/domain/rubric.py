@@ -22,8 +22,8 @@ _KEY_RE = re.compile(r"^[a-z][a-z0-9_]{1,40}$")
 class OutputKind(StrEnum):
     """What is being judged. The kind selects guidance lines and the prompt."""
 
-    QA_ANSWER = "qa_answer"      # a node-scoped answer was expected (Phase 8)
-    QA_REFUSAL = "qa_refusal"    # a refusal / escalation was expected (Phase 8)
+    QA_ANSWER = "qa_answer"  # a node-scoped answer was expected (Phase 8)
+    QA_REFUSAL = "qa_refusal"  # a refusal / escalation was expected (Phase 8)
     IKE_SUMMARY = "ike_summary"  # an issue summary built from IKE facts (Phase 9)
 
 
@@ -48,7 +48,9 @@ class Criterion:
         if self.max_points <= 0:
             raise InvariantError(f"{self.key}: max_points must be positive")
         if not 0 <= self.min_points <= self.max_points:
-            raise InvariantError(f"{self.key}: min_points must be within 0..{self.max_points}")
+            raise InvariantError(
+                f"{self.key}: min_points must be within 0..{self.max_points}"
+            )
 
     @property
     def names(self) -> tuple[str, ...]:
@@ -68,7 +70,9 @@ class Rubric:
     criteria: tuple[Criterion, ...]
     out_of: int = 20
     accept_total: int = 18
-    _lookup: dict[str, str] = field(default_factory=dict, init=False, repr=False, compare=False, hash=False)
+    _lookup: dict[str, str] = field(
+        default_factory=dict, init=False, repr=False, compare=False, hash=False
+    )
 
     def __post_init__(self) -> None:
         if not self.rubric_id.strip() or not self.version.strip():
@@ -87,7 +91,9 @@ class Rubric:
         for c in self.criteria:
             for name in c.names:
                 if name in lookup and lookup[name] != c.key:
-                    raise InvariantError(f"name {name!r} is used by {lookup[name]} and {c.key}")
+                    raise InvariantError(
+                        f"name {name!r} is used by {lookup[name]} and {c.key}"
+                    )
                 lookup[name] = c.key
         self._lookup.update(lookup)
 
@@ -122,7 +128,10 @@ class Rubric:
         return self._lookup.get(canonical_name(name))
 
     def guidance_lines(self, kind: str) -> list[str]:
-        return [f"- {c.key} (0-{c.max_points}): {c.guidance_for(kind) or c.title_en}" for c in self.criteria]
+        return [
+            f"- {c.key} (0-{c.max_points}): {c.guidance_for(kind) or c.title_en}"
+            for c in self.criteria
+        ]
 
     def reply_skeleton(self) -> str:
         inner = ", ".join(f'"{c.key}": <0-{c.max_points}>' for c in self.criteria)
@@ -130,9 +139,20 @@ class Rubric:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "id": self.rubric_id, "version": self.version, "out_of": self.out_of, "accept_total": self.accept_total,
-            "criteria": [{"key": c.key, "max": c.max_points, "min": c.min_points, "title_en": c.title_en,
-                          "title_fa": c.title_fa} for c in self.criteria],
+            "id": self.rubric_id,
+            "version": self.version,
+            "out_of": self.out_of,
+            "accept_total": self.accept_total,
+            "criteria": [
+                {
+                    "key": c.key,
+                    "max": c.max_points,
+                    "min": c.min_points,
+                    "title_en": c.title_en,
+                    "title_fa": c.title_fa,
+                }
+                for c in self.criteria
+            ],
         }
 
 
@@ -142,15 +162,52 @@ def default_rubric() -> Rubric:
         "judge.rubric",
         "1.0.0",
         (
-            Criterion("grounding", 5, 4, "Grounding", "پشتوانه‌داری",
-                      ("groundedness", "faithfulness", "grounded", "support", "evidence")),
-            Criterion("correctness", 5, 4, "Correctness", "درستی",
-                      ("accuracy", "correct", "factual_accuracy", "factuality")),
-            Criterion("citation", 4, 3, "Citation / traceability", "ارجاع",
-                      ("citations", "traceability", "references", "attribution", "cite")),
-            Criterion("completeness", 3, 2, "Completeness", "کامل‌بودن", ("coverage", "complete")),
-            Criterion("clarity", 3, 2, "Language and clarity", "زبان و وضوح",
-                      ("language", "clarity_language", "language_clarity", "fluency", "style")),
+            Criterion(
+                "grounding",
+                5,
+                4,
+                "Grounding",
+                "پشتوانه‌داری",
+                ("groundedness", "faithfulness", "grounded", "support", "evidence"),
+            ),
+            Criterion(
+                "correctness",
+                5,
+                4,
+                "Correctness",
+                "درستی",
+                ("accuracy", "correct", "factual_accuracy", "factuality"),
+            ),
+            Criterion(
+                "citation",
+                4,
+                3,
+                "Citation / traceability",
+                "ارجاع",
+                ("citations", "traceability", "references", "attribution", "cite"),
+            ),
+            Criterion(
+                "completeness",
+                3,
+                2,
+                "Completeness",
+                "کامل‌بودن",
+                ("coverage", "complete"),
+            ),
+            Criterion(
+                "clarity",
+                3,
+                2,
+                "Language and clarity",
+                "زبان و وضوح",
+                (
+                    "language",
+                    "clarity_language",
+                    "language_clarity",
+                    "fluency",
+                    "style",
+                ),
+            ),
         ),
         out_of=20,
         accept_total=18,

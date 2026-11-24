@@ -28,12 +28,21 @@ def deliverables_from_dict(data: Any) -> list[Deliverable]:
                 raise InvariantError(f"phase {number}: a deliverable must be a mapping")
             unknown = sorted(set(d) - KEYS)
             if unknown:
-                raise InvariantError(f"phase {number}: unknown deliverable keys {', '.join(unknown)}")
+                raise InvariantError(
+                    f"phase {number}: unknown deliverable keys {', '.join(unknown)}"
+                )
             paths = d.get("paths") or []
             if isinstance(paths, str):
                 paths = [paths]
-            out.append(Deliverable(number, str(d.get("spec", "")), str(d.get("status", "")),
-                                   tuple(str(p) for p in paths), str(d.get("note", "") or "")))
+            out.append(
+                Deliverable(
+                    number,
+                    str(d.get("spec", "")),
+                    str(d.get("status", "")),
+                    tuple(str(p) for p in paths),
+                    str(d.get("note", "") or ""),
+                )
+            )
     return out
 
 

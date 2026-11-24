@@ -30,7 +30,9 @@ class FakeTransfer:
     calls: list[tuple[str, list[str], int]] = field(default_factory=list)
 
     def transfer(self, cycle_id, step, received, expected_children):  # noqa: ANN001, ANN201
-        self.calls.append((step.source_node, [p.source_node for p in received], expected_children))
+        self.calls.append(
+            (step.source_node, [p.source_node for p in received], expected_children)
+        )
         if step.source_node in self.fail:
             raise RuntimeError("boom")
         ok = step.source_node not in self.reject
@@ -53,19 +55,33 @@ class FakeStore:
 
 
 def plan():  # noqa: ANN201
-    return build_plan([
-        TreeNode("N-BRD", 0, None), TreeNode("N-CEO", 1, "N-BRD"), TreeNode("N-HW", 2, "N-CEO"),
-        TreeNode("N-HW-REP", 3, "N-HW"), TreeNode("N-HW-ADV", 3, "N-HW"),
-    ])
+    return build_plan(
+        [
+            TreeNode("N-BRD", 0, None),
+            TreeNode("N-CEO", 1, "N-BRD"),
+            TreeNode("N-HW", 2, "N-CEO"),
+            TreeNode("N-HW-REP", 3, "N-HW"),
+            TreeNode("N-HW-ADV", 3, "N-HW"),
+        ]
+    )
 
 
 def test_children_packages_reach_their_parent() -> None:
     transfer = FakeTransfer()
     run = CycleProcessor(transfer).run(CYCLE, plan())
-    assert transfer.calls == [("N-HW-ADV", [], 0), ("N-HW-REP", [], 0), ("N-HW", ["N-HW-ADV", "N-HW-REP"], 2),
-                              ("N-CEO", ["N-HW"], 1)]
+    assert transfer.calls == [
+        ("N-HW-ADV", [], 0),
+        ("N-HW-REP", [], 0),
+        ("N-HW", ["N-HW-ADV", "N-HW-REP"], 2),
+        ("N-CEO", ["N-HW"], 1),
+    ]
     assert run.report.counts()["accepted"] == 4
-    assert [p.source_node for p in run.accepted_packages()] == ["N-HW-ADV", "N-HW-REP", "N-HW", "N-CEO"]
+    assert [p.source_node for p in run.accepted_packages()] == [
+        "N-HW-ADV",
+        "N-HW-REP",
+        "N-HW",
+        "N-CEO",
+    ]
 
 
 def test_rejected_package_is_not_forwarded() -> None:
@@ -86,9 +102,13 @@ def test_failing_node_does_not_stop_the_cycle() -> None:
 
 def test_store_receives_every_built_package() -> None:
     store = FakeStore()
-    run = CycleProcessor(FakeTransfer(fail={"N-HW-ADV"})).run(CYCLE, plan(), store=store)
+    run = CycleProcessor(FakeTransfer(fail={"N-HW-ADV"})).run(
+        CYCLE, plan(), store=store
+    )
     assert store.saved == ["N-HW-REP", "N-HW", "N-CEO"]
-    assert {s.store_action for s in run.report.steps if s.outcome is StepOutcome.BUILT} == {"inserted"}
+    assert {
+        s.store_action for s in run.report.steps if s.outcome is StepOutcome.BUILT
+    } == {"inserted"}
 
 
 def test_report_lists_skipped_root() -> None:

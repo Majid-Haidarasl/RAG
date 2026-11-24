@@ -7,11 +7,41 @@ from rag_core.shared_kernel.layer import LayerIndex
 
 def arm_layers() -> list[Layer]:
     return [
-        Layer(LayerIndex(0), "L0", "Strategic governance", "راهبری استراتژیک", default_detail_level="executive"),
-        Layer(LayerIndex(1), "L1", "Parent organization", "سازمان مادر", default_detail_level="managerial"),
-        Layer(LayerIndex(2), "L2", "Specialist deputies", "معاونت‌های تخصصی", default_detail_level="technical_summary"),
-        Layer(LayerIndex(3), "L3", "Execution teams", "تیم‌ها و واحدهای اجرا", default_detail_level="detailed_technical"),
-        Layer(LayerIndex(4), "L4", "Knowledge repository", "مخزن دانش داخلی", default_detail_level="detailed_technical"),
+        Layer(
+            LayerIndex(0),
+            "L0",
+            "Strategic governance",
+            "راهبری استراتژیک",
+            default_detail_level="executive",
+        ),
+        Layer(
+            LayerIndex(1),
+            "L1",
+            "Parent organization",
+            "سازمان مادر",
+            default_detail_level="managerial",
+        ),
+        Layer(
+            LayerIndex(2),
+            "L2",
+            "Specialist deputies",
+            "معاونت‌های تخصصی",
+            default_detail_level="technical_summary",
+        ),
+        Layer(
+            LayerIndex(3),
+            "L3",
+            "Execution teams",
+            "تیم‌ها و واحدهای اجرا",
+            default_detail_level="detailed_technical",
+        ),
+        Layer(
+            LayerIndex(4),
+            "L4",
+            "Knowledge repository",
+            "مخزن دانش داخلی",
+            default_detail_level="detailed_technical",
+        ),
     ]
 
 

@@ -23,7 +23,9 @@ def find_soffice() -> Path | None:
     return None
 
 
-def convert_doc_to_docx(source: Path, dest_dir: Path, soffice: Path | None = None) -> Path:
+def convert_doc_to_docx(
+    source: Path, dest_dir: Path, soffice: Path | None = None
+) -> Path:
     binary = soffice or find_soffice()
     if binary is None:
         raise MissingLibreOfficeError(str(source))
@@ -47,9 +49,13 @@ def convert_doc_to_docx(source: Path, dest_dir: Path, soffice: Path | None = Non
             timeout=CONVERT_TIMEOUT_S,
         )
     except subprocess.TimeoutExpired as exc:
-        raise ParseFailedError(str(source), f"LibreOffice conversion timed out after {CONVERT_TIMEOUT_S}s") from exc
+        raise ParseFailedError(
+            str(source), f"LibreOffice conversion timed out after {CONVERT_TIMEOUT_S}s"
+        ) from exc
     if completed.returncode != 0:
-        detail = (completed.stderr or completed.stdout or "").strip() or f"exit {completed.returncode}"
+        detail = (
+            completed.stderr or completed.stdout or ""
+        ).strip() or f"exit {completed.returncode}"
         raise ParseFailedError(str(source), f"LibreOffice conversion failed: {detail}")
     produced = dest_dir / (source.stem + ".docx")
     if not produced.is_file():
@@ -58,11 +64,15 @@ def convert_doc_to_docx(source: Path, dest_dir: Path, soffice: Path | None = Non
         if len(matches) == 1:
             produced = matches[0]
         else:
-            raise ParseFailedError(str(source), "LibreOffice did not write a .docx output")
+            raise ParseFailedError(
+                str(source), "LibreOffice did not write a .docx output"
+            )
     return produced
 
 
-def parse_doc(path: Path, soffice: Path | None = None) -> tuple[list[ContentBlock], Path]:
+def parse_doc(
+    path: Path, soffice: Path | None = None
+) -> tuple[list[ContentBlock], Path]:
     """Convert ``path`` and parse the DOCX. Returns (blocks, converted_docx_path)."""
     if find_soffice() is None and soffice is None:
         raise MissingLibreOfficeError(str(path))

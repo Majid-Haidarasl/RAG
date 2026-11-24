@@ -30,9 +30,14 @@ def module_from_entry(path: str, entry: Any) -> ModuleCoverage:
     if "num_statements" not in s or "covered_lines" not in s:
         raise InvariantError(f"{path}: summary needs num_statements and covered_lines")
     missing = entry.get("missing_lines") or []
-    return ModuleCoverage(path.replace("\\", "/"), _int(s, "num_statements", path), _int(s, "covered_lines", path),
-                          _int(s, "num_branches", path), _int(s, "covered_branches", path),
-                          tuple(int(n) for n in missing))
+    return ModuleCoverage(
+        path.replace("\\", "/"),
+        _int(s, "num_statements", path),
+        _int(s, "covered_lines", path),
+        _int(s, "num_branches", path),
+        _int(s, "covered_branches", path),
+        tuple(int(n) for n in missing),
+    )
 
 
 def report_from_dict(data: Any, *, package: str = "rag_core") -> CoverageReport:
@@ -40,14 +45,23 @@ def report_from_dict(data: Any, *, package: str = "rag_core") -> CoverageReport:
     if not isinstance(data, dict) or not isinstance(data.get("files"), dict):
         raise InvariantError("coverage json needs a 'files' mapping")
     meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
-    mods = [module_from_entry(p, e) for p, e in sorted(data["files"].items())
-            if f"/{package}/" in "/" + p.replace("\\", "/")]
-    return CoverageReport(tuple(mods), bool(meta.get("branch_coverage")), str(meta.get("version", "")))
+    mods = [
+        module_from_entry(p, e)
+        for p, e in sorted(data["files"].items())
+        if f"/{package}/" in "/" + p.replace("\\", "/")
+    ]
+    return CoverageReport(
+        tuple(mods), bool(meta.get("branch_coverage")), str(meta.get("version", ""))
+    )
 
 
-def load_coverage_report(path: Path, *, package: str = "rag_core") -> CoverageReport | None:
+def load_coverage_report(
+    path: Path, *, package: str = "rag_core"
+) -> CoverageReport | None:
     """``None`` when the file does not exist (coverage was not measured)."""
     path = Path(path)
     if not path.is_file():
         return None
-    return report_from_dict(json.loads(path.read_text(encoding="utf-8")), package=package)
+    return report_from_dict(
+        json.loads(path.read_text(encoding="utf-8")), package=package
+    )

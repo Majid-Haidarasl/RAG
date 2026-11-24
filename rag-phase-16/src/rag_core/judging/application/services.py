@@ -54,11 +54,15 @@ class LlmJudge:
         return prompt
 
     def render(self, case: JudgeCase) -> tuple[str, str]:
-        return self.prompt_for(case).render(case, self.rubric, sources_char_budget=self.sources_char_budget)
+        return self.prompt_for(case).render(
+            case, self.rubric, sources_char_budget=self.sources_char_budget
+        )
 
     def judge(self, case: JudgeCase) -> JudgeResult:
         prompt = self.prompt_for(case)
-        system, user = prompt.render(case, self.rubric, sources_char_budget=self.sources_char_budget)
+        system, user = prompt.render(
+            case, self.rubric, sources_char_budget=self.sources_char_budget
+        )
         t0 = time.perf_counter()
         raw = ""
         error = ""
@@ -81,14 +85,33 @@ class LlmJudge:
             if parsed.complete:
                 break
         seconds = time.perf_counter() - t0
-        extra = {"raw": raw[:RAW_LIMIT], "seconds": seconds, "attempts": attempts,
-                 "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
+        extra = {
+            "raw": raw[:RAW_LIMIT],
+            "seconds": seconds,
+            "attempts": attempts,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+        }
         if last is None:
-            return JudgeResult.for_case(case, self.name, {}, self.policy.error(error or "unparseable"),
-                                        parse_mode="error", **extra)
+            return JudgeResult.for_case(
+                case,
+                self.name,
+                {},
+                self.policy.error(error or "unparseable"),
+                parse_mode="error",
+                **extra,
+            )
         outcome = self.policy.decide(last.scores)
-        return JudgeResult.for_case(case, self.name, last.scores, outcome, notes=last.issues, parse_mode=last.mode,
-                                    warnings=last.warnings, **extra)
+        return JudgeResult.for_case(
+            case,
+            self.name,
+            last.scores,
+            outcome,
+            notes=last.issues,
+            parse_mode=last.mode,
+            warnings=last.warnings,
+            **extra,
+        )
 
 
 def judge_all(
@@ -114,7 +137,9 @@ def judge_all(
             if policy is None or consecutive > max_consecutive_errors:
                 raise
             reason = f"model:{type(exc).__name__}: {exc}"[:300]
-            result = JudgeResult.for_case(case, judge.name, {}, policy.error(reason), parse_mode="error")
+            result = JudgeResult.for_case(
+                case, judge.name, {}, policy.error(reason), parse_mode="error"
+            )
         out.append(result)
         if progress is not None:
             progress(i, len(cases), result)

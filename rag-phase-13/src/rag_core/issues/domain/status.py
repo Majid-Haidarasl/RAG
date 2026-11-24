@@ -100,13 +100,19 @@ class Resolution(StrEnum):
 
 
 # Closing an issue that was never worked on needs a non-fix resolution.
-EARLY_CLOSE_RESOLUTIONS = frozenset({Resolution.DUPLICATE, Resolution.INVALID, Resolution.WONT_FIX})
+EARLY_CLOSE_RESOLUTIONS = frozenset(
+    {Resolution.DUPLICATE, Resolution.INVALID, Resolution.WONT_FIX}
+)
 INVALIDATING_RESOLUTIONS = frozenset({Resolution.DUPLICATE, Resolution.INVALID})
 
 TRANSITIONS: dict[IssueStatus, frozenset[IssueStatus]] = {
     IssueStatus.OPEN: frozenset({IssueStatus.TRIAGED, IssueStatus.CLOSED}),
-    IssueStatus.TRIAGED: frozenset({IssueStatus.IN_PROGRESS, IssueStatus.BLOCKED, IssueStatus.CLOSED}),
-    IssueStatus.IN_PROGRESS: frozenset({IssueStatus.BLOCKED, IssueStatus.RESOLVED, IssueStatus.TRIAGED}),
+    IssueStatus.TRIAGED: frozenset(
+        {IssueStatus.IN_PROGRESS, IssueStatus.BLOCKED, IssueStatus.CLOSED}
+    ),
+    IssueStatus.IN_PROGRESS: frozenset(
+        {IssueStatus.BLOCKED, IssueStatus.RESOLVED, IssueStatus.TRIAGED}
+    ),
     IssueStatus.BLOCKED: frozenset({IssueStatus.IN_PROGRESS, IssueStatus.TRIAGED}),
     IssueStatus.RESOLVED: frozenset({IssueStatus.CLOSED, IssueStatus.REOPENED}),
     IssueStatus.CLOSED: frozenset({IssueStatus.REOPENED}),
@@ -128,12 +134,16 @@ def check_transition(
     """Raise ``InvariantError`` unless ``current → target`` is allowed with its guards."""
     if not can_transition(current, target):
         allowed = ", ".join(sorted(s.value for s in TRANSITIONS[current]))
-        raise InvariantError(f"transition {current} → {target} is not allowed (allowed: {allowed})")
+        raise InvariantError(
+            f"transition {current} → {target} is not allowed (allowed: {allowed})"
+        )
     if target is IssueStatus.CLOSED:
         if current is IssueStatus.RESOLVED:
             if resolution not in (None, Resolution.FIXED):
                 raise InvariantError("a resolved issue closes as fixed")
         elif resolution not in EARLY_CLOSE_RESOLUTIONS:
-            raise InvariantError(f"closing from {current} needs resolution duplicate, invalid or wont_fix")
+            raise InvariantError(
+                f"closing from {current} needs resolution duplicate, invalid or wont_fix"
+            )
     if target in {IssueStatus.BLOCKED, IssueStatus.REOPENED} and not reason.strip():
         raise InvariantError(f"moving to {target} requires a reason")

@@ -2,7 +2,12 @@
 
 import pytest
 
-from rag_core.knowledge.domain.model import ChunkStatus, KnowledgeChunk, VersionStatus, VersionTag
+from rag_core.knowledge.domain.model import (
+    ChunkStatus,
+    KnowledgeChunk,
+    VersionStatus,
+    VersionTag,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from tests.fixtures.knowledge.factories import D1, FA, chunks, item
 
@@ -14,8 +19,14 @@ V10, V11 = VersionTag(1, 0), VersionTag(1, 1)
 def test_new_chunks_start_active_and_carry_normalized_hash() -> None:
     c = KnowledgeChunk(chunk_id="d#c0001", order=1, text="می‌رود")
     assert c.status is ChunkStatus.ACTIVE
-    assert c.normalized_hash == KnowledgeChunk(chunk_id="x", order=1, text="میرود").normalized_hash
-    assert c.content_hash != KnowledgeChunk(chunk_id="x", order=1, text="میرود").content_hash
+    assert (
+        c.normalized_hash
+        == KnowledgeChunk(chunk_id="x", order=1, text="میرود").normalized_hash
+    )
+    assert (
+        c.content_hash
+        != KnowledgeChunk(chunk_id="x", order=1, text="میرود").content_hash
+    )
 
 
 def test_chunk_is_immutable_and_status_change_returns_copy() -> None:
@@ -67,7 +78,12 @@ def test_reingest_unchanged_sha_is_noop_with_event() -> None:
 def test_reingest_changed_sha_bumps_minor_and_retires_old_chunks() -> None:
     it = item(sha="abc")
     v = it.reingest(FA, "def", chunks("AR-HW-012", "x"), effective_from=D1)
-    assert v is not None and v.tag == V11 and v.supersedes == V10 and v.file_sha256 == "def"
+    assert (
+        v is not None
+        and v.tag == V11
+        and v.supersedes == V10
+        and v.file_sha256 == "def"
+    )
     assert it.get_version(V10, FA).count(ChunkStatus.RETIRED) == 2
 
 

@@ -92,7 +92,9 @@ class ContextAssembler:
         out: dict[str, str] = {}
         for h in hits:
             label = h.record.source.label
-            out[h.key] = f"{label}/{h.record.language}" if len(base[label]) > 1 else label
+            out[h.key] = (
+                f"{label}/{h.record.language}" if len(base[label]) > 1 else label
+            )
         return out
 
     def assemble(self, hits: list[Hit]) -> AssembledContext:
@@ -108,15 +110,22 @@ class ContextAssembler:
         used = 0
         for h in sorted(hits, key=lambda x: x.rank):
             text = _cut(h.record.text, self.max_block_tokens)
-            tokens = estimate_tokens(text) + estimate_tokens(h.record.source.describe()) + 4
+            tokens = (
+                estimate_tokens(text) + estimate_tokens(h.record.source.describe()) + 4
+            )
             if used + tokens > self.budget_tokens:
                 ctx.dropped.append(h.key)
                 continue
             used += tokens
-            chosen.append(ContextBlock(labels[h.key], h, text, tokens, text != h.record.text))
+            chosen.append(
+                ContextBlock(labels[h.key], h, text, tokens, text != h.record.text)
+            )
         # ... then order for reading: document by best rank, chunks by order.
         chosen.sort(
-            key=lambda b: (doc_rank[(b.hit.record.document_id, b.hit.record.language)], b.hit.record.order)
+            key=lambda b: (
+                doc_rank[(b.hit.record.document_id, b.hit.record.language)],
+                b.hit.record.order,
+            )
         )
         ctx.blocks = chosen
         return ctx

@@ -15,7 +15,12 @@ from rag_core.rfp.domain.blueprint import (
     Requirement,
 )
 from rag_core.shared_kernel.errors import InvariantError
-from tests.fixtures.rfp.samples import MANDATORY, shipped_blueprint, with_requirement, without_requirement
+from tests.fixtures.rfp.samples import (
+    MANDATORY,
+    shipped_blueprint,
+    with_requirement,
+    without_requirement,
+)
 
 pytestmark = [pytest.mark.rfp_gen]
 
@@ -23,7 +28,11 @@ pytestmark = [pytest.mark.rfp_gen]
 def test_shipped_blueprint_shape() -> None:
     bp = shipped_blueprint()
     assert bp.blueprint_id == "BP-WEB-REPORTING" and bp.rfp_id == "AR-RFP-1403-07"
-    assert bp.owner_node == "N-SW" and bp.item == "AR-ISS-024/WEB" and bp.reference_document == "AR-RFP-025"
+    assert (
+        bp.owner_node == "N-SW"
+        and bp.item == "AR-ISS-024/WEB"
+        and bp.reference_document == "AR-RFP-025"
+    )
     assert bp.issues == ("AR-ISS-024", "AR-ISS-035")
     assert (len(bp.requirements), len(bp.criteria), len(bp.links)) == (11, 2, 7)
 
@@ -40,33 +49,56 @@ def test_every_section_present_and_mandatory_ids() -> None:
     assert bp.sections() == SECTION_ORDER
     assert bp.missing_mandatory() == ()
     assert bp.mandatory_ids() == MANDATORY
-    assert {bp.requirement(r).section.value for r in MANDATORY} == set(MANDATORY_SECTIONS)
+    assert {bp.requirement(r).section.value for r in MANDATORY} == set(
+        MANDATORY_SECTIONS
+    )
 
 
 def test_linked_ids_are_rfp_item_and_issues() -> None:
-    assert shipped_blueprint().linked_ids() == ("AR-RFP-1403-07", "AR-ISS-024/WEB", "AR-ISS-024", "AR-ISS-035")
+    assert shipped_blueprint().linked_ids() == (
+        "AR-RFP-1403-07",
+        "AR-ISS-024/WEB",
+        "AR-ISS-024",
+        "AR-ISS-035",
+    )
 
 
-def test_record_ids_carry_no_digits_so_the_fact_checker_never_reads_them_as_data() -> None:
+def test_record_ids_carry_no_digits_so_the_fact_checker_never_reads_them_as_data() -> (
+    None
+):
     bp = shipped_blueprint()
-    ids = [bp.blueprint_id, *(r.requirement_id for r in bp.requirements), *(c.criterion_id for c in bp.criteria),
-           *(x.link_id for x in bp.links)]
+    ids = [
+        bp.blueprint_id,
+        *(r.requirement_id for r in bp.requirements),
+        *(c.criterion_id for c in bp.criteria),
+        *(x.link_id for x in bp.links),
+    ]
     assert all(not re.search(r"\d", i) for i in ids)
 
 
 def test_answered_in_names_a_response_section() -> None:
     bp = shipped_blueprint()
-    assert all(r.answered_in in RESPONSE_SECTIONS for r in bp.requirements if r.answered_in)
+    assert all(
+        r.answered_in in RESPONSE_SECTIONS for r in bp.requirements if r.answered_in
+    )
     assert bp.response_sections == RESPONSE_SECTIONS
 
 
 def test_language_accessors() -> None:
     bp = shipped_blueprint()
     tech = bp.criterion("CRT-TECH")
-    assert bp.title("en").startswith("Warehouse web reporting") and "آذرپخش" in bp.title("fa")
-    assert tech is not None and tech.name("en") == "Technical" and tech.name("fa") == "فنی"
+    assert bp.title("en").startswith(
+        "Warehouse web reporting"
+    ) and "آذرپخش" in bp.title("fa")
+    assert (
+        tech is not None and tech.name("en") == "Technical" and tech.name("fa") == "فنی"
+    )
     req = bp.requirement("REQ-EVALUATION")
-    assert req is not None and "60%" in req.statement("en") and req.statement("fa") == req.statement_fa
+    assert (
+        req is not None
+        and "60%" in req.statement("en")
+        and req.statement("fa") == req.statement_fa
+    )
     assert bp.requirement("REQ-NOPE") is None and bp.criterion("CRT-NOPE") is None
 
 

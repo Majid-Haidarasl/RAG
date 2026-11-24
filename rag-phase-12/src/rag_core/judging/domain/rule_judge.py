@@ -27,7 +27,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import time
 
-from rag_core.judging.domain.cases import NOT_FOUND_STATUSES, REFUSAL_STATUSES, JudgeCase, SourceBlock
+from rag_core.judging.domain.cases import (
+    NOT_FOUND_STATUSES,
+    REFUSAL_STATUSES,
+    JudgeCase,
+    SourceBlock,
+)
 from rag_core.judging.domain.parser import round_half_up
 from rag_core.judging.domain.results import JudgeResult
 from rag_core.judging.domain.rubric import OutputKind, Rubric
@@ -76,7 +81,11 @@ def citation_valid(ref: CitedRef, sources: tuple[SourceBlock, ...]) -> bool:
             continue
         if ref.order is not None and block.order != ref.order:
             continue
-        if ref.language is not None and block.language is not None and block.language != ref.language:
+        if (
+            ref.language is not None
+            and block.language is not None
+            and block.language != ref.language
+        ):
             continue
         return True
     return False
@@ -85,9 +94,17 @@ def citation_valid(ref: CitedRef, sources: tuple[SourceBlock, ...]) -> bool:
 class RuleBasedJudge:
     name = "rule"
 
-    def __init__(self, rubric: Rubric, validator: FactValidator, config: RuleJudgeConfig | None = None) -> None:
+    def __init__(
+        self,
+        rubric: Rubric,
+        validator: FactValidator,
+        config: RuleJudgeConfig | None = None,
+    ) -> None:
         if tuple(sorted(rubric.keys)) != tuple(sorted(STANDARD_KEYS)):
-            raise InvariantError("the rule judge needs the five standard criteria: " + ", ".join(STANDARD_KEYS))
+            raise InvariantError(
+                "the rule judge needs the five standard criteria: "
+                + ", ".join(STANDARD_KEYS)
+            )
         self.rubric = rubric
         self.validator = validator
         self.config = config or RuleJudgeConfig()
@@ -104,21 +121,38 @@ class RuleBasedJudge:
         else:
             scores, notes = self._summary(case)
         outcome = self.policy.decide(scores)
-        return JudgeResult.for_case(case, self.name, scores, outcome, notes=tuple(notes), parse_mode="rules",
-                                    seconds=time.perf_counter() - t0)
+        return JudgeResult.for_case(
+            case,
+            self.name,
+            scores,
+            outcome,
+            notes=tuple(notes),
+            parse_mode="rules",
+            seconds=time.perf_counter() - t0,
+        )
 
     # -- shared signals -------------------------------------------------------------
-    def _claims(self, text: str, sources: tuple[SourceBlock, ...]) -> tuple[list[str], list[str]]:
+    def _claims(
+        self, text: str, sources: tuple[SourceBlock, ...]
+    ) -> tuple[list[str], list[str]]:
         texts = [b.text for b in sources]
         docs = " ".join(b.document_id for b in sources if b.document_id)
         if docs:
             texts.append(docs)
         report = self.validator.validate(text, texts)
-        unsupported = [r.claim.raw_text for r in report.results if r.verdict is FactVerdict.UNSUPPORTED]
-        flagged = [r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED]
+        unsupported = [
+            r.claim.raw_text
+            for r in report.results
+            if r.verdict is FactVerdict.UNSUPPORTED
+        ]
+        flagged = [
+            r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED
+        ]
         return unsupported, flagged
 
-    def _clarity(self, case: JudgeCase, text: str, *, answered: bool) -> tuple[int, list[str]]:
+    def _clarity(
+        self, case: JudgeCase, text: str, *, answered: bool
+    ) -> tuple[int, list[str]]:
         top = self.mx["clarity"]
         match = language_matches(text, case.language)
         if match is False:
@@ -129,16 +163,25 @@ class RuleBasedJudge:
             score -= 1
             notes.append("language_unclear")
         summary = case.kind is OutputKind.IKE_SUMMARY
-        limit = self.config.max_summary_chars if summary else self.config.max_answer_chars
-        too_many = not summary and len(sentences(text)) > self.config.max_answer_sentences
+        limit = (
+            self.config.max_summary_chars if summary else self.config.max_answer_chars
+        )
+        too_many = (
+            not summary and len(sentences(text)) > self.config.max_answer_sentences
+        )
         if len(text) > limit or too_many:
             score -= 1
             notes.append("too_long")
         lowered = text.lower()
-        if any(a in lowered for a in ARTIFACTS) or (answered and REFUSAL_TOKEN in text.upper()):
+        if any(a in lowered for a in ARTIFACTS) or (
+            answered and REFUSAL_TOKEN in text.upper()
+        ):
             score -= 1
             notes.append("artifacts")
-        if summary and sum(1 for line in text.splitlines() if line.count("|") >= 2) >= 2:
+        if (
+            summary
+            and sum(1 for line in text.splitlines() if line.count("|") >= 2) >= 2
+        ):
             score -= 1
             notes.append("table")
         return max(0, score), notes
@@ -151,8 +194,13 @@ class RuleBasedJudge:
         clarity, notes = self._clarity(case, text, answered=not refused)
         if refused:
             notes.append("refused_although_answerable")
-            return {"grounding": mx["grounding"], "correctness": 0, "citation": 0, "completeness": 0,
-                    "clarity": clarity}, notes
+            return {
+                "grounding": mx["grounding"],
+                "correctness": 0,
+                "citation": 0,
+                "completeness": 0,
+                "clarity": clarity,
+            }, notes
         if not case.sources:
             grounding = 0
             notes.append("no_sources")
@@ -183,8 +231,13 @@ class RuleBasedJudge:
                 citation -= 1
                 notes.append("sparse_citations")
             citation = max(0, citation)
-        return {"grounding": grounding, "correctness": correctness, "citation": citation,
-                "completeness": completeness, "clarity": clarity}, notes
+        return {
+            "grounding": grounding,
+            "correctness": correctness,
+            "citation": citation,
+            "completeness": completeness,
+            "clarity": clarity,
+        }, notes
 
     # -- refusal / escalation expected ------------------------------------------------
     def _refusal(self, case: JudgeCase) -> tuple[dict[str, int], list[str]]:
@@ -197,9 +250,16 @@ class RuleBasedJudge:
         clarity, notes = self._clarity(case, text, answered=False)
         if not refused:
             notes.append("answered_without_scope_evidence")
-            return {"grounding": 0, "correctness": 0, "citation": 0 if refs else mx["citation"],
-                    "completeness": 0, "clarity": clarity}, notes
-        status = case.status if case.status in REFUSAL_STATUSES else "insufficient_context"
+            return {
+                "grounding": 0,
+                "correctness": 0,
+                "citation": 0 if refs else mx["citation"],
+                "completeness": 0,
+                "clarity": clarity,
+            }, notes
+        status = (
+            case.status if case.status in REFUSAL_STATUSES else "insufficient_context"
+        )
         if exp.status == "out_of_scope":
             status_ok = status == "out_of_scope"
         elif exp.status == "not_found":
@@ -208,7 +268,9 @@ class RuleBasedJudge:
             status_ok = True
         if not status_ok:
             notes.append(f"status:{status}!={exp.status}")
-        correctness = mx["correctness"] if status_ok else round_half_up(mx["correctness"] * 0.4)
+        correctness = (
+            mx["correctness"] if status_ok else round_half_up(mx["correctness"] * 0.4)
+        )
         grounding = mx["grounding"] if not refs else max(0, mx["grounding"] - 2)
         citation = mx["citation"] if not refs else max(0, mx["citation"] - 2)
         if refs:
@@ -216,7 +278,11 @@ class RuleBasedJudge:
         top = mx["completeness"]
         if exp.status == "out_of_scope":
             if exp.escalation:
-                completeness = top if case.escalation == exp.escalation else (min(1, top) if case.escalation else 0)
+                completeness = (
+                    top
+                    if case.escalation == exp.escalation
+                    else (min(1, top) if case.escalation else 0)
+                )
             else:
                 completeness = top if case.escalation else min(1, top)
             if case.escalation != exp.escalation:
@@ -224,8 +290,13 @@ class RuleBasedJudge:
         else:
             long_enough = len(strip_refs(text).strip()) >= self.config.min_refusal_chars
             completeness = top if long_enough else min(1, top)
-        return {"grounding": grounding, "correctness": correctness, "citation": citation,
-                "completeness": completeness, "clarity": clarity}, notes
+        return {
+            "grounding": grounding,
+            "correctness": correctness,
+            "citation": citation,
+            "completeness": completeness,
+            "clarity": clarity,
+        }, notes
 
     # -- IKE summary --------------------------------------------------------------------
     def _summary(self, case: JudgeCase) -> tuple[dict[str, int], list[str]]:
@@ -240,7 +311,9 @@ class RuleBasedJudge:
         notes.extend(f"unsupported:{u}" for u in unsupported[:5])
         if exp.item_leads:
             parts = sentences(text)
-            all_items = tuple(dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads)]))
+            all_items = tuple(
+                dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads)])
+            )
             ok = 0
             for item, names in exp.item_leads:
                 # Prefer segments about this sub-issue (its id comes first); "WIN depends on HW" is about WIN.
@@ -266,5 +339,10 @@ class RuleBasedJudge:
             notes.append(f"gaps:{found}/{len(gaps)}")
         else:
             completeness = mx["completeness"]
-        return {"grounding": grounding, "correctness": correctness, "citation": citation,
-                "completeness": completeness, "clarity": clarity}, notes
+        return {
+            "grounding": grounding,
+            "correctness": correctness,
+            "citation": citation,
+            "completeness": completeness,
+            "clarity": clarity,
+        }, notes

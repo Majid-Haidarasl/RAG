@@ -29,7 +29,10 @@ def _expectation(data: dict[str, Any] | None) -> Expectation:
         facts=tuple(tuple(str(a) for a in group) for group in data.get("facts") or ()),
         escalation=str(data.get("escalation", "")),
         items=tuple(str(i) for i in data.get("items") or ()),
-        item_leads=tuple((str(i), tuple(str(n) for n in names)) for i, names in data.get("item_leads") or ()),
+        item_leads=tuple(
+            (str(i), tuple(str(n) for n in names))
+            for i, names in data.get("item_leads") or ()
+        ),
         gaps=tuple(str(g) for g in data.get("gaps") or ()),
     )
 

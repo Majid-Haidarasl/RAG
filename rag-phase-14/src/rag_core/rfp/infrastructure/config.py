@@ -8,7 +8,11 @@ from typing import Any
 
 import yaml
 
-from rag_core.projects.infrastructure.config import CycleSettings, LiveSettings, ModelSettings
+from rag_core.projects.infrastructure.config import (
+    CycleSettings,
+    LiveSettings,
+    ModelSettings,
+)
 from rag_core.shared_kernel.errors import InvariantError
 
 
@@ -23,20 +27,26 @@ class StorageSettings:
 @dataclass(frozen=True)
 class CandidateSettings:
     categories: tuple[str, ...] = ("procurement",)
-    targets: dict[str, str] = field(default_factory=lambda: {"AR-ISS-024": "AR-ISS-024/WEB"})
+    targets: dict[str, str] = field(
+        default_factory=lambda: {"AR-ISS-024": "AR-ISS-024/WEB"}
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "categories", tuple(str(c) for c in self.categories))
         targets = {str(k): str(v) for k, v in dict(self.targets or {}).items()}
         for issue, item in targets.items():
             if not item.startswith(issue + "/"):
-                raise InvariantError(f"candidates.targets: {item} is not a sub-issue of {issue}")
+                raise InvariantError(
+                    f"candidates.targets: {item} is not a sub-issue of {issue}"
+                )
         object.__setattr__(self, "targets", targets)
 
 
 @dataclass(frozen=True)
 class JudgingSettings:
-    max_rfp_chars: int = 6000        # an RFP is a document, not a summary (Phase 10 summary limit is 3000)
+    max_rfp_chars: int = (
+        6000  # an RFP is a document, not a summary (Phase 10 summary limit is 3000)
+    )
 
     def __post_init__(self) -> None:
         if self.max_rfp_chars < 1000:
@@ -76,7 +86,9 @@ def _plain(cls: type, data: Any, section: str) -> Any:
     known = {f.name for f in fields(cls)}
     unknown = sorted(set(data) - known)
     if unknown:
-        raise InvariantError(f"unknown keys in rfp config {section!r}: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in rfp config {section!r}: {', '.join(unknown)}"
+        )
     data = {k: (tuple(v) if isinstance(v, list) else v) for k, v in data.items()}
     for key in ("id", "cutoff"):
         if key in data:

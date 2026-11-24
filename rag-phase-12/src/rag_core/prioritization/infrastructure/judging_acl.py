@@ -19,11 +19,18 @@ from rag_core.prioritization.domain.brief import KeyIssueBrief
 LANGUAGE_NAMES = {"fa": "Persian", "en": "English"}
 
 
-def brief_case(brief: KeyIssueBrief, text: str | None = None, *, origin: str = "priority-template",
-               suffix: str = "") -> JudgeCase:
-    task = (f"Write the {LANGUAGE_NAMES.get(brief.language, brief.language)} key-issue brief of cycle "
-            f"{brief.cycle_id} for the chief executive: the key issues in priority order with their score and main "
-            "factors, the open gaps on them, the next action and the open research gaps. Use only the facts.")
+def brief_case(
+    brief: KeyIssueBrief,
+    text: str | None = None,
+    *,
+    origin: str = "priority-template",
+    suffix: str = "",
+) -> JudgeCase:
+    task = (
+        f"Write the {LANGUAGE_NAMES.get(brief.language, brief.language)} key-issue brief of cycle "
+        f"{brief.cycle_id} for the chief executive: the key issues in priority order with their score and main "
+        "factors, the open gaps on them, the next action and the open research gaps. Use only the facts."
+    )
     case_id = f"P12-brief-{brief.language}" + (f"-{suffix}" if suffix else "")
     return JudgeCase(
         case_id=case_id,
@@ -40,9 +47,15 @@ def brief_case(brief: KeyIssueBrief, text: str | None = None, *, origin: str = "
 
 
 def verdict_dict(result: JudgeResult) -> dict[str, Any]:
-    return {"judge": result.judge, "total": result.total, "out_of": result.outcome.out_of,
-            "accepted": result.accepted, "scores": dict(result.scores), "reasons": list(result.outcome.reasons),
-            "notes": list(result.notes)}
+    return {
+        "judge": result.judge,
+        "total": result.total,
+        "out_of": result.outcome.out_of,
+        "accepted": result.accepted,
+        "scores": dict(result.scores),
+        "reasons": list(result.outcome.reasons),
+        "notes": list(result.notes),
+    }
 
 
 class BriefJudge:
@@ -53,9 +66,17 @@ class BriefJudge:
         self.name = str(getattr(judge, "name", "judge"))
         self.results: list[JudgeResult] = []
 
-    def judge_brief(self, brief: KeyIssueBrief, text: str | None = None, *, origin: str = "priority-template",
-                    suffix: str = "") -> JudgeResult:
-        result = judge_all(self.judge, [brief_case(brief, text, origin=origin, suffix=suffix)])[0]
+    def judge_brief(
+        self,
+        brief: KeyIssueBrief,
+        text: str | None = None,
+        *,
+        origin: str = "priority-template",
+        suffix: str = "",
+    ) -> JudgeResult:
+        result = judge_all(
+            self.judge, [brief_case(brief, text, origin=origin, suffix=suffix)]
+        )[0]
         self.results.append(result)
         return result
 
@@ -68,7 +89,13 @@ def negative_brief_cases(brief: KeyIssueBrief) -> list[JudgeCase]:
     """Broken copies of the template: invented number, invented id, key issue lines removed."""
     base = brief_case(brief)
     lang = brief.language
-    kept = [line for line in brief.text.splitlines() if not any(i in line for i in brief.items)]
-    return [base.mutated("wrong_number", brief.text + NEG_NUMBER[lang]),
-            base.mutated("fabricated_id", brief.text + NEG_ID[lang]),
-            base.mutated("drop_items", "\n".join(kept))]
+    kept = [
+        line
+        for line in brief.text.splitlines()
+        if not any(i in line for i in brief.items)
+    ]
+    return [
+        base.mutated("wrong_number", brief.text + NEG_NUMBER[lang]),
+        base.mutated("fabricated_id", brief.text + NEG_ID[lang]),
+        base.mutated("drop_items", "\n".join(kept)),
+    ]

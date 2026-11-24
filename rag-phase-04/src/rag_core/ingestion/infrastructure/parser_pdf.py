@@ -24,7 +24,9 @@ def _page_is_scanned(page: object, text: str) -> bool:
     return len(chars) < 8 and len(text.strip()) < 8
 
 
-def _tables_as_blocks(page: object, page_number: int, start_index: int) -> list[ContentBlock]:
+def _tables_as_blocks(
+    page: object, page_number: int, start_index: int
+) -> list[ContentBlock]:
     blocks: list[ContentBlock] = []
     try:
         tables = page.extract_tables() or []
@@ -33,7 +35,9 @@ def _tables_as_blocks(page: object, page_number: int, start_index: int) -> list[
     for table_index, table in enumerate(tables):
         rows: list[tuple[str, ...]] = []
         for row in table or []:
-            cells = tuple((cell or "").strip() if cell is not None else "" for cell in row)
+            cells = tuple(
+                (cell or "").strip() if cell is not None else "" for cell in row
+            )
             rows.append(cells)
         text = "\n".join(" | ".join(row) for row in rows).strip()
         if not text:
@@ -73,7 +77,9 @@ def parse_pdf(path: Path) -> tuple[list[ContentBlock], tuple[int, ...], int]:
                     scanned.append(number)
                 # Split kept text into paragraphs on blank lines, then append tables.
                 if text:
-                    for paragraph in [p.strip() for p in text.split("\n\n") if p.strip()]:
+                    for paragraph in [
+                        p.strip() for p in text.split("\n\n") if p.strip()
+                    ]:
                         # pdfplumber often uses single newlines; also split long line groups
                         blocks.append(
                             ContentBlock(

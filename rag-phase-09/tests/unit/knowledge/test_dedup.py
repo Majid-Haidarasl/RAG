@@ -10,7 +10,12 @@ pytestmark = [pytest.mark.knowledge, pytest.mark.dedup]
 
 def test_exact_duplicate_survives_rendering_differences() -> None:
     a = record("a", LOREM_FA, doc="AR-HW-012", lang="fa")
-    b = record("b", LOREM_FA.replace("\u200c", " ").replace("ی", "ي"), doc="AR-HR-004", lang="fa")
+    b = record(
+        "b",
+        LOREM_FA.replace("\u200c", " ").replace("ی", "ي"),
+        doc="AR-HR-004",
+        lang="fa",
+    )
     rep = DuplicateFinder().find([a, b])
     assert len(rep.exact_groups) == 1
     assert rep.exact_groups[0].members == ("a", "b")
@@ -19,7 +24,12 @@ def test_exact_duplicate_survives_rendering_differences() -> None:
 
 
 def test_short_texts_are_not_exact_duplicates() -> None:
-    rep = DuplicateFinder().find([record("a", "Purpose and scope"), record("b", "Purpose and scope", doc="AR-Y-002")])
+    rep = DuplicateFinder().find(
+        [
+            record("a", "Purpose and scope"),
+            record("b", "Purpose and scope", doc="AR-Y-002"),
+        ]
+    )
     assert rep.exact_groups == []
 
 
@@ -38,7 +48,9 @@ def test_rendition_of_same_document_is_labelled() -> None:
 
 def test_near_duplicate_detected_after_small_edit() -> None:
     edited = LOREM_EN.replace("written approval", "signed approval")
-    rep = DuplicateFinder().find([record("a", LOREM_EN, doc="AR-A-001"), record("b", edited, doc="AR-B-002")])
+    rep = DuplicateFinder().find(
+        [record("a", LOREM_EN, doc="AR-A-001"), record("b", edited, doc="AR-B-002")]
+    )
     assert len(rep.near_pairs) == 1
     pair = rep.near_pairs[0]
     assert pair.jaccard >= 0.80 and pair.kind == "near"
@@ -47,17 +59,26 @@ def test_near_duplicate_detected_after_small_edit() -> None:
 
 def test_unrelated_texts_are_distinct() -> None:
     other = " ".join(f"token{i}" for i in range(80))
-    rep = DuplicateFinder().find([record("a", LOREM_EN, doc="AR-A-001"), record("b", other, doc="AR-B-002")])
+    rep = DuplicateFinder().find(
+        [record("a", LOREM_EN, doc="AR-A-001"), record("b", other, doc="AR-B-002")]
+    )
     assert rep.near_pairs == [] and rep.overlap_pairs == [] and rep.exact_groups == []
 
 
 def test_containment_overlap_when_short_chunk_is_inside_long_one() -> None:
     extra = " ".join(f"extra{i}" for i in range(120))
     long_text = LOREM_EN + " " + extra
-    rep = DuplicateFinder().find([record("short", LOREM_EN, doc="AR-A-001"), record("long", long_text, doc="AR-B-002")])
+    rep = DuplicateFinder().find(
+        [
+            record("short", LOREM_EN, doc="AR-A-001"),
+            record("long", long_text, doc="AR-B-002"),
+        ]
+    )
     assert len(rep.overlap_pairs) == 1
     pair = rep.overlap_pairs[0]
-    assert pair.contained == "short" and pair.containment >= 0.95 and pair.jaccard < 0.80
+    assert (
+        pair.contained == "short" and pair.containment >= 0.95 and pair.jaccard < 0.80
+    )
 
 
 def test_fa_en_translation_pair_is_not_a_duplicate() -> None:
@@ -82,19 +103,37 @@ def test_bilingual_numeric_table_is_excluded_even_when_hashes_match() -> None:
 
 def test_same_numbers_in_different_documents_are_still_flagged() -> None:
     rows = " ".join(f"140{i} 2500{i} 31{i}" for i in range(10))
-    rep = DuplicateFinder().find([record("a", rows, doc="AR-FIN-008"), record("b", rows, doc="AR-FIN-009", lang="fa")])
+    rep = DuplicateFinder().find(
+        [
+            record("a", rows, doc="AR-FIN-008"),
+            record("b", rows, doc="AR-FIN-009", lang="fa"),
+        ]
+    )
     assert len(rep.exact_groups) == 1
 
 
 def test_boilerplate_shingles_are_ignored_for_overlap_candidates() -> None:
     header = "Document ID controlled copy approved by the board internal use only revision record"
-    recs = [record(f"d{i}", header + " " + " ".join(f"u{i}x{j}" for j in range(60)), doc=f"AR-D-{i:03d}") for i in range(12)]
-    rep = DuplicateFinder(DedupConfig(boilerplate_min_sources=3, boilerplate_source_fraction=0.1)).find(recs)
+    recs = [
+        record(
+            f"d{i}",
+            header + " " + " ".join(f"u{i}x{j}" for j in range(60)),
+            doc=f"AR-D-{i:03d}",
+        )
+        for i in range(12)
+    ]
+    rep = DuplicateFinder(
+        DedupConfig(boilerplate_min_sources=3, boilerplate_source_fraction=0.1)
+    ).find(recs)
     assert rep.overlap_pairs == []
 
 
 def test_lsh_recall_matches_reference_on_small_set() -> None:
-    texts = [LOREM_EN, LOREM_EN.replace("laptop", "notebook"), LOREM_EN.replace("month", "quarter")]
+    texts = [
+        LOREM_EN,
+        LOREM_EN.replace("laptop", "notebook"),
+        LOREM_EN.replace("month", "quarter"),
+    ]
     recs = [record(f"k{i}", t, doc=f"AR-K-{i:03d}") for i, t in enumerate(texts)]
     rep = DuplicateFinder().find(recs)
     assert rep.reference_near_pairs == len(rep.near_pairs) == 3
@@ -107,24 +146,53 @@ def test_duplicate_keys_are_rejected() -> None:
 
 
 def test_report_serializes_to_plain_dict() -> None:
-    d = DuplicateFinder().find([record("a", LOREM_EN, doc="AR-A-001"), record("b", LOREM_EN, doc="AR-B-002")]).to_dict()
-    assert d["exact_group_count"] == 1 and d["by_scope"]["exact_groups"]["cross_document"] == 1
-    assert set(d["timings_s"]) >= {"exact", "near_minhash_lsh", "overlap_index", "total"}
+    d = (
+        DuplicateFinder()
+        .find(
+            [
+                record("a", LOREM_EN, doc="AR-A-001"),
+                record("b", LOREM_EN, doc="AR-B-002"),
+            ]
+        )
+        .to_dict()
+    )
+    assert (
+        d["exact_group_count"] == 1
+        and d["by_scope"]["exact_groups"]["cross_document"] == 1
+    )
+    assert set(d["timings_s"]) >= {
+        "exact",
+        "near_minhash_lsh",
+        "overlap_index",
+        "total",
+    }
 
 
 def test_char_mode_matches_renditions_despite_spurious_spaces() -> None:
     from tests.fixtures.knowledge.factories import LOREM_FA
 
-    split = LOREM_FA.replace("تعمیرات", "ت عمیرات").replace("تکنسین", "ت کنسین").replace("دستمزد", "دست مزد")
+    split = (
+        LOREM_FA.replace("تعمیرات", "ت عمیرات")
+        .replace("تکنسین", "ت کنسین")
+        .replace("دستمزد", "دست مزد")
+    )
     split = split.replace("خرابی", "خ رابی").replace("ثبت", "ث بت")
     a = record("docx", LOREM_FA, doc="AR-HW-012", lang="fa", source="a.docx")
     b = record("pdf", split, doc="AR-HW-012", lang="fa", source="a.pdf")
     word = DuplicateFinder(DedupConfig(exhaustive=True)).find([a, b])
-    char = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find([a, b])
-    assert char.exact_groups and char.exact_groups[0].scope == "rendition"  # spaces ignored by normalized hash
+    char = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find(
+        [a, b]
+    )
+    assert (
+        char.exact_groups and char.exact_groups[0].scope == "rendition"
+    )  # spaces ignored by normalized hash
     assert word.exact_groups  # same normalized hash in both modes
-    c = record("pdf2", split + " بند افزوده", doc="AR-HW-012", lang="fa", source="b.pdf")
-    near = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find([a, c])
+    c = record(
+        "pdf2", split + " بند افزوده", doc="AR-HW-012", lang="fa", source="b.pdf"
+    )
+    near = DuplicateFinder(DedupConfig(shingle_mode="char", exhaustive=True)).find(
+        [a, c]
+    )
     assert len(near.near_pairs) == 1 and near.near_pairs[0].jaccard >= 0.8
 
 

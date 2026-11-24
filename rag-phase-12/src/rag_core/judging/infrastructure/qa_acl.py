@@ -44,9 +44,15 @@ def _cited_documents(answer: dict[str, Any]) -> set[str]:
     return docs
 
 
-def answer_sources(answer: dict[str, Any], texts: dict[ChunkKey, str]) -> tuple[tuple[SourceBlock, ...], int]:
+def answer_sources(
+    answer: dict[str, Any], texts: dict[ChunkKey, str]
+) -> tuple[tuple[SourceBlock, ...], int]:
     """Source blocks for one answer (cited documents first) and the number of chunks not found."""
-    used = [u for u in answer.get("used_chunks") or [] if "document_id" in u and "order" in u]
+    used = [
+        u
+        for u in answer.get("used_chunks") or []
+        if "document_id" in u and "order" in u
+    ]
     counts: dict[tuple[str, int], int] = {}
     for u in used:
         key = (str(u["document_id"]), int(u["order"]))
@@ -54,8 +60,14 @@ def answer_sources(answer: dict[str, Any], texts: dict[ChunkKey, str]) -> tuple[
     cited = _cited_documents(answer)
     blocks: list[SourceBlock] = []
     missing = 0
-    for u in sorted(used, key=lambda u: 0 if str(u["document_id"]).upper() in cited else 1):
-        doc, lang, order = str(u["document_id"]), str(u.get("language", "")), int(u["order"])
+    for u in sorted(
+        used, key=lambda u: 0 if str(u["document_id"]).upper() in cited else 1
+    ):
+        doc, lang, order = (
+            str(u["document_id"]),
+            str(u.get("language", "")),
+            int(u["order"]),
+        )
         text = texts.get((doc, lang, order))
         if text is None:
             missing += 1
@@ -65,35 +77,45 @@ def answer_sources(answer: dict[str, Any], texts: dict[ChunkKey, str]) -> tuple[
     return tuple(blocks), missing
 
 
-def phase8_cases(answers: list[dict[str, Any]], samples: dict[str, SampleQuestion],
-                 texts: dict[ChunkKey, str]) -> tuple[list[JudgeCase], int]:
+def phase8_cases(
+    answers: list[dict[str, Any]],
+    samples: dict[str, SampleQuestion],
+    texts: dict[ChunkKey, str],
+) -> tuple[list[JudgeCase], int]:
     cases: list[JudgeCase] = []
     missing_total = 0
     for a in answers:
         sid = str(a.get("id", ""))
         sample = samples.get(sid)
-        expected = str(a.get("expected_status") or (sample.expected_status if sample else "answered"))
+        expected = str(
+            a.get("expected_status")
+            or (sample.expected_status if sample else "answered")
+        )
         kind = OutputKind.QA_ANSWER if expected == "answered" else OutputKind.QA_REFUSAL
         sources, missing = answer_sources(a, texts)
         missing_total += missing
         status = str(a.get("status", "answered"))
         escalation = a.get("escalation") or {}
         language = str(a.get("language") or (sample.language if sample else "en"))
-        cases.append(JudgeCase(
-            case_id=f"P8-{sid}",
-            kind=kind,
-            language=language if language in {"fa", "en"} else "en",
-            task=str(a.get("question", "")),
-            output=str(a.get("text", "")),
-            sources=sources,
-            expectation=Expectation(
-                status=expected,
-                facts=sample.expected_facts if sample else (),
-                escalation=sample.expected_escalation if sample else "",
-            ),
-            status=status,
-            escalation=str(escalation.get("target", "")) if status == "out_of_scope" else "",
-            node=str(a.get("node", "")),
-            origin="phase8-live",
-        ))
+        cases.append(
+            JudgeCase(
+                case_id=f"P8-{sid}",
+                kind=kind,
+                language=language if language in {"fa", "en"} else "en",
+                task=str(a.get("question", "")),
+                output=str(a.get("text", "")),
+                sources=sources,
+                expectation=Expectation(
+                    status=expected,
+                    facts=sample.expected_facts if sample else (),
+                    escalation=sample.expected_escalation if sample else "",
+                ),
+                status=status,
+                escalation=str(escalation.get("target", ""))
+                if status == "out_of_scope"
+                else "",
+                node=str(a.get("node", "")),
+                origin="phase8-live",
+            )
+        )
     return cases, missing_total

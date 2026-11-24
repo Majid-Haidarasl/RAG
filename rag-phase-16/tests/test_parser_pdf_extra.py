@@ -7,7 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from rag_core.ingestion.domain.errors import GarbledTextError, ParseFailedError, POPPLER_INSTALL
+from rag_core.ingestion.domain.errors import (
+    GarbledTextError,
+    ParseFailedError,
+    POPPLER_INSTALL,
+)
 from rag_core.ingestion.domain.model import BlockKind, ContentBlock
 from rag_core.ingestion.domain.text_quality import TextQuality
 from rag_core.ingestion.infrastructure import parser_pdf as mod
@@ -46,7 +50,9 @@ def test_page_not_scanned_when_text_passes_threshold() -> None:
 
 
 def test_tables_as_blocks_swallows_extract_error() -> None:
-    page = SimpleNamespace(extract_tables=lambda: (_ for _ in ()).throw(RuntimeError("no tables")))
+    page = SimpleNamespace(
+        extract_tables=lambda: (_ for _ in ()).throw(RuntimeError("no tables"))
+    )
     assert _tables_as_blocks(page, 1, 0) == []
 
 
@@ -103,7 +109,9 @@ def test_append_tables_skips_duplicate_and_garbled() -> None:
         page=1,
     )
     empty = ContentBlock(kind=BlockKind.TABLE, text="", index=2, page=1)
-    _append_tables(blocks, 1, [dup, garbled, empty], page_text="prefix already here suffix")
+    _append_tables(
+        blocks, 1, [dup, garbled, empty], page_text="prefix already here suffix"
+    )
     assert blocks == []
 
 
@@ -118,7 +126,9 @@ def test_pdftotext_failure_falls_back_to_pdfplumber(
     )
     result = parse_pdf_detailed(path, pdftotext="/usr/bin/pdftotext")
     assert result.engine == "pdfplumber"
-    assert any("pdftotext failed" in w and "broken poppler" in w for w in result.warnings)
+    assert any(
+        "pdftotext failed" in w and "broken poppler" in w for w in result.warnings
+    )
     blob = "\n".join(b.text for b in result.blocks)
     assert "30 minutes" in blob or "AR-SW-022" in blob
 
@@ -167,7 +177,9 @@ def test_open_failure_wrapped_as_parse_failed(
     path = write_text_pdf(tmp_path / "AR-SW-022-sla.pdf")
     import pdfplumber
 
-    monkeypatch.setattr(pdfplumber, "open", lambda _p: (_ for _ in ()).throw(OSError("cannot open")))
+    monkeypatch.setattr(
+        pdfplumber, "open", lambda _p: (_ for _ in ()).throw(OSError("cannot open"))
+    )
     with pytest.raises(ParseFailedError, match="cannot open"):
         parse_pdf_detailed(path, pdftotext=False)
 
@@ -179,7 +191,9 @@ def test_fragmented_quality_adds_warning(
     monkeypatch.setattr(
         mod,
         "assess_text_quality",
-        lambda _text: TextQuality("fragmented", ("too many fragments",), {"chars": 10.0}),
+        lambda _text: TextQuality(
+            "fragmented", ("too many fragments",), {"chars": 10.0}
+        ),
     )
     result = parse_pdf_detailed(path, pdftotext=False)
     assert any("fragmented PDF text: too many fragments" in w for w in result.warnings)

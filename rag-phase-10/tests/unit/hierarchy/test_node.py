@@ -6,7 +6,14 @@ from rag_core.hierarchy.infrastructure.memory import InMemoryOrganizationReposit
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.identifiers import NodeIdentifier
 from rag_core.shared_kernel.layer import LayerIndex
-from tests.fixtures.armanrayan import board, ceo, library, seed_organization, software_deputy, web_team
+from tests.fixtures.armanrayan import (
+    board,
+    ceo,
+    library,
+    seed_organization,
+    software_deputy,
+    web_team,
+)
 
 pytestmark = pytest.mark.hierarchy
 

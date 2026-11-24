@@ -30,8 +30,12 @@ def _role(executor) -> ReferralRole:  # noqa: ANN001
 def test_owner_node_member_with_two_terms_is_lead_candidate() -> None:
     person = make_executor(domains=("reporting API",), docs=("AR-SW-017",))
     match = ExecutorMatcher().evaluate(person, REQUEST)
-    assert match.role is ReferralRole.LEAD_CANDIDATE and match.node_role is NodeRole.OWNER
-    assert match.matched_terms == ("api", "report") and match.shared_documents == ("AR-SW-017",)
+    assert (
+        match.role is ReferralRole.LEAD_CANDIDATE and match.node_role is NodeRole.OWNER
+    )
+    assert match.matched_terms == ("api", "report") and match.shared_documents == (
+        "AR-SW-017",
+    )
     assert match.eligible
 
 
@@ -44,7 +48,9 @@ def test_single_matching_keyword_is_not_enough() -> None:
 
 
 def test_supporting_node_member_with_shared_knowledge_is_collaborator() -> None:
-    person = make_executor(node="N-SW-UX", domains=("brand colours",), docs=("AR-RFP-025",))
+    person = make_executor(
+        node="N-SW-UX", domains=("brand colours",), docs=("AR-RFP-025",)
+    )
     assert _role(person) is ReferralRole.COLLABORATOR
 
 
@@ -59,11 +65,15 @@ def test_supporting_node_member_without_signal_is_excluded() -> None:
 
 
 def test_outside_node_with_terms_and_knowledge_is_only_a_cross_node_candidate() -> None:
-    person = make_executor(node="N-SW-MOB", domains=("web API contract",), docs=("AR-SW-017",))
+    person = make_executor(
+        node="N-SW-MOB", domains=("web API contract",), docs=("AR-SW-017",)
+    )
     match = ExecutorMatcher().evaluate(person, REQUEST)
     assert match.role is ReferralRole.CROSS_NODE_CANDIDATE and not match.eligible
     plan = ExecutorMatcher().plan([person], REQUEST)
-    assert plan.recommended == [] and [m.executor_id for m in plan.cross_node_candidates] == ["EX-TEST-PERSON"]
+    assert plan.recommended == [] and [
+        m.executor_id for m in plan.cross_node_candidates
+    ] == ["EX-TEST-PERSON"]
 
 
 def test_outside_node_with_terms_but_no_knowledge_is_excluded() -> None:
@@ -97,19 +107,40 @@ def test_score_formula() -> None:
 
 
 def test_plan_orders_by_score_then_terms_then_id_and_picks_lead() -> None:
-    a = make_executor("EX-ALPHA-ONE", "Alpha One", domains=("reporting API",), docs=("AR-SW-017",))
-    b = make_executor("EX-BETA-TWO", "Beta Two", domains=("reporting API dashboard",), docs=("AR-SW-017",))
-    c = make_executor("EX-GAMMA-THREE", "Gamma Three", node="N-SW-UX", docs=("AR-RFP-025",))
+    a = make_executor(
+        "EX-ALPHA-ONE", "Alpha One", domains=("reporting API",), docs=("AR-SW-017",)
+    )
+    b = make_executor(
+        "EX-BETA-TWO",
+        "Beta Two",
+        domains=("reporting API dashboard",),
+        docs=("AR-SW-017",),
+    )
+    c = make_executor(
+        "EX-GAMMA-THREE", "Gamma Three", node="N-SW-UX", docs=("AR-RFP-025",)
+    )
     plan = ExecutorMatcher().plan([a, c, b], REQUEST)
-    assert [m.executor_id for m in plan.recommended] == ["EX-BETA-TWO", "EX-ALPHA-ONE", "EX-GAMMA-THREE"]
+    assert [m.executor_id for m in plan.recommended] == [
+        "EX-BETA-TWO",
+        "EX-ALPHA-ONE",
+        "EX-GAMMA-THREE",
+    ]
     assert plan.lead is not None and plan.lead.executor_id == "EX-BETA-TWO"
-    assert [m.executor_id for m in plan.collaborators] == ["EX-ALPHA-ONE", "EX-GAMMA-THREE"]
+    assert [m.executor_id for m in plan.collaborators] == [
+        "EX-ALPHA-ONE",
+        "EX-GAMMA-THREE",
+    ]
     data = plan.to_dict()
-    assert data["lead"] == "EX-BETA-TWO" and data["acceptance_authority"] == "team_owner:N-SW-WEB"
+    assert (
+        data["lead"] == "EX-BETA-TWO"
+        and data["acceptance_authority"] == "team_owner:N-SW-WEB"
+    )
 
 
 def test_plan_without_owner_match_has_no_lead() -> None:
-    c = make_executor("EX-GAMMA-THREE", "Gamma Three", node="N-SW-UX", docs=("AR-RFP-025",))
+    c = make_executor(
+        "EX-GAMMA-THREE", "Gamma Three", node="N-SW-UX", docs=("AR-RFP-025",)
+    )
     plan = ExecutorMatcher().plan([c], REQUEST)
     assert plan.lead is None and plan.recommended_ids() == ["EX-GAMMA-THREE"]
 

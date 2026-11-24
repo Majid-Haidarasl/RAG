@@ -5,7 +5,10 @@ import pytest
 from rag_core.ingestion.domain.catalog import CATALOG
 from rag_core.projects.domain.validation import RegistryValidator
 from rag_core.projects.infrastructure.issues_acl import issue_facts
-from rag_core.projects.infrastructure.registry_json import JsonProjectRegistry, registry_from_dict
+from rag_core.projects.infrastructure.registry_json import (
+    JsonProjectRegistry,
+    registry_from_dict,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from tests.fixtures.hierarchy.registry import shipped_registry
 from tests.fixtures.issues.seed import seed_issues
@@ -21,16 +24,34 @@ def shipped():  # noqa: ANN201
 def test_shipped_registry_counts() -> None:
     reg = shipped()
     assert reg.cycle == "1403-Q2" and reg.cutoff == "1403-06-31"
-    assert [p.project_id for p in reg.projects] == ["PRJ-AZP-118", "PRJ-RHS-PORTAL", "PRJ-DSP-VISITOR"]
-    assert reg.counts_by_kind() == {"research": 2, "achievement": 5, "challenge": 4, "unsolved_issue": 4}
-    assert [d.dimension_id for d in reg.scorecard] == ["SC-REF", "SC-CAP", "SC-REP", "SC-MGT", "SC-RRQ"]
+    assert [p.project_id for p in reg.projects] == [
+        "PRJ-AZP-118",
+        "PRJ-RHS-PORTAL",
+        "PRJ-DSP-VISITOR",
+    ]
+    assert reg.counts_by_kind() == {
+        "research": 2,
+        "achievement": 5,
+        "challenge": 4,
+        "unsolved_issue": 4,
+    }
+    assert [d.dimension_id for d in reg.scorecard] == [
+        "SC-REF",
+        "SC-CAP",
+        "SC-REP",
+        "SC-MGT",
+        "SC-RRQ",
+    ]
 
 
 def test_shipped_project_facts_follow_the_corpus() -> None:
     reg = shipped()
     azp = reg.project("PRJ-AZP-118")
-    assert azp is not None and azp.numbers() == {"progress_percent": 62, "remaining_mtoman": 1240,
-                                                 "contract_value_mtoman": 2180}
+    assert azp is not None and azp.numbers() == {
+        "progress_percent": 62,
+        "remaining_mtoman": 1240,
+        "contract_value_mtoman": 2180,
+    }
     assert azp.contract_ref == "AR-CNT-1402-118" and azp.primary_issue == "AR-ISS-024"
     rhs, dsp = reg.project("PRJ-RHS-PORTAL"), reg.project("PRJ-DSP-VISITOR")
     assert rhs is not None and (rhs.progress_percent, rhs.remaining_mtoman) == (78, 410)

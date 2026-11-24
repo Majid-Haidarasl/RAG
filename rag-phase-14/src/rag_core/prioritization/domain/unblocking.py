@@ -13,7 +13,7 @@ class SubTask:
     item_id: str
     status: str
     position: int
-    depends_on: tuple[str, ...] = ()   # full sibling ids
+    depends_on: tuple[str, ...] = ()  # full sibling ids
 
 
 @dataclass(frozen=True)
@@ -52,6 +52,10 @@ def next_actions(tasks: Iterable[SubTask]) -> list[NextAction]:
     """Open, not-blocked sub-issues that unblock others, the most unblocking first."""
     items = list(tasks)
     deps = dependents_of(items)
-    candidates = [t for t in items if t.status not in CLOSED and t.status != "blocked" and deps.get(t.item_id)]
+    candidates = [
+        t
+        for t in items
+        if t.status not in CLOSED and t.status != "blocked" and deps.get(t.item_id)
+    ]
     candidates.sort(key=lambda t: (-len(deps[t.item_id]), t.position, t.item_id))
     return [NextAction(t.item_id, deps[t.item_id]) for t in candidates]

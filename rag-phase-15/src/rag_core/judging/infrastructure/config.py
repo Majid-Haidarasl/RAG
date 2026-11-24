@@ -23,8 +23,15 @@ class JudgeModelSettings:
     format: str = "json"
     keep_alive: str = "30m"
     timeout_s: float = 180.0
-    options: dict[str, Any] = field(default_factory=lambda: {
-        "temperature": 0.0, "top_p": 1.0, "seed": 42, "num_ctx": 8192, "num_predict": 512})
+    options: dict[str, Any] = field(
+        default_factory=lambda: {
+            "temperature": 0.0,
+            "top_p": 1.0,
+            "seed": 42,
+            "num_ctx": 8192,
+            "num_predict": 512,
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -62,18 +69,26 @@ def _build(cls: type, data: Any, section: str) -> Any:
     known = {f.name for f in fields(cls)}
     unknown = sorted(set(data) - known)
     if unknown:
-        raise InvariantError(f"unknown keys in judge config {section!r}: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in judge config {section!r}: {', '.join(unknown)}"
+        )
     return cls(**data)
 
 
 def judge_settings_from_dict(data: dict[str, Any]) -> JudgeSettings:
-    sections = {"model": JudgeModelSettings, "run": JudgeRunSettings, "files": JudgeFileSettings,
-                "rules": RuleJudgeConfig}
+    sections = {
+        "model": JudgeModelSettings,
+        "run": JudgeRunSettings,
+        "files": JudgeFileSettings,
+        "rules": RuleJudgeConfig,
+    }
     unknown = sorted(set(data) - set(sections) - {"config_version"})
     if unknown:
         raise InvariantError(f"unknown judge config sections: {', '.join(unknown)}")
     built = {name: _build(cls, data.get(name), name) for name, cls in sections.items()}
-    return JudgeSettings(config_version=str(data.get("config_version", "0.10.0")), **built)
+    return JudgeSettings(
+        config_version=str(data.get("config_version", "0.10.0")), **built
+    )
 
 
 def load_judge_settings(path: Path) -> JudgeSettings:

@@ -9,11 +9,24 @@ from typing import Any
 import yaml
 
 from rag_core.prioritization.domain.model import Caps, Weights
-from rag_core.research_gaps.domain.rules import DEFAULT_SEVERITY, RULE_ORDER, RuleSetting
+from rag_core.research_gaps.domain.rules import (
+    DEFAULT_SEVERITY,
+    RULE_ORDER,
+    RuleSetting,
+)
 from rag_core.shared_kernel.errors import InvariantError
 
-DEFAULT_WEIGHTS = {"priority": 0.15, "severity": 0.10, "urgency": 0.15, "risk": 0.15, "dependents": 0.10,
-                   "exposure": 0.10, "blocked": 0.10, "gaps": 0.10, "spread": 0.05}
+DEFAULT_WEIGHTS = {
+    "priority": 0.15,
+    "severity": 0.10,
+    "urgency": 0.15,
+    "risk": 0.15,
+    "dependents": 0.10,
+    "exposure": 0.10,
+    "blocked": 0.10,
+    "gaps": 0.10,
+    "spread": 0.05,
+}
 
 
 @dataclass(frozen=True)
@@ -41,7 +54,9 @@ class PrioritySettings:
         if self.key_count < 1:
             raise InvariantError("prioritization.key_count must be >= 1")
         if not self.sensitivity_ratios or any(r <= 0 for r in self.sensitivity_ratios):
-            raise InvariantError("prioritization.sensitivity_ratios must be positive numbers")
+            raise InvariantError(
+                "prioritization.sensitivity_ratios must be positive numbers"
+            )
 
 
 @dataclass(frozen=True)
@@ -51,8 +66,15 @@ class ModelSettings:
     format: str = "json"
     keep_alive: str = "30m"
     timeout_s: float = 180.0
-    options: dict[str, Any] = field(default_factory=lambda: {
-        "temperature": 0.2, "top_p": 0.9, "seed": 42, "num_ctx": 8192, "num_predict": 768})
+    options: dict[str, Any] = field(
+        default_factory=lambda: {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "seed": 42,
+            "num_ctx": 8192,
+            "num_predict": 768,
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -74,13 +96,27 @@ class ProjectSettings:
     cycle: CycleSettings = field(default_factory=CycleSettings)
     storage: StorageSettings = field(default_factory=StorageSettings)
     gap_rules: dict[str, RuleSetting] = field(
-        default_factory=lambda: {c: RuleSetting(True, DEFAULT_SEVERITY[c]) for c in RULE_ORDER})
+        default_factory=lambda: {
+            c: RuleSetting(True, DEFAULT_SEVERITY[c]) for c in RULE_ORDER
+        }
+    )
     prioritization: PrioritySettings = field(default_factory=PrioritySettings)
     model: ModelSettings = field(default_factory=ModelSettings)
     live: LiveSettings = field(default_factory=LiveSettings)
 
 
-TOP_KEYS = frozenset({"config_version", "case", "cycle", "storage", "gap_rules", "prioritization", "model", "live"})
+TOP_KEYS = frozenset(
+    {
+        "config_version",
+        "case",
+        "cycle",
+        "storage",
+        "gap_rules",
+        "prioritization",
+        "model",
+        "live",
+    }
+)
 
 
 def _plain(cls: type, data: Any, section: str) -> Any:
@@ -90,7 +126,9 @@ def _plain(cls: type, data: Any, section: str) -> Any:
     known = {f.name for f in fields(cls)}
     unknown = sorted(set(data) - known)
     if unknown:
-        raise InvariantError(f"unknown keys in projects config {section!r}: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in projects config {section!r}: {', '.join(unknown)}"
+        )
     if "id" in data:
         data = {**data, "id": str(data["id"])}
     if "cutoff" in data:
@@ -104,14 +142,21 @@ def _gap_rules(data: Any) -> dict[str, RuleSetting]:
         raise InvariantError("projects config section 'gap_rules' must be a mapping")
     unknown = sorted(set(data) - set(RULE_ORDER))
     if unknown:
-        raise InvariantError(f"unknown gap rules in projects config: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown gap rules in projects config: {', '.join(unknown)}"
+        )
     out: dict[str, RuleSetting] = {}
     for code in RULE_ORDER:
         rec = data.get(code) or {}
         if not isinstance(rec, dict) or set(rec) - {"enabled", "severity"}:
-            raise InvariantError(f"gap rule {code}: only 'enabled' and 'severity' are allowed")
+            raise InvariantError(
+                f"gap rule {code}: only 'enabled' and 'severity' are allowed"
+            )
         try:
-            out[code] = RuleSetting(bool(rec.get("enabled", True)), str(rec.get("severity", DEFAULT_SEVERITY[code])))
+            out[code] = RuleSetting(
+                bool(rec.get("enabled", True)),
+                str(rec.get("severity", DEFAULT_SEVERITY[code])),
+            )
         except ValueError as exc:
             raise InvariantError(f"gap rule {code}: {exc}") from None
     return out
@@ -119,10 +164,19 @@ def _gap_rules(data: Any) -> dict[str, RuleSetting]:
 
 def _priority(data: Any) -> PrioritySettings:
     data = dict(data or {})
-    allowed = {"weights", "caps", "key_count", "key_min_score", "sensitivity_ratios", "risk_threshold"}
+    allowed = {
+        "weights",
+        "caps",
+        "key_count",
+        "key_min_score",
+        "sensitivity_ratios",
+        "risk_threshold",
+    }
     unknown = sorted(set(data) - allowed)
     if unknown:
-        raise InvariantError(f"unknown keys in projects config 'prioritization': {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in projects config 'prioritization': {', '.join(unknown)}"
+        )
     caps = data.get("caps") or {}
     if set(caps) - {f.name for f in fields(Caps)}:
         raise InvariantError("unknown keys in prioritization.caps")
@@ -131,7 +185,9 @@ def _priority(data: Any) -> PrioritySettings:
         caps=Caps(**{k: int(v) for k, v in caps.items()}),
         key_count=int(data.get("key_count", 3)),
         key_min_score=float(data.get("key_min_score", 25.0)),
-        sensitivity_ratios=tuple(float(r) for r in data.get("sensitivity_ratios", (0.8, 1.2))),
+        sensitivity_ratios=tuple(
+            float(r) for r in data.get("sensitivity_ratios", (0.8, 1.2))
+        ),
         risk_threshold=int(data.get("risk_threshold", 7)),
     )
 

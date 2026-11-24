@@ -28,7 +28,10 @@ class HierarchyScope:
 
     def exists(self, node: str) -> bool:
         try:
-            return NodeIdentifier(node) in self.org and self.org.get(NodeIdentifier(node)).is_active
+            return (
+                NodeIdentifier(node) in self.org
+                and self.org.get(NodeIdentifier(node)).is_active
+            )
         except Exception:  # noqa: BLE001 - invalid id format means "does not exist"
             return False
 
@@ -40,7 +43,9 @@ class HierarchyScope:
 
     def visible_documents(self, node: str) -> frozenset[str]:
         if node not in self._cache:
-            docs = self._resolver.visible_documents(NodeIdentifier(node), self.ownership, self.confidentiality_of)
+            docs = self._resolver.visible_documents(
+                NodeIdentifier(node), self.ownership, self.confidentiality_of
+            )
             self._cache[node] = frozenset(str(d) for d in docs)
         return self._cache[node]
 
@@ -49,5 +54,11 @@ class HierarchyScope:
         return None if owner is None else str(owner)
 
     def route(self, asking: str, evidence_owners: list[str]) -> EscalationRoute:
-        decision = route_question(self.org, NodeIdentifier(asking), [NodeIdentifier(o) for o in evidence_owners])
-        return EscalationRoute(decision.action.value, str(decision.target), decision.reason)
+        decision = route_question(
+            self.org,
+            NodeIdentifier(asking),
+            [NodeIdentifier(o) for o in evidence_owners],
+        )
+        return EscalationRoute(
+            decision.action.value, str(decision.target), decision.reason
+        )

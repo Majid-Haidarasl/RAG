@@ -28,10 +28,25 @@ class JudgeResult:
     tags: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
-    def for_case(cls, case: JudgeCase, judge: str, scores: dict[str, int], outcome: PolicyOutcome,
-                 **extra: object) -> JudgeResult:
-        return cls(case.case_id, judge, case.kind.value, case.origin, case.gold, dict(scores), outcome,
-                   tags=case.tags, **extra)  # type: ignore[arg-type]
+    def for_case(
+        cls,
+        case: JudgeCase,
+        judge: str,
+        scores: dict[str, int],
+        outcome: PolicyOutcome,
+        **extra: object,
+    ) -> JudgeResult:
+        return cls(
+            case.case_id,
+            judge,
+            case.kind.value,
+            case.origin,
+            case.gold,
+            dict(scores),
+            outcome,
+            tags=case.tags,
+            **extra,
+        )  # type: ignore[arg-type]
 
     @property
     def accepted(self) -> bool:
@@ -57,10 +72,23 @@ class JudgeResult:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "case_id": self.case_id, "judge": self.judge, "kind": self.kind, "origin": self.origin, "gold": self.gold,
-            "scores": dict(self.scores), "total": self.total, "out_of": self.outcome.out_of,
-            "decision": self.decision.value, "reasons": list(self.outcome.reasons), "notes": list(self.notes),
-            "parse_mode": self.parse_mode, "warnings": list(self.warnings), "raw": self.raw,
-            "seconds": round(self.seconds, 3), "attempts": self.attempts, "prompt_tokens": self.prompt_tokens,
-            "completion_tokens": self.completion_tokens, "tags": list(self.tags),
+            "case_id": self.case_id,
+            "judge": self.judge,
+            "kind": self.kind,
+            "origin": self.origin,
+            "gold": self.gold,
+            "scores": dict(self.scores),
+            "total": self.total,
+            "out_of": self.outcome.out_of,
+            "decision": self.decision.value,
+            "reasons": list(self.outcome.reasons),
+            "notes": list(self.notes),
+            "parse_mode": self.parse_mode,
+            "warnings": list(self.warnings),
+            "raw": self.raw,
+            "seconds": round(self.seconds, 3),
+            "attempts": self.attempts,
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "tags": list(self.tags),
         }

@@ -12,5 +12,7 @@ def issue_facts(issues: Iterable[Issue]) -> dict[str, IssueFacts]:
     out: dict[str, IssueFacts] = {}
     for issue in issues:
         blocked = sum(1 for s in issue.subissues if s.status.value == "blocked")
-        out[str(issue.identifier)] = IssueFacts(str(issue.identifier), issue.status.value, int(issue.risk), blocked)
+        out[str(issue.identifier)] = IssueFacts(
+            str(issue.identifier), issue.status.value, int(issue.risk), blocked
+        )
     return out

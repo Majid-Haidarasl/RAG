@@ -18,7 +18,11 @@ from rag_core.ingestion.infrastructure.pdf_poppler import (
     visual_to_logical,
 )
 from rag_core.knowledge.domain.fingerprint import char_shingles, containment
-from tests.fixtures.ingestion.builders import PERSIAN_PARAGRAPHS, write_persian_docx, write_text_pdf
+from tests.fixtures.ingestion.builders import (
+    PERSIAN_PARAGRAPHS,
+    write_persian_docx,
+    write_text_pdf,
+)
 
 pytestmark = pytest.mark.ingestion
 
@@ -41,8 +45,8 @@ def test_rtl_line_joins_small_gaps_and_keeps_real_spaces() -> None:
     # visual right-to-left: "دان" "ش" (tiny gap → one word) then real space, then "مصوب"
     boxes = [
         Box(391.6, 0, 401.1, h, "ناد"),
-        Box(386.2, 0, 391.0, h, "ش"),       # gap 0.6/20 = 0.03 < join gap
-        Box(350.0, 0, 383.8, h, "بوصم"),    # gap 2.4/20 = 0.12 → space
+        Box(386.2, 0, 391.0, h, "ش"),  # gap 0.6/20 = 0.03 < join gap
+        Box(350.0, 0, 383.8, h, "بوصم"),  # gap 2.4/20 = 0.12 → space
     ]
     assert line_text(boxes, join_gap=0.066) == "دانش مصوب"
 
@@ -50,8 +54,8 @@ def test_rtl_line_joins_small_gaps_and_keeps_real_spaces() -> None:
 def test_ltr_run_inside_rtl_line_keeps_its_order() -> None:
     h = 20.0
     boxes = [
-        Box(400, 0, 440, h, "خیرات"),       # تاریخ
-        Box(350, 0, 390, h, "یداتسرف"),     # فرستادی
+        Box(400, 0, 440, h, "خیرات"),  # تاریخ
+        Box(350, 0, 390, h, "یداتسرف"),  # فرستادی
         Box(200, 0, 240, h, "October"),
         Box(250, 0, 290, h, "2024"),
     ]
@@ -71,17 +75,24 @@ def test_forced_pdfplumber_fallback_reports_install_hint(tmp_path: Path) -> None
     assert any("sudo apt install -y poppler-utils" in w for w in result.warnings)
 
 
-def test_garbled_text_is_a_failure_not_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_garbled_text_is_a_failure_not_success(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     path = write_text_pdf(tmp_path / "AR-SW-022-sla.pdf")
     garbled = " ".join(["(cid:11)ش", "هرود", "(cid:22)ئ"] * 30)
     monkeypatch.setattr(
-        pdf_poppler, "extract_pdf_pages", lambda p, exe=None: ([PopplerPage(1, (garbled,))], {})
+        pdf_poppler,
+        "extract_pdf_pages",
+        lambda p, exe=None: ([PopplerPage(1, (garbled,))], {}),
     )
     with pytest.raises(GarbledTextError, match="garbled text from pdftotext"):
         parse_pdf_detailed(path, pdftotext="/usr/bin/pdftotext")
 
 
-@pytest.mark.skipif(not HAS_PDFTOTEXT, reason="poppler pdftotext is not installed (sudo apt install -y poppler-utils)")
+@pytest.mark.skipif(
+    not HAS_PDFTOTEXT,
+    reason="poppler pdftotext is not installed (sudo apt install -y poppler-utils)",
+)
 def test_pdftotext_is_primary_engine_for_text_pdf(tmp_path: Path) -> None:
     path = write_text_pdf(tmp_path / "AR-SW-022-sla.pdf")
     result = parse_pdf_detailed(path)
@@ -100,16 +111,29 @@ def test_pdftotext_is_primary_engine_for_text_pdf(tmp_path: Path) -> None:
 def test_persian_pdf_comes_back_in_logical_order(tmp_path: Path) -> None:
     docx = write_persian_docx(tmp_path / "fa.docx")
     subprocess.run(
-        [find_soffice(), f"-env:UserInstallation=file://{tmp_path / 'lo'}", "--headless",
-         "--convert-to", "pdf", "--outdir", str(tmp_path), str(docx)],
-        check=True, capture_output=True, timeout=180,
+        [
+            find_soffice(),
+            f"-env:UserInstallation=file://{tmp_path / 'lo'}",
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(tmp_path),
+            str(docx),
+        ],
+        check=True,
+        capture_output=True,
+        timeout=180,
     )
     pdf = tmp_path / "fa.pdf"
     result = parse_pdf_detailed(pdf)
     text = "\n".join(b.text for b in result.blocks)
     assert result.engine == "pdftotext"
     assert not result.quality.is_garbled
-    assert result.quality.metrics["function_words"] > result.quality.metrics["reversed_function_words"]
+    assert (
+        result.quality.metrics["function_words"]
+        > result.quality.metrics["reversed_function_words"]
+    )
     source = char_shingles(" ".join(PERSIAN_PARAGRAPHS))
     assert containment(source, char_shingles(text)) >= 0.80
     assert "AR-HR-005" in text

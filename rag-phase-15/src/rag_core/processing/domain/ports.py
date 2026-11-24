@@ -28,8 +28,13 @@ class PackageLike(Protocol):
 
 
 class NodeTransferPort(Protocol):
-    def transfer(self, cycle_id: str, step: ProcessingStep, received: list[Any],
-                 expected_children: int = 0) -> Any: ...
+    def transfer(
+        self,
+        cycle_id: str,
+        step: ProcessingStep,
+        received: list[Any],
+        expected_children: int = 0,
+    ) -> Any: ...
 
 
 class SaveOutcomeLike(Protocol):

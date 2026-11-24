@@ -39,7 +39,9 @@ class ParseFailedError(IngestionError):
 class GarbledTextError(ParseFailedError):
     """Text was extracted but is not usable (cid glyphs, reversed order, ...)."""
 
-    def __init__(self, path: str, reasons: tuple[str, ...], engine: str, hint: str = "") -> None:
+    def __init__(
+        self, path: str, reasons: tuple[str, ...], engine: str, hint: str = ""
+    ) -> None:
         reason = f"garbled text from {engine}: " + "; ".join(reasons)
         if hint:
             reason += f". {hint}"

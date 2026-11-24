@@ -8,13 +8,21 @@ from rag_core.hierarchy.domain.validation import RegistryValidator
 from rag_core.hierarchy.infrastructure.registry_csv import CsvRegistryLoader
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.identifiers import NodeIdentifier
-from tests.fixtures.hierarchy.registry import REGISTRY_DIR, layer_row, node_row, shipped_registry, shipped_rows
+from tests.fixtures.hierarchy.registry import (
+    REGISTRY_DIR,
+    layer_row,
+    node_row,
+    shipped_registry,
+    shipped_rows,
+)
 
 pytestmark = [pytest.mark.hierarchy, pytest.mark.registry]
 
 
 def _codes(rows) -> set[str]:
-    report = RegistryValidator(catalog_index()).validate(rows.layers, rows.nodes, rows.doc_map)
+    report = RegistryValidator(catalog_index()).validate(
+        rows.layers, rows.nodes, rows.doc_map
+    )
     return {i.code for i in report.errors}
 
 
@@ -51,7 +59,14 @@ def test_document_map_has_one_owner_per_corpus_document_matching_the_catalog() -
     catalog = catalog_index()
     assert len(ownership.documents()) == len(catalog) == 26
     for doc_id, (owner, _) in catalog.items():
-        assert str(ownership.owner_of(next(d for d in ownership.documents() if d.value == doc_id))) == owner
+        assert (
+            str(
+                ownership.owner_of(
+                    next(d for d in ownership.documents() if d.value == doc_id)
+                )
+            )
+            == owner
+        )
 
 
 def test_per_item_written_with_a_space_is_accepted() -> None:
@@ -73,8 +88,16 @@ def test_per_item_written_with_a_space_is_accepted() -> None:
         (lambda r: node_row(r, "N-SW").update(is_leaf="true"), "N-LEAF"),
         (lambda r: node_row(r, "N-SW-WEB").update(node_name_en="React"), "N-TECHNAME"),
         (lambda r: node_row(r, "N-SW-WEB").update(node_type="deputy"), "N-TYPE-LAYER"),
-        (lambda r: node_row(r, "N-SW-WEB").update(transfer_detail_level_to_parent="executive"), "N-DETAIL"),
-        (lambda r: node_row(r, "N-SW-WEB").update(escalation_node_id="N-HW"), "N-ESCALATION"),
+        (
+            lambda r: node_row(r, "N-SW-WEB").update(
+                transfer_detail_level_to_parent="executive"
+            ),
+            "N-DETAIL",
+        ),
+        (
+            lambda r: node_row(r, "N-SW-WEB").update(escalation_node_id="N-HW"),
+            "N-ESCALATION",
+        ),
         (lambda r: node_row(r, "N-SW-WEB").update(source_docs="AR-SW-099"), "N-SOURCE"),
         (lambda r: node_row(r, "N-SW").update(status="retired"), "N-RETIRED-PARENT"),
         (lambda r: node_row(r, "N-BRD").update(parent_node_id="N-CEO"), "N-ROOT"),
@@ -85,10 +108,45 @@ def test_per_item_written_with_a_space_is_accepted() -> None:
         (lambda r: layer_row(r, 4).update(layer_code="L7"), "L-CODE"),
         (lambda r: layer_row(r, 2).update(min_judge_score="25"), "L-SCORE"),
         (lambda r: r.layers.remove(layer_row(r, 2)), "L-GAP"),
-        (lambda r: r.doc_map.append({"document_id": "AR-SW-017", "node_id": "N-SW-MOB", "role": "owner", "source": "x"}), "M-OWNERS"),
-        (lambda r: next(m for m in r.doc_map if m["role"] == "owner").update(node_id="N-HW"), "M-OWNER"),
-        (lambda r: r.doc_map.append({"document_id": "AR-SW-017", "node_id": "N-NOPE", "role": "co_owner", "source": "x"}), "M-NODE"),
-        (lambda r: r.doc_map.append({"document_id": "AR-SW-017", "node_id": "N-HW", "role": "reader", "source": "x"}), "M-ROLE"),
+        (
+            lambda r: r.doc_map.append(
+                {
+                    "document_id": "AR-SW-017",
+                    "node_id": "N-SW-MOB",
+                    "role": "owner",
+                    "source": "x",
+                }
+            ),
+            "M-OWNERS",
+        ),
+        (
+            lambda r: next(m for m in r.doc_map if m["role"] == "owner").update(
+                node_id="N-HW"
+            ),
+            "M-OWNER",
+        ),
+        (
+            lambda r: r.doc_map.append(
+                {
+                    "document_id": "AR-SW-017",
+                    "node_id": "N-NOPE",
+                    "role": "co_owner",
+                    "source": "x",
+                }
+            ),
+            "M-NODE",
+        ),
+        (
+            lambda r: r.doc_map.append(
+                {
+                    "document_id": "AR-SW-017",
+                    "node_id": "N-HW",
+                    "role": "reader",
+                    "source": "x",
+                }
+            ),
+            "M-ROLE",
+        ),
     ],
 )
 def test_broken_rows_are_reported(mutate, code: str) -> None:
@@ -108,11 +166,19 @@ def test_validator_collects_all_errors_instead_of_stopping_at_the_first() -> Non
 def test_missing_cost_center_is_only_a_warning() -> None:
     report = shipped_registry().report
     assert report.ok
-    assert {w.code for w in report.warnings} <= {"N-COSTCENTER", "N-LEAF-FLAG", "M-UNMAPPED"}
+    assert {w.code for w in report.warnings} <= {
+        "N-COSTCENTER",
+        "N-LEAF-FLAG",
+        "M-UNMAPPED",
+    }
 
 
 def test_unmapped_corpus_document_is_reported() -> None:
     rows = shipped_rows()
     rows.doc_map[:] = [m for m in rows.doc_map if m["document_id"] != "AR-TRN-026"]
-    report = RegistryValidator(catalog_index()).validate(rows.layers, rows.nodes, rows.doc_map)
-    assert any(w.code == "M-UNMAPPED" and w.subject == "AR-TRN-026" for w in report.warnings)
+    report = RegistryValidator(catalog_index()).validate(
+        rows.layers, rows.nodes, rows.doc_map
+    )
+    assert any(
+        w.code == "M-UNMAPPED" and w.subject == "AR-TRN-026" for w in report.warnings
+    )

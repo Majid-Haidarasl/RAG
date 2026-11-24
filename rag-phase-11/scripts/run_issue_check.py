@@ -55,7 +55,9 @@ def find_root(explicit: Path | None) -> Path:
         return explicit.resolve()
     cwd = Path.cwd().resolve()
     for candidate in [cwd, *cwd.parents, ROOT_CANDIDATE]:
-        if (candidate / "pyproject.toml").is_file() and (candidate / "data" / "issues").is_dir():
+        if (candidate / "pyproject.toml").is_file() and (
+            candidate / "data" / "issues"
+        ).is_dir():
             return candidate
     raise SystemExit("could not find the repo root (pyproject.toml + data/issues/)")
 
@@ -89,7 +91,9 @@ def invariant_checks(issue) -> dict[str, bool]:  # type: ignore[no-untyped-def]
                 happy.transition_subissue(code, IssueStatus.IN_PROGRESS)
             happy.transition_subissue(code, IssueStatus.RESOLVED)
         happy.transition(IssueStatus.RESOLVED)
-        happy.transition_subissue("WIN", IssueStatus.REOPENED, reason="multi-station test failed")
+        happy.transition_subissue(
+            "WIN", IssueStatus.REOPENED, reason="multi-station test failed"
+        )
         reopened = happy.status is IssueStatus.REOPENED
         results["failed_subissue_reopens_resolved_parent"] = reopened
     except DomainError:
@@ -108,7 +112,11 @@ def main() -> int:
     parser.add_argument("--pytest-exit", default=None)
     parser.add_argument("--pytest-line", default=None)
     parser.add_argument("--python-version", default=None)
-    parser.add_argument("--prior", default="", help="earlier steps as name=exit,... (e.g. ingest=0,dedup=0)")
+    parser.add_argument(
+        "--prior",
+        default="",
+        help="earlier steps as name=exit,... (e.g. ingest=0,dedup=0)",
+    )
     args = parser.parse_args()
 
     root = find_root(args.root)
@@ -125,8 +133,12 @@ def main() -> int:
     for issue in issues:
         pos = issue.relative_position(org)
         positions[str(issue.identifier)] = {
-            "owner": pos.owner, "layer": pos.owner_layer, "depth": pos.owner_depth, "scope": pos.scope.value,
-            "common_ancestor": pos.common_ancestor, "escalation": f"{pos.escalation_action}->{pos.escalation_target}",
+            "owner": pos.owner,
+            "layer": pos.owner_layer,
+            "depth": pos.owner_depth,
+            "scope": pos.scope.value,
+            "common_ancestor": pos.common_ancestor,
+            "escalation": f"{pos.escalation_action}->{pos.escalation_target}",
         }
     scope_counts = Counter(p["scope"] for p in positions.values())
 
@@ -141,7 +153,15 @@ def main() -> int:
         seeded = {s.code: str(s.owner_node) for s in case.subissues}
         generated = {d.code: d.owner_node for d in drafts}
         decomposition = {
-            "generated": [{"code": d.code, "owner": d.owner_node, "depends_on": list(d.depends_on), "matched": list(d.matched)} for d in drafts],
+            "generated": [
+                {
+                    "code": d.code,
+                    "owner": d.owner_node,
+                    "depends_on": list(d.depends_on),
+                    "matched": list(d.matched),
+                }
+                for d in drafts
+            ],
             "matches_seed": generated == seeded,
         }
         for s in case.subissues:
@@ -156,16 +176,26 @@ def main() -> int:
         best = result.best
         ok_label = result.label.value == sample.get("expected_label")
         expected_best = sample.get("expected_best")
-        ok_best = expected_best is None or (best is not None and best.key == expected_best)
+        ok_best = expected_best is None or (
+            best is not None and best.key == expected_best
+        )
         comparisons.append(
             {
-                "id": sample["id"], "language": sample.get("language"), "label": result.label.value,
-                "best": best.key if best else None, "score": best.score if best else 0.0,
-                "text": best.breakdown.text if best else 0.0, "meta": best.breakdown.meta if best else 0.0,
+                "id": sample["id"],
+                "language": sample.get("language"),
+                "label": result.label.value,
+                "best": best.key if best else None,
+                "score": best.score if best else 0.0,
+                "text": best.breakdown.text if best else 0.0,
+                "meta": best.breakdown.meta if best else 0.0,
                 "via": best.via if best else None,
-                "expected_label": sample.get("expected_label"), "expected_best": expected_best,
+                "expected_label": sample.get("expected_label"),
+                "expected_best": expected_best,
                 "ok": ok_label and ok_best,
-                "top3": [{"key": c.key, "label": c.label.value, "score": c.score} for c in result.candidates[:3]],
+                "top3": [
+                    {"key": c.key, "label": c.label.value, "score": c.score}
+                    for c in result.candidates[:3]
+                ],
             }
         )
 
@@ -178,25 +208,47 @@ def main() -> int:
         "prior_steps": all(v == "0" for v in prior.values()),
         "registry_valid": report.ok,
         "decomposition_matches_seed": bool(decomposition.get("matches_seed")),
-        "comparison_expectations": all(c["ok"] for c in comparisons) and bool(comparisons),
+        "comparison_expectations": all(c["ok"] for c in comparisons)
+        and bool(comparisons),
         "invariants": bool(invariants) and all(invariants.values()),
     }
     status = "PASS" if all(checks.values()) else "FAIL"
 
     payload = {
-        "kit": KIT, "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "status": status,
-        "checks": checks, "prior_steps": prior,
-        "validation": {"errors": [str(e) for e in report.errors], "warnings": [str(w) for w in report.warnings]},
-        "issues": len(issues), "sub_issues": len(subs), "status_counts": dict(status_counts),
-        "status_categories": dict(category_counts), "sub_issue_status": dict(sub_status),
-        "positions": positions, "case_sub_issue_positions": sub_positions, "decomposition": decomposition,
-        "invariants": invariants, "comparisons": comparisons,
-        "thresholds": {"duplicate_score": DUPLICATE_SCORE, "duplicate_min_text": DUPLICATE_MIN_TEXT, "related_score": RELATED_SCORE},
+        "kit": KIT,
+        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "status": status,
+        "checks": checks,
+        "prior_steps": prior,
+        "validation": {
+            "errors": [str(e) for e in report.errors],
+            "warnings": [str(w) for w in report.warnings],
+        },
+        "issues": len(issues),
+        "sub_issues": len(subs),
+        "status_counts": dict(status_counts),
+        "status_categories": dict(category_counts),
+        "sub_issue_status": dict(sub_status),
+        "positions": positions,
+        "case_sub_issue_positions": sub_positions,
+        "decomposition": decomposition,
+        "invariants": invariants,
+        "comparisons": comparisons,
+        "thresholds": {
+            "duplicate_score": DUPLICATE_SCORE,
+            "duplicate_min_text": DUPLICATE_MIN_TEXT,
+            "related_score": RELATED_SCORE,
+        },
     }
     out_dir = args.out or (root / "results" / "phase-07")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_json = out_dir / f"issue-check-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json = (
+        out_dir
+        / f"issue-check-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+    )
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     print()
     print(SEPARATOR_START)
@@ -218,24 +270,50 @@ def main() -> int:
         print(f"  - {e}")
     print(f"issues: {len(issues)}")
     print(f"sub_issues: {len(subs)}")
-    print("issue_status: " + " ".join(f"{k}={v}" for k, v in sorted(status_counts.items())))
-    print("status_categories: " + " ".join(f"{k}={v}" for k, v in sorted(category_counts.items())))
-    print("sub_issue_status: " + " ".join(f"{k}={v}" for k, v in sorted(sub_status.items())))
-    print("issue_scope: " + " ".join(f"{k}={v}" for k, v in sorted(scope_counts.items())))
+    print(
+        "issue_status: "
+        + " ".join(f"{k}={v}" for k, v in sorted(status_counts.items()))
+    )
+    print(
+        "status_categories: "
+        + " ".join(f"{k}={v}" for k, v in sorted(category_counts.items()))
+    )
+    print(
+        "sub_issue_status: "
+        + " ".join(f"{k}={v}" for k, v in sorted(sub_status.items()))
+    )
+    print(
+        "issue_scope: " + " ".join(f"{k}={v}" for k, v in sorted(scope_counts.items()))
+    )
     if case is not None:
         cp = positions[CASE]
-        print(f"azarpakhsh_position: owner={cp['owner']} L{cp['layer']} depth={cp['depth']} {cp['scope']} escalation={cp['escalation']}")
-        print("azarpakhsh_decomposition: " + " ".join(f"{d['code']}->{d['owner']}" for d in decomposition["generated"])  # type: ignore[index,union-attr]
-              + f" (matches_seed={decomposition['matches_seed']})")
-        print("azarpakhsh_sub_positions: " + " ".join(f"{k.split('/')[1]}={v}" for k, v in sub_positions.items()))
-        print("invariants: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in invariants.items()))
-    print(f"comparison_thresholds: duplicate>={DUPLICATE_SCORE} (text>={DUPLICATE_MIN_TEXT}) related>={RELATED_SCORE}")
+        print(
+            f"azarpakhsh_position: owner={cp['owner']} L{cp['layer']} depth={cp['depth']} {cp['scope']} escalation={cp['escalation']}"
+        )
+        print(
+            "azarpakhsh_decomposition: "
+            + " ".join(f"{d['code']}->{d['owner']}" for d in decomposition["generated"])  # type: ignore[index,union-attr]
+            + f" (matches_seed={decomposition['matches_seed']})"
+        )
+        print(
+            "azarpakhsh_sub_positions: "
+            + " ".join(f"{k.split('/')[1]}={v}" for k, v in sub_positions.items())
+        )
+        print(
+            "invariants: "
+            + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in invariants.items())
+        )
+    print(
+        f"comparison_thresholds: duplicate>={DUPLICATE_SCORE} (text>={DUPLICATE_MIN_TEXT}) related>={RELATED_SCORE}"
+    )
     for c in comparisons:
         print(
             f"compare {c['id']} ({c['language']}): {c['label']} best={c['best']} score={c['score']:.3f} "
             f"text={c['text']:.3f} meta={c['meta']:.3f} expected={c['expected_label']} {'ok' if c['ok'] else 'MISMATCH'}"
         )
-    print("checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items()))
+    print(
+        "checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items())
+    )
     print(f"results_json: {out_json}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1

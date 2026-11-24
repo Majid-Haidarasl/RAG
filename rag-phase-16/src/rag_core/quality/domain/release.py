@@ -25,13 +25,17 @@ def require_version(value: str, where: str) -> str:
 
 # ---- versions ---------------------------------------------------------------------------------
 
+
 def version_problems(expected: str, found: Mapping[str, str | None]) -> list[str]:
     """``where=found`` for every place whose version differs from ``expected`` (missing counts too)."""
     require_version(expected, "expected")
-    return [f"{where}={value or '-'}" for where, value in found.items() if value != expected]
+    return [
+        f"{where}={value or '-'}" for where, value in found.items() if value != expected
+    ]
 
 
 # ---- phrases ----------------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class PhraseHit:
@@ -53,7 +57,9 @@ def find_phrases(text: str, phrases: Sequence[str]) -> list[tuple[int, str]]:
     return hits
 
 
-def scan_texts(texts: Iterable[tuple[str, str]], phrases: Sequence[str]) -> list[PhraseHit]:
+def scan_texts(
+    texts: Iterable[tuple[str, str]], phrases: Sequence[str]
+) -> list[PhraseHit]:
     """``texts`` is (path, content); returns every hit in path order."""
     if not [p for p in phrases if p.strip()]:
         raise InvariantError("the phrase scan needs at least one phrase")
@@ -65,6 +71,7 @@ def scan_texts(texts: Iterable[tuple[str, str]], phrases: Sequence[str]) -> list
 
 # ---- documents --------------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DocRequirement:
     path: str
@@ -72,8 +79,14 @@ class DocRequirement:
     markers: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        if not self.path.strip() or self.path.startswith("/") or ".." in self.path.split("/"):
-            raise InvariantError(f"document path {self.path!r} must be relative to the kit root")
+        if (
+            not self.path.strip()
+            or self.path.startswith("/")
+            or ".." in self.path.split("/")
+        ):
+            raise InvariantError(
+                f"document path {self.path!r} must be relative to the kit root"
+            )
         if self.min_chars < 0:
             raise InvariantError(f"{self.path}: min_chars must be >= 0")
 
@@ -112,6 +125,7 @@ def check_doc(req: DocRequirement, text: str | None) -> DocCheck:
 
 # ---- changelog --------------------------------------------------------------------------------
 
+
 def changelog_versions(text: str) -> list[str]:
     """Version headings in file order."""
     return _CHANGELOG_HEADING_RE.findall(text or "")
@@ -139,7 +153,9 @@ def slide_count(names: Iterable[str]) -> int:
     return sum(1 for n in names if _SLIDE_RE.match(n))
 
 
-def presentation_problems(names: Sequence[str] | None, min_slides: int, max_slides: int) -> list[str]:
+def presentation_problems(
+    names: Sequence[str] | None, min_slides: int, max_slides: int
+) -> list[str]:
     if min_slides < 1 or max_slides < min_slides:
         raise InvariantError("slide limits must satisfy 1 <= min <= max")
     if names is None:
@@ -147,4 +163,8 @@ def presentation_problems(names: Sequence[str] | None, min_slides: int, max_slid
     if "[Content_Types].xml" not in names or "ppt/presentation.xml" not in names:
         return ["not_a_pptx"]
     n = slide_count(names)
-    return [] if min_slides <= n <= max_slides else [f"slides:{n} outside {min_slides}..{max_slides}"]
+    return (
+        []
+        if min_slides <= n <= max_slides
+        else [f"slides:{n} outside {min_slides}..{max_slides}"]
+    )

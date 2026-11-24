@@ -4,11 +4,22 @@ import pytest
 
 from rag_core.hierarchy.application.workflows import HierarchyWorkflowService
 from rag_core.hierarchy.domain.model import Node, NodeStatus, NodeType
-from rag_core.hierarchy.domain.ownership import DocumentOwnership, OwnershipLink, OwnershipRole
+from rag_core.hierarchy.domain.ownership import (
+    DocumentOwnership,
+    OwnershipLink,
+    OwnershipRole,
+)
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.identifiers import DocumentId, NodeIdentifier
 from rag_core.shared_kernel.layer import LayerIndex
-from tests.fixtures.armanrayan import board, ceo, library, seed_organization, software_deputy, web_team
+from tests.fixtures.armanrayan import (
+    board,
+    ceo,
+    library,
+    seed_organization,
+    software_deputy,
+    web_team,
+)
 from tests.fixtures.hierarchy.registry import shipped_registry
 
 pytestmark = [pytest.mark.hierarchy, pytest.mark.registry]
@@ -17,7 +28,15 @@ N = NodeIdentifier
 
 
 def _team(node_id: str, parent: str = "N-SW") -> Node:
-    return Node(N(node_id), "Data Team", "تیم داده", NodeType.TEAM, LayerIndex(3), N(parent), is_leaf=True)
+    return Node(
+        N(node_id),
+        "Data Team",
+        "تیم داده",
+        NodeType.TEAM,
+        LayerIndex(3),
+        N(parent),
+        is_leaf=True,
+    )
 
 
 def _service() -> HierarchyWorkflowService:
@@ -37,15 +56,29 @@ def test_add_node_under_a_retired_parent_is_rejected() -> None:
     svc = _service()
     svc.retire_node(N("N-SW-VIS"))
     with pytest.raises(InvariantError, match="retired"):
-        svc.add_node(Node(N("N-SW-VIS-X"), "Sub", "زیر", NodeType.TEAM, LayerIndex(3), N("N-SW-VIS")))
+        svc.add_node(
+            Node(
+                N("N-SW-VIS-X"),
+                "Sub",
+                "زیر",
+                NodeType.TEAM,
+                LayerIndex(3),
+                N("N-SW-VIS"),
+            )
+        )
 
 
 def test_move_team_to_another_deputy_keeps_layer_and_emits_event() -> None:
     svc = _service()
     moved = svc.move_node(N("N-SW-SUP"), N("N-HW"))
     assert moved.parent_id == N("N-HW") and moved.layer.value == 3
-    assert any(e.name == "NodeMoved" and e.payload["to"] == "N-HW" for e in svc.organization.events)
-    assert N("N-SW-SUP") not in {d.identifier for d in svc.organization.descendants(N("N-SW"))}
+    assert any(
+        e.name == "NodeMoved" and e.payload["to"] == "N-HW"
+        for e in svc.organization.events
+    )
+    assert N("N-SW-SUP") not in {
+        d.identifier for d in svc.organization.descendants(N("N-SW"))
+    }
 
 
 @pytest.mark.parametrize(
@@ -144,7 +177,14 @@ def test_two_owners_for_one_document_are_rejected() -> None:
 
 def test_q3_exemption_is_explicit_repository_under_deputy_is_rejected() -> None:
     org = seed_organization(board(), ceo(), software_deputy(), web_team())
-    stray = Node(N("N-SW-LIB"), "Team Library", "کتابخانه تیم", NodeType.KNOWLEDGE_REPOSITORY, LayerIndex(4), N("N-SW"))
+    stray = Node(
+        N("N-SW-LIB"),
+        "Team Library",
+        "کتابخانه تیم",
+        NodeType.KNOWLEDGE_REPOSITORY,
+        LayerIndex(4),
+        N("N-SW"),
+    )
     with pytest.raises(InvariantError, match="adjacent"):
         org.register_node(stray)
     org.register_node(library())  # L4 repository under L1 CEO remains allowed

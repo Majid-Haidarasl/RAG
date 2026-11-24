@@ -28,18 +28,34 @@ from rag_core.tuning.infrastructure.config import RetrievalVariant
 
 def to_sample(item: GoldItem) -> SampleQuestion:
     return SampleQuestion(
-        id=item.id, node=item.node, language=item.language, question=item.question,
-        expected_status=item.expected_status, expected_docs=item.expected_docs,
-        expected_outside_docs=item.expected_outside_docs, expected_escalation=item.expected_escalation,
-        expected_facts=item.expected_facts, case=item.pair)
+        id=item.id,
+        node=item.node,
+        language=item.language,
+        question=item.question,
+        expected_status=item.expected_status,
+        expected_docs=item.expected_docs,
+        expected_outside_docs=item.expected_outside_docs,
+        expected_escalation=item.expected_escalation,
+        expected_facts=item.expected_facts,
+        case=item.pair,
+    )
 
 
-def retrieval_config(variant: RetrievalVariant, base: RetrievalConfig | None = None) -> RetrievalConfig:
-    return replace(base or RetrievalConfig(), top_k=variant.top_k, candidate_k=variant.candidate_k,
-                   lexical_weight=variant.lexical_weight, vector_weight=variant.vector_weight)
+def retrieval_config(
+    variant: RetrievalVariant, base: RetrievalConfig | None = None
+) -> RetrievalConfig:
+    return replace(
+        base or RetrievalConfig(),
+        top_k=variant.top_k,
+        candidate_k=variant.candidate_k,
+        lexical_weight=variant.lexical_weight,
+        vector_weight=variant.vector_weight,
+    )
 
 
-def assembler(variant: RetrievalVariant, max_block_tokens: int = 900) -> ContextAssembler:
+def assembler(
+    variant: RetrievalVariant, max_block_tokens: int = 900
+) -> ContextAssembler:
     return ContextAssembler(variant.budget_tokens, max_block_tokens)
 
 
@@ -47,18 +63,29 @@ def norm_text(text: str) -> str:
     return " ".join(normalized_tokens(normalize_digits(normalize_yeh_kaf(text or ""))))
 
 
-def ranking_row(item: GoldItem, result: RetrievalResult, context_text: str, seconds: float,
-                visible: frozenset[str] | None = None) -> RankingRow:
+def ranking_row(
+    item: GoldItem,
+    result: RetrievalResult,
+    context_text: str,
+    seconds: float,
+    visible: frozenset[str] | None = None,
+) -> RankingRow:
     ranked = tuple(result.document_ids())
     violations = 0 if visible is None else sum(1 for d in ranked if d not in visible)
-    found = facts_found(context_text, item.expected_facts) if item.expected_facts else (0, 0)
+    found = (
+        facts_found(context_text, item.expected_facts)
+        if item.expected_facts
+        else (0, 0)
+    )
     return RankingRow(item.id, ranked, item.expected_docs, found, seconds, violations)
 
 
 Retrieve = Callable[[GoldItem], tuple[RetrievalResult, str]]
 
 
-def rank_items(items: Iterable[GoldItem], retrieve: Retrieve, scope: ScopePort | None = None) -> list[RankingRow]:
+def rank_items(
+    items: Iterable[GoldItem], retrieve: Retrieve, scope: ScopePort | None = None
+) -> list[RankingRow]:
     """One ranking row per answered item: ``retrieve`` returns the result and the assembled context text."""
     rows: list[RankingRow] = []
     for item in items:
@@ -76,11 +103,13 @@ def rank_items(items: Iterable[GoldItem], retrieve: Retrieve, scope: ScopePort |
 @dataclass(frozen=True)
 class GroundingProblem:
     item_id: str
-    code: str      # quote_not_in_corpus | fact_not_in_quote | unsupported_claim | unknown_document
+    code: str  # quote_not_in_corpus | fact_not_in_quote | unsupported_claim | unknown_document
     detail: str = ""
 
     def __str__(self) -> str:
-        return f"{self.item_id}:{self.code}" + (f" ({self.detail})" if self.detail else "")
+        return f"{self.item_id}:{self.code}" + (
+            f" ({self.detail})" if self.detail else ""
+        )
 
 
 def document_texts(records: Iterable[ChunkRecord]) -> dict[tuple[str, str], list[str]]:
@@ -89,7 +118,10 @@ def document_texts(records: Iterable[ChunkRecord]) -> dict[tuple[str, str], list
     for r in records:
         if r.is_active:
             by.setdefault((r.document_id, r.language), []).append(r)
-    return {k: [norm_text(r.text) for r in sorted(v, key=lambda r: r.order)] for k, v in by.items()}
+    return {
+        k: [norm_text(r.text) for r in sorted(v, key=lambda r: r.order)]
+        for k, v in by.items()
+    }
 
 
 def quote_in(quote: str, chunks: Sequence[str]) -> bool:
@@ -99,8 +131,11 @@ def quote_in(quote: str, chunks: Sequence[str]) -> bool:
     return any(q in c for c in chunks) or q in " ".join(chunks)
 
 
-def gold_grounding(items: Iterable[GoldItem], docs: dict[tuple[str, str], list[str]],
-                   validator: CitedFactValidator | None = None) -> list[GroundingProblem]:
+def gold_grounding(
+    items: Iterable[GoldItem],
+    docs: dict[tuple[str, str], list[str]],
+    validator: CitedFactValidator | None = None,
+) -> list[GroundingProblem]:
     """Every quote is in its document, every fact is in the quotes, the reference adds no number or id."""
     validator = validator or CitedFactValidator()
     out: list[GroundingProblem] = []
@@ -108,7 +143,11 @@ def gold_grounding(items: Iterable[GoldItem], docs: dict[tuple[str, str], list[s
         for i, e in enumerate(item.evidence, 1):
             chunks = docs.get((e.document_id, e.language))
             if chunks is None:
-                out.append(GroundingProblem(item.id, "unknown_document", f"{e.document_id}/{e.language}"))
+                out.append(
+                    GroundingProblem(
+                        item.id, "unknown_document", f"{e.document_id}/{e.language}"
+                    )
+                )
             elif not quote_in(e.quote, chunks):
                 out.append(GroundingProblem(item.id, "quote_not_in_corpus", f"§{i}"))
         if not item.answered:
@@ -116,13 +155,23 @@ def gold_grounding(items: Iterable[GoldItem], docs: dict[tuple[str, str], list[s
         for group in item.expected_facts:
             if facts_found(item.quote_text, (group,))[0] == 0:
                 out.append(GroundingProblem(item.id, "fact_not_in_quote", group[0]))
-        for text, which in ((item.reference_answer, "reference"), (item.partial_answer, "partial")):
+        for text, which in (
+            (item.reference_answer, "reference"),
+            (item.partial_answer, "partial"),
+        ):
             if not text.strip():
                 continue
-            report = validator.validate(text, [e.quote for e in item.evidence],
-                                        source_document_ids=list(item.expected_docs))
+            report = validator.validate(
+                text,
+                [e.quote for e in item.evidence],
+                source_document_ids=list(item.expected_docs),
+            )
             for r in flagged(report):
-                out.append(GroundingProblem(item.id, "unsupported_claim", f"{which}: {r.claim.raw_text}"))
+                out.append(
+                    GroundingProblem(
+                        item.id, "unsupported_claim", f"{which}: {r.claim.raw_text}"
+                    )
+                )
     return out
 
 
@@ -135,15 +184,28 @@ def scope_problems(items: Iterable[GoldItem], scope: ScopePort) -> list[str]:
             continue
         visible = scope.visible_documents(item.node)
         if item.answered:
-            out += [f"{item.id}:not_visible:{d}" for d in item.expected_docs if d not in visible]
+            out += [
+                f"{item.id}:not_visible:{d}"
+                for d in item.expected_docs
+                if d not in visible
+            ]
         if item.expected_status == "out_of_scope":
-            out += [f"{item.id}:visible_outside:{d}" for d in item.expected_outside_docs if d in visible]
-            owners = [o for o in (scope.owner_of(d) for d in item.expected_outside_docs) if o]
+            out += [
+                f"{item.id}:visible_outside:{d}"
+                for d in item.expected_outside_docs
+                if d in visible
+            ]
+            owners = [
+                o for o in (scope.owner_of(d) for d in item.expected_outside_docs) if o
+            ]
             if not owners:
                 out.append(f"{item.id}:no_owner")
             else:
                 route = scope.route(item.node, owners)
-                if route.action != "escalate" or route.target != item.expected_escalation:
+                if (
+                    route.action != "escalate"
+                    or route.target != item.expected_escalation
+                ):
                     out.append(f"{item.id}:route:{route.action}->{route.target}")
     return out
 

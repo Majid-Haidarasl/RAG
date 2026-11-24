@@ -78,7 +78,11 @@ class TransferPackage:
         fields: dict[str, str],
         citations: list[Citation],
     ) -> TransferPackage:
-        missing = [name for name in rules.required_fields if not str(fields.get(name, "")).strip()]
+        missing = [
+            name
+            for name in rules.required_fields
+            if not str(fields.get(name, "")).strip()
+        ]
         if missing:
             raise InvariantError(f"TransferPackage missing required fields: {missing}")
         # source_references may be represented by citations when the field is present.
@@ -87,7 +91,9 @@ class TransferPackage:
         if rules.max_words is not None:
             words = sum(len(v.split()) for v in fields.values())
             if words > rules.max_words:
-                raise InvariantError(f"package has {words} words, max is {rules.max_words}")
+                raise InvariantError(
+                    f"package has {words} words, max is {rules.max_words}"
+                )
         package = cls(
             source_node=source_node,
             target_node=target_node,
@@ -97,7 +103,10 @@ class TransferPackage:
             citations=tuple(citations),
         )
         package.events.append(
-            DomainEvent("CycleCompleted", {"source": str(source_node), "target": str(target_node)})
+            DomainEvent(
+                "CycleCompleted",
+                {"source": str(source_node), "target": str(target_node)},
+            )
         )
         return package
 
@@ -105,7 +114,9 @@ class TransferPackage:
         if self.status is not PackageStatus.DRAFT:
             raise InvariantError("only a draft package can be accepted")
         self.status = PackageStatus.ACCEPTED
-        self.events.append(DomainEvent("PackageAccepted", {"source": str(self.source_node)}))
+        self.events.append(
+            DomainEvent("PackageAccepted", {"source": str(self.source_node)})
+        )
 
     def reject(self, reason: str) -> None:
         if self.status is not PackageStatus.DRAFT:

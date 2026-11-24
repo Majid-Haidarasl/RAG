@@ -23,16 +23,30 @@ P9_FACTS = [
 ]
 
 
-def run(tmp_path: Path, *args: str, p8: Path | None = None, p9: Path | None = None
-        ) -> tuple[subprocess.CompletedProcess, dict]:
+def run(
+    tmp_path: Path, *args: str, p8: Path | None = None, p9: Path | None = None
+) -> tuple[subprocess.CompletedProcess, dict]:
     empty = tmp_path / "empty"
     empty.mkdir(exist_ok=True)
-    cmd = [sys.executable, str(SCRIPT), "--out", str(tmp_path / "out"),
-           "--phase8-results", str(p8 or empty), "--phase9-results", str(p9 or empty), *args]
+    cmd = [
+        sys.executable,
+        str(SCRIPT),
+        "--out",
+        str(tmp_path / "out"),
+        "--phase8-results",
+        str(p8 or empty),
+        "--phase9-results",
+        str(p9 or empty),
+        *args,
+    ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900, check=False)
-    lines = [line for line in proc.stdout.splitlines() if line.startswith("results_json: ")]
+    lines = [
+        line for line in proc.stdout.splitlines() if line.startswith("results_json: ")
+    ]
     assert lines, proc.stdout[-3000:] + proc.stderr[-3000:]
-    return proc, json.loads(Path(lines[0].split(": ", 1)[1]).read_text(encoding="utf-8"))
+    return proc, json.loads(
+        Path(lines[0].split(": ", 1)[1]).read_text(encoding="utf-8")
+    )
 
 
 def _config(tmp_path: Path, url: str) -> Path:
@@ -48,20 +62,41 @@ def _live_results(tmp_path: Path) -> tuple[Path, Path]:
     p9 = tmp_path / "p9"
     p8.mkdir()
     p9.mkdir()
-    answer = {"id": "Q01", "node": "N-SW-SUP", "language": "en", "question": "What is the P1 response time?",
-              "status": "answered", "expected_status": "answered", "text": "Within 30 minutes [AR-SW-022 §4].",
-              "used_chunks": [{"document_id": "AR-NOPE-001", "language": "en", "order": 1}], "citations": []}
+    answer = {
+        "id": "Q01",
+        "node": "N-SW-SUP",
+        "language": "en",
+        "question": "What is the P1 response time?",
+        "status": "answered",
+        "expected_status": "answered",
+        "text": "Within 30 minutes [AR-SW-022 §4].",
+        "used_chunks": [{"document_id": "AR-NOPE-001", "language": "en", "order": 1}],
+        "citations": [],
+    }
     (p8 / "rag-demo-20260101T000000Z.json").write_text(
-        json.dumps({"live": {"status": "ok", "answers": [answer]}}), encoding="utf-8")
-    summaries = {"en": {"text": "AR-ISS-024/HW is in progress and is led by Saeed Akbari."}}
+        json.dumps({"live": {"status": "ok", "answers": [answer]}}), encoding="utf-8"
+    )
+    summaries = {
+        "en": {"text": "AR-ISS-024/HW is in progress and is led by Saeed Akbari."}
+    }
     (p9 / "ike-check-20260101T000000Z.json").write_text(
-        json.dumps({"live": {"status": "ok", "summaries": summaries, "facts": P9_FACTS}}), encoding="utf-8")
+        json.dumps(
+            {"live": {"status": "ok", "summaries": summaries, "facts": P9_FACTS}}
+        ),
+        encoding="utf-8",
+    )
     return p8, p9
 
 
 def test_no_live_passes_and_prints_the_summary(tmp_path: Path) -> None:
-    proc, data = run(tmp_path, "--no-live", "--pytest-exit", "0",
-                     "--prior", "ingest=0,dedup=0,hierarchy=0,issues=0,rag=0,ike=0")
+    proc, data = run(
+        tmp_path,
+        "--no-live",
+        "--pytest-exit",
+        "0",
+        "--prior",
+        "ingest=0,dedup=0,hierarchy=0,issues=0,rag=0,ike=0",
+    )
     assert proc.returncode == 0, proc.stdout[-3000:] + proc.stderr[-3000:]
     out = proc.stdout
     assert "======== PHASE 10 SUMMARY ========" in out and "status: PASS" in out
@@ -73,27 +108,45 @@ def test_no_live_passes_and_prints_the_summary(tmp_path: Path) -> None:
     assert all(row["ok"] for row in data["parser_cases"])
     cal = data["calibration_rule"]
     assert cal["check"]["agree"] == cal["check"]["n"] == 13 and cal["all"]["n"] == 14
-    assert data["negative_controls_rule"]["offline"]["rejected"] == data["negative_controls_rule"]["offline"]["n"] > 0
-    tpl = [r for r in data["key_outputs_rule"]["results"] if r["origin"] == "ike-template"]
+    assert (
+        data["negative_controls_rule"]["offline"]["rejected"]
+        == data["negative_controls_rule"]["offline"]["n"]
+        > 0
+    )
+    tpl = [
+        r for r in data["key_outputs_rule"]["results"] if r["origin"] == "ike-template"
+    ]
     assert len(tpl) == 2 and all(r["decision"] == "accept" for r in tpl), tpl
 
 
 def test_failed_prior_step_fails_status(tmp_path: Path) -> None:
     proc, data = run(tmp_path, "--no-live", "--prior", "ike=1")
-    assert proc.returncode == 1 and data["status"] == "FAIL" and data["checks"]["prior_steps"] is False
+    assert (
+        proc.returncode == 1
+        and data["status"] == "FAIL"
+        and data["checks"]["prior_steps"] is False
+    )
 
 
 def test_earlier_live_outputs_are_judged_by_rules(tmp_path: Path) -> None:
     p8, p9 = _live_results(tmp_path)
     proc, data = run(tmp_path, "--no-live", p8=p8, p9=p9)
     assert proc.returncode == 0, proc.stdout[-3000:] + proc.stderr[-3000:]
-    assert data["phase8_results"]["answers"] == 1 and data["phase8_results"]["missing_chunks"] == 1
+    assert (
+        data["phase8_results"]["answers"] == 1
+        and data["phase8_results"]["missing_chunks"] == 1
+    )
     assert data["phase9_results"]["summaries"] == 1
     by_id = {r["case_id"]: r for r in data["key_outputs_rule"]["results"]}
-    assert by_id["P8-Q01"]["decision"] == "reject"  # its source chunk is unknown: nothing grounds it
+    assert (
+        by_id["P8-Q01"]["decision"] == "reject"
+    )  # its source chunk is unknown: nothing grounds it
     assert by_id["P9-LLM-en"]["decision"] == "accept", by_id["P9-LLM-en"]
     assert "phase8_answers_rule: file=rag-demo-20260101T000000Z.json" in proc.stdout
-    assert "phase9_summaries_rule: file=ike-check-20260101T000000Z.json en=20/20:accept" in proc.stdout
+    assert (
+        "phase9_summaries_rule: file=ike-check-20260101T000000Z.json en=20/20:accept"
+        in proc.stdout
+    )
     assert data["checks"]["negative_controls_rejected"] is True
 
 
@@ -113,9 +166,16 @@ def test_live_judge_against_fake_ollama(tmp_path: Path) -> None:
     assert live["errors"] == 0 and live["parse_modes"] == {"json": live["cases"]}
     assert live["calibration"]["n"] == 14 and live["key_outputs"]["n"] == 2
     # A judge that accepts everything is caught by the negative controls (reported, not a kit failure).
-    assert live["negative_controls"]["n"] > 0 and live["negative_controls"]["rejected"] == 0
+    assert (
+        live["negative_controls"]["n"] > 0
+        and live["negative_controls"]["rejected"] == 0
+    )
     assert data["status"] == "PASS"
     chats = [body for path, body in srv.requests if path == "/api/chat"]
-    assert chats and all(b["format"] == "json" and b["options"]["temperature"] == 0.0 for b in chats)
+    assert chats and all(
+        b["format"] == "json" and b["options"]["temperature"] == 0.0 for b in chats
+    )
     assert "live_judge: llm:qwen3:8b think=off format=json" in proc.stdout
-    assert "live_key_outputs:" in proc.stdout and "live_negative_controls:" in proc.stdout
+    assert (
+        "live_key_outputs:" in proc.stdout and "live_negative_controls:" in proc.stdout
+    )

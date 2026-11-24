@@ -24,10 +24,15 @@ def rel(src: str, dst: str, kind: RelationType, conf: float = 1.0) -> IkeRelatio
 
 @pytest.mark.parametrize(
     ("identifier", "kind"),
-    [("AR-ISS-024", EndpointKind.ISSUE), ("AR-ISS-024/HW", EndpointKind.SUBISSUE),
-     ("EX-SAEED-AKBARI", EndpointKind.EXECUTOR), ("AR-HW-012", EndpointKind.KNOWLEDGE),
-     ("AR-CNT-1402-118", EndpointKind.KNOWLEDGE), ("gap:no-lead-executor", EndpointKind.TOPIC),
-     ("photo-diagnosis", EndpointKind.TOPIC)],
+    [
+        ("AR-ISS-024", EndpointKind.ISSUE),
+        ("AR-ISS-024/HW", EndpointKind.SUBISSUE),
+        ("EX-SAEED-AKBARI", EndpointKind.EXECUTOR),
+        ("AR-HW-012", EndpointKind.KNOWLEDGE),
+        ("AR-CNT-1402-118", EndpointKind.KNOWLEDGE),
+        ("gap:no-lead-executor", EndpointKind.TOPIC),
+        ("photo-diagnosis", EndpointKind.TOPIC),
+    ],
 )
 def test_endpoint_kind(identifier: str, kind: EndpointKind) -> None:
     assert endpoint_kind(identifier) is kind
@@ -48,11 +53,23 @@ def test_well_typed_relations_have_no_problems() -> None:
 @pytest.mark.parametrize(
     ("relation", "fragment"),
     [
-        (rel("AR-HW-012", "AR-ISS-024/HW", RelationType.CAN_HANDLE), "source kind knowledge"),
-        (rel("EX-SAEED-AKBARI", "AR-HW-012", RelationType.CAN_HANDLE), "target kind knowledge"),
-        (rel("AR-ISS-024/WIN", "AR-ISS-031/HW", RelationType.DEPENDS_ON), "inside one issue"),
+        (
+            rel("AR-HW-012", "AR-ISS-024/HW", RelationType.CAN_HANDLE),
+            "source kind knowledge",
+        ),
+        (
+            rel("EX-SAEED-AKBARI", "AR-HW-012", RelationType.CAN_HANDLE),
+            "target kind knowledge",
+        ),
+        (
+            rel("AR-ISS-024/WIN", "AR-ISS-031/HW", RelationType.DEPENDS_ON),
+            "inside one issue",
+        ),
         (rel("AR-ISS-024/HW", "AR-ISS-031", RelationType.PART_OF), "own parent"),
-        (rel("AR-ISS-024/HW", "EX-SAEED-AKBARI", RelationType.KNOWLEDGE_LACK), "target kind executor"),
+        (
+            rel("AR-ISS-024/HW", "EX-SAEED-AKBARI", RelationType.KNOWLEDGE_LACK),
+            "target kind executor",
+        ),
     ],
 )
 def test_ill_typed_relations_are_reported(relation: IkeRelation, fragment: str) -> None:
@@ -72,7 +89,12 @@ def test_add_if_absent_skips_existing_relation() -> None:
     graph = IkeGraph(NodeIdentifier("N-LIB"))
     first = rel("AR-ISS-024/HW", "AR-HW-012", RelationType.RELATES_TO)
     assert graph.add_if_absent(first) is True
-    assert graph.add_if_absent(rel("AR-ISS-024/HW", "AR-HW-012", RelationType.RELATES_TO, 0.5)) is False
+    assert (
+        graph.add_if_absent(
+            rel("AR-ISS-024/HW", "AR-HW-012", RelationType.RELATES_TO, 0.5)
+        )
+        is False
+    )
     assert graph.relations == [first]
 
 
@@ -80,12 +102,26 @@ def test_queries_and_counts() -> None:
     graph = IkeGraph(NodeIdentifier("N-LIB"))
     graph.add_checked(rel("AR-ISS-024/HW", "AR-HW-012", RelationType.RELATES_TO))
     graph.add_checked(rel("AR-ISS-024/HW", "AR-HW-015", RelationType.RELATES_TO))
-    graph.add_checked(rel("EX-SAEED-AKBARI", "AR-ISS-024/HW", RelationType.CAN_HANDLE, 0.9))
-    assert [r.target_id for r in graph.outgoing("AR-ISS-024/HW", RelationType.RELATES_TO)] == ["AR-HW-012", "AR-HW-015"]
+    graph.add_checked(
+        rel("EX-SAEED-AKBARI", "AR-ISS-024/HW", RelationType.CAN_HANDLE, 0.9)
+    )
+    assert [
+        r.target_id for r in graph.outgoing("AR-ISS-024/HW", RelationType.RELATES_TO)
+    ] == ["AR-HW-012", "AR-HW-015"]
     assert [r.source_id for r in graph.incoming("AR-ISS-024/HW")] == ["EX-SAEED-AKBARI"]
     counts = graph.counts()
-    assert counts["relates_to"] == 2 and counts["can_handle"] == 1 and counts["part_of"] == 0
-    assert graph.endpoints() == {"issue": 0, "subissue": 1, "executor": 1, "knowledge": 2, "topic": 0}
+    assert (
+        counts["relates_to"] == 2
+        and counts["can_handle"] == 1
+        and counts["part_of"] == 0
+    )
+    assert graph.endpoints() == {
+        "issue": 0,
+        "subissue": 1,
+        "executor": 1,
+        "knowledge": 2,
+        "topic": 0,
+    }
     data = graph.to_dict()
     assert data["node"] == "N-LIB" and len(data["relations"]) == 3  # type: ignore[arg-type]
 
@@ -105,12 +141,16 @@ def test_validate_reports_duplicates_and_bad_kinds_added_around_the_root() -> No
     r = rel("AR-HW-012", "AR-ISS-024/HW", RelationType.CAN_HANDLE)
     graph.relations.extend([r, r])
     problems = graph.validate()
-    assert any("duplicate" in p for p in problems) and any("not allowed" in p for p in problems)
+    assert any("duplicate" in p for p in problems) and any(
+        "not allowed" in p for p in problems
+    )
 
 
 def test_knowledge_lack_on_topic_emits_event() -> None:
     graph = IkeGraph(NodeIdentifier("N-HW-REP"))
-    graph.add_checked(rel("AR-ISS-024/HW", "gap:no-lead-executor", RelationType.KNOWLEDGE_LACK, 0.9))
+    graph.add_checked(
+        rel("AR-ISS-024/HW", "gap:no-lead-executor", RelationType.KNOWLEDGE_LACK, 0.9)
+    )
     assert graph.events[-1].name == "KnowledgeLackFlagged"
 
 

@@ -23,25 +23,35 @@ STATUSES = ("done", "external", "run", "planned")
 @dataclass(frozen=True)
 class Deliverable:
     phase: int
-    spec: str                      # the deliverable as written in the phase plan
+    spec: str  # the deliverable as written in the phase plan
     status: str
-    paths: tuple[str, ...] = ()    # where it lives in the kit (done / run)
+    paths: tuple[str, ...] = ()  # where it lives in the kit (done / run)
     note: str = ""
 
     def __post_init__(self) -> None:
         if not 1 <= self.phase <= 99:
             raise InvariantError(f"phase must be 1..99, got {self.phase}")
         if not self.spec.strip():
-            raise InvariantError(f"phase {self.phase}: a deliverable needs its spec text")
+            raise InvariantError(
+                f"phase {self.phase}: a deliverable needs its spec text"
+            )
         if self.status not in STATUSES:
-            raise InvariantError(f"phase {self.phase} {self.spec!r}: status must be one of {', '.join(STATUSES)}")
+            raise InvariantError(
+                f"phase {self.phase} {self.spec!r}: status must be one of {', '.join(STATUSES)}"
+            )
         if self.status == "done" and not self.paths:
-            raise InvariantError(f"phase {self.phase} {self.spec!r}: a done deliverable needs its paths")
+            raise InvariantError(
+                f"phase {self.phase} {self.spec!r}: a done deliverable needs its paths"
+            )
         if self.status in ("external", "planned") and not self.note.strip():
-            raise InvariantError(f"phase {self.phase} {self.spec!r}: {self.status} needs a note")
+            raise InvariantError(
+                f"phase {self.phase} {self.spec!r}: {self.status} needs a note"
+            )
         for p in self.paths:
             if p.startswith("/") or ".." in p.split("/"):
-                raise InvariantError(f"phase {self.phase}: path {p!r} must be relative to the kit root")
+                raise InvariantError(
+                    f"phase {self.phase}: path {p!r} must be relative to the kit root"
+                )
 
 
 @dataclass(frozen=True)
@@ -52,11 +62,17 @@ class ChecklistProblem:
     detail: str = ""
 
     def __str__(self) -> str:
-        return f"P{self.phase}:{self.code}:{self.spec}" + (f":{self.detail}" if self.detail else "")
+        return f"P{self.phase}:{self.code}:{self.spec}" + (
+            f":{self.detail}" if self.detail else ""
+        )
 
 
-def checklist_problems(items: Sequence[Deliverable], exists: Callable[[str], bool], *,
-                       phases: Iterable[int] = range(1, 17)) -> list[ChecklistProblem]:
+def checklist_problems(
+    items: Sequence[Deliverable],
+    exists: Callable[[str], bool],
+    *,
+    phases: Iterable[int] = range(1, 17),
+) -> list[ChecklistProblem]:
     """Missing paths of done deliverables, phases without any deliverable, duplicate specs."""
     out: list[ChecklistProblem] = []
     seen: set[tuple[int, str]] = set()

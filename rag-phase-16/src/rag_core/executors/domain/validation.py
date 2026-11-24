@@ -19,7 +19,15 @@ from rag_core.executors.domain.ports import TeamDirectory
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.identifiers import ExecutorId
 
-REQUIRED = ("id", "name_en", "home_node", "specialty", "allowed_referral_domains", "expertise", "knowledge_documents")
+REQUIRED = (
+    "id",
+    "name_en",
+    "home_node",
+    "specialty",
+    "allowed_referral_domains",
+    "expertise",
+    "knowledge_documents",
+)
 EXECUTION_LAYER = 3
 _PAY_KEYS = ("pay", "salary", "compensation", "pay_mtoman")
 
@@ -56,8 +64,12 @@ class ExecutorRegistryValidator:
         for rec in records:
             report.checked += 1
             ident = str(rec.get("id", "?"))
-            err = lambda rule, msg: report.errors.append(ExecutorFinding(ident, rule, msg))  # noqa: E731
-            warn = lambda rule, msg: report.warnings.append(ExecutorFinding(ident, rule, msg))  # noqa: E731
+            err = lambda rule, msg: report.errors.append(
+                ExecutorFinding(ident, rule, msg)
+            )  # noqa: E731
+            warn = lambda rule, msg: report.warnings.append(
+                ExecutorFinding(ident, rule, msg)
+            )  # noqa: E731
             missing = [k for k in REQUIRED if not rec.get(k)]
             if missing:
                 err("required", "missing " + ", ".join(missing))
@@ -82,7 +94,10 @@ class ExecutorRegistryValidator:
             else:
                 layer = self.directory.team(node).layer
                 if layer != EXECUTION_LAYER:
-                    err("home_node_layer", f"{node} is on layer {layer}; executors belong to execution teams (layer 3)")
+                    err(
+                        "home_node_layer",
+                        f"{node} is on layer {layer}; executors belong to execution teams (layer 3)",
+                    )
             for doc in rec["knowledge_documents"]:
                 if str(doc).upper() not in self.known_documents:
                     err("knowledge_document", f"unknown document {doc}")
@@ -90,10 +105,19 @@ class ExecutorRegistryValidator:
                 err("knowledge_document", "duplicate knowledge document")
             hours = rec.get("capacity_hours_per_week")
             if hours is None:
-                warn("capacity", "no fixed hours published (allocated through unit planning)")
+                warn(
+                    "capacity",
+                    "no fixed hours published (allocated through unit planning)",
+                )
             elif not isinstance(hours, int) or hours < 0 or hours > MAX_REFERRAL_HOURS:
-                err("capacity", f"capacity_hours_per_week must be 0..{MAX_REFERRAL_HOURS} or null, got {hours!r}")
+                err(
+                    "capacity",
+                    f"capacity_hours_per_week must be 0..{MAX_REFERRAL_HOURS} or null, got {hours!r}",
+                )
             for key in rec:
                 if key.lower() in _PAY_KEYS:
-                    warn("confidential", f"field {key!r} looks like pay; pay is not part of the executor registry")
+                    warn(
+                        "confidential",
+                        f"field {key!r} looks like pay; pay is not part of the executor registry",
+                    )
         return report

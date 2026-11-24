@@ -32,5 +32,8 @@ def test_real_plan_targets_per_layer(plan) -> None:  # noqa: ANN001
     for s in plan.steps:
         by_target[s.target_layer] = by_target.get(s.target_layer, 0) + 1
     assert by_target == {2: 15, 1: 3, 0: 1}
-    assert {s.node_id: s.reason for s in plan.skipped} == {"N-BRD": ROOT_REASON, "N-LIB": REPOSITORY_REASON}
+    assert {s.node_id: s.reason for s in plan.skipped} == {
+        "N-BRD": ROOT_REASON,
+        "N-LIB": REPOSITORY_REASON,
+    }
     assert len(plan.children_of("N-SW")) == 6

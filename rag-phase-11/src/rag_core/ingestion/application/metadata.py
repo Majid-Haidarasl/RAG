@@ -15,7 +15,9 @@ SCHEMA_RELATIVE = Path("schemas/knowledge-metadata.json")
 def find_repo_root(start: Path | None = None) -> Path:
     cur = (start or Path.cwd()).resolve()
     for candidate in [cur, *cur.parents]:
-        if (candidate / "pyproject.toml").is_file() and (candidate / SCHEMA_RELATIVE).is_file():
+        if (candidate / "pyproject.toml").is_file() and (
+            candidate / SCHEMA_RELATIVE
+        ).is_file():
             return candidate
     raise FileNotFoundError(f"cannot locate {SCHEMA_RELATIVE} upward from {cur}")
 
@@ -51,7 +53,11 @@ def bilingual_pair_name(path: Path, language: LanguageCode | None) -> str | None
         return None
     if not other.is_dir():
         return None
-    prefix = path.name.split("-")[0] + "-" + path.name.split("-")[1] if path.name.count("-") >= 1 else path.stem
+    prefix = (
+        path.name.split("-")[0] + "-" + path.name.split("-")[1]
+        if path.name.count("-") >= 1
+        else path.stem
+    )
     # IDs are AR-XXX-NNN
     parts = path.name.split("-")
     if len(parts) >= 3:

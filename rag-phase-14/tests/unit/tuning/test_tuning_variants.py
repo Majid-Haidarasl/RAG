@@ -3,7 +3,14 @@
 import pytest
 
 from rag_core.shared_kernel.errors import InvariantError
-from rag_core.tuning.domain.variants import KINDS, Candidate, Selection, SelectionRule, pick, selection_problems
+from rag_core.tuning.domain.variants import (
+    KINDS,
+    Candidate,
+    Selection,
+    SelectionRule,
+    pick,
+    selection_problems,
+)
 
 pytestmark = [pytest.mark.tuning, pytest.mark.eval_metrics]
 
@@ -23,7 +30,12 @@ def test_rule_invariants() -> None:
 
 def test_clear_winner() -> None:
     p = pick(cands(("base", {"facts": 0.7}), ("new", {"facts": 0.9})), RULE, "base")
-    assert p.winner == "new" and p.order == ("new", "base") and p.measured and "0.9" in p.reason
+    assert (
+        p.winner == "new"
+        and p.order == ("new", "base")
+        and p.measured
+        and "0.9" in p.reason
+    )
 
 
 def test_small_gain_keeps_the_baseline() -> None:
@@ -38,17 +50,31 @@ def test_baseline_best() -> None:
 
 def test_tie_breakers() -> None:
     rule = SelectionRule("facts", True, (("rule_accept", True), ("seconds", False)))
-    p = pick(cands(("base", {"facts": 0.8, "rule_accept": 0.5, "seconds": 3}),
-                   ("a", {"facts": 0.8, "rule_accept": 0.7, "seconds": 9}),
-                   ("b", {"facts": 0.8, "rule_accept": 0.7, "seconds": 4})), rule, "base")
+    p = pick(
+        cands(
+            ("base", {"facts": 0.8, "rule_accept": 0.5, "seconds": 3}),
+            ("a", {"facts": 0.8, "rule_accept": 0.7, "seconds": 9}),
+            ("b", {"facts": 0.8, "rule_accept": 0.7, "seconds": 4}),
+        ),
+        rule,
+        "base",
+    )
     assert p.order == ("b", "a", "base") and p.winner == "b"
 
 
 def test_lower_is_better() -> None:
     rule = SelectionRule("leniency", False, (), 0.05)
-    p = pick(cands(("baseline", {"leniency": 0.4}), ("strict", {"leniency": 0.1})), rule, "baseline")
+    p = pick(
+        cands(("baseline", {"leniency": 0.4}), ("strict", {"leniency": 0.1})),
+        rule,
+        "baseline",
+    )
     assert p.winner == "strict"
-    p = pick(cands(("baseline", {"leniency": 0.12}), ("strict", {"leniency": 0.1})), rule, "baseline")
+    p = pick(
+        cands(("baseline", {"leniency": 0.12}), ("strict", {"leniency": 0.1})),
+        rule,
+        "baseline",
+    )
     assert p.winner == "baseline"
 
 
@@ -82,10 +108,16 @@ def test_selection_complete() -> None:
 
 
 def test_selection_problems() -> None:
-    sel = full_selection(qa_prompt=Selection("qa_prompt", "v9", "a reason with more than five words"),
-                         retrieval=Selection("retrieval", "v1", "too short"))
+    sel = full_selection(
+        qa_prompt=Selection("qa_prompt", "v9", "a reason with more than five words"),
+        retrieval=Selection("retrieval", "v1", "too short"),
+    )
     del sel["ai_ids"]
     sel["speed"] = Selection("speed", "x", "a reason with more than five words")
     problems = selection_problems(sel, {"qa_prompt": ("v1",), "retrieval": ("v1",)})
-    assert set(problems) == {"missing:ai_ids", "unknown_variant:qa_prompt=v9", "missing_reason:retrieval",
-                             "unknown_kind:speed"}
+    assert set(problems) == {
+        "missing:ai_ids",
+        "unknown_variant:qa_prompt=v9",
+        "missing_reason:retrieval",
+        "unknown_kind:speed",
+    }

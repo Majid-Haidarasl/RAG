@@ -17,7 +17,10 @@ def test_shipped_config_matches_phase2_decisions() -> None:
     assert s.ollama.base_url == "http://localhost:11434"
     assert s.embedding.model == "bge-m3:latest" and s.embedding.dim == 1024
     assert s.generation.model == "qwen3:8b" and s.generation.think is False
-    assert s.generation.options["temperature"] <= 0.3 and s.generation.options["num_ctx"] == 8192
+    assert (
+        s.generation.options["temperature"] <= 0.3
+        and s.generation.options["num_ctx"] == 8192
+    )
     assert s.retrieval.rrf_k == 60 and s.retrieval.top_k == 5
     assert s.retrieval.near_duplicate_threshold == 0.80
     assert 8 <= s.embedding.batch_size <= 32

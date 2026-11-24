@@ -31,14 +31,22 @@ def test_export_writes_one_file_per_package_and_index(tmp_path: Path) -> None:
     data = rows(tmp_path)
     files = export_latest(data, tmp_path / "out", "1403-Q2")
     assert sorted(p.name for p in files) == ["N-HW-REP.csv", "N-SW-WIN.csv", INDEX_FILE]
-    index = list(csv.reader(StringIO((tmp_path / "out" / "1403-Q2" / INDEX_FILE).read_text(encoding="utf-8"))))
+    index = list(
+        csv.reader(
+            StringIO(
+                (tmp_path / "out" / "1403-Q2" / INDEX_FILE).read_text(encoding="utf-8")
+            )
+        )
+    )
     assert tuple(index[0]) == INDEX_COLUMNS
     assert [r[1] for r in index[1:]] == ["N-HW-REP", "N-SW-WIN"]
 
 
 def test_exported_package_keeps_persian_text(tmp_path: Path) -> None:
     export_latest(rows(tmp_path), tmp_path / "out", "1403-Q2")
-    pkg = package_from_csv((tmp_path / "out" / "1403-Q2" / "N-HW-REP.csv").read_text(encoding="utf-8"))
+    pkg = package_from_csv(
+        (tmp_path / "out" / "1403-Q2" / "N-HW-REP.csv").read_text(encoding="utf-8")
+    )
     assert "سعید اکبری" in pkg.fields["summary_fa"]
     assert pkg.status.value == "accepted"
     assert str(pkg.target_node) == "N-HW"
@@ -58,5 +66,7 @@ def test_round_trip_reports_missing_files(tmp_path: Path) -> None:
     data = rows(tmp_path)
     export_latest(data, tmp_path / "out", "1403-Q2")
     (tmp_path / "out" / "1403-Q2" / "N-SW-WIN.csv").unlink()
-    assert round_trip_problems(data, tmp_path / "out", "1403-Q2") == ["N-SW-WIN: file missing"]
+    assert round_trip_problems(data, tmp_path / "out", "1403-Q2") == [
+        "N-SW-WIN: file missing"
+    ]
     assert str(citation_from_text("AR-HW-012@1.2")) == "AR-HW-012@1.2"

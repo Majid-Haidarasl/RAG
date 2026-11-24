@@ -44,8 +44,16 @@ def item(
     )
 
 
-def record(key: str, text: str, doc: str = "AR-X-001", lang: str | None = "en", source: str | None = None) -> TextRecord:
-    return TextRecord(key=key, document_id=doc, language=lang, source=source or key, text=text)
+def record(
+    key: str,
+    text: str,
+    doc: str = "AR-X-001",
+    lang: str | None = "en",
+    source: str | None = None,
+) -> TextRecord:
+    return TextRecord(
+        key=key, document_id=doc, language=lang, source=source or key, text=text
+    )
 
 
 LOREM_EN = (

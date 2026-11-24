@@ -10,8 +10,14 @@ pytestmark = [pytest.mark.ike, pytest.mark.ike_model]
 
 
 def test_covered_suggested_missed_and_outside_scope() -> None:
-    res = search_result("N-HW-REP", ["AR-HW-012", "AR-HW-013", "AR-HW-012"], {"AR-HW-012", "AR-HW-013", "AR-SW-019"})
-    cmp = compare_knowledge("AR-ISS-050/HW", ("AR-HW-012", "AR-HW-015", "AR-SW-019"), res)
+    res = search_result(
+        "N-HW-REP",
+        ["AR-HW-012", "AR-HW-013", "AR-HW-012"],
+        {"AR-HW-012", "AR-HW-013", "AR-SW-019"},
+    )
+    cmp = compare_knowledge(
+        "AR-ISS-050/HW", ("AR-HW-012", "AR-HW-015", "AR-SW-019"), res
+    )
     assert cmp.retrieved == ("AR-HW-012", "AR-HW-013")
     assert cmp.covered == ("AR-HW-012",)
     assert cmp.suggested == ("AR-HW-013",)
@@ -28,7 +34,9 @@ def test_lexical_evidence_floor() -> None:
 
 
 def test_vector_score_decides_when_present() -> None:
-    res = search_result("N-HW-REP", ["AR-HW-012"], {"AR-HW-012"}, lexical=9.0, vector=0.30)
+    res = search_result(
+        "N-HW-REP", ["AR-HW-012"], {"AR-HW-012"}, lexical=9.0, vector=0.30
+    )
     cmp = compare_knowledge("X/HW", ("AR-HW-012",), res)
     assert cmp.mode == "hybrid" and not cmp.evidence
     assert compare_knowledge("X/HW", ("AR-HW-012",), res, min_vector=0.25).evidence
@@ -49,7 +57,13 @@ def test_unknown_scope_never_marks_outside() -> None:
 
 
 def test_service_compares_every_subissue_from_its_owner_node() -> None:
-    search = FakeSearch({"N-HW-REP": search_result("N-HW-REP", ["AR-HW-012"], {"AR-HW-012", "AR-HW-015"})})
+    search = FakeSearch(
+        {
+            "N-HW-REP": search_result(
+                "N-HW-REP", ["AR-HW-012"], {"AR-HW-012", "AR-HW-015"}
+            )
+        }
+    )
     out = IkeService(search, top_k=6).compare(sample_issue())
     assert list(out) == ["AR-ISS-050/HW", "AR-ISS-050/WIN", "AR-ISS-050/WEB"]
     assert [c[1] for c in search.calls] == ["N-HW-REP", "N-SW-WIN", "N-SW-WEB"]

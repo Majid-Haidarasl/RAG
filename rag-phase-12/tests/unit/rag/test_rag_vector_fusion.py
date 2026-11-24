@@ -13,7 +13,9 @@ pytestmark = [pytest.mark.rag, pytest.mark.retrieval]
 
 def test_normalize_and_cosine() -> None:
     v = l2_normalize([3.0, 4.0])
-    assert math.isclose(v[0], 0.6, rel_tol=1e-6) and math.isclose(v[1], 0.8, rel_tol=1e-6)
+    assert math.isclose(v[0], 0.6, rel_tol=1e-6) and math.isclose(
+        v[1], 0.8, rel_tol=1e-6
+    )
     assert math.isclose(cosine([1, 0], [1, 0]), 1.0, rel_tol=1e-6)
     assert math.isclose(cosine([1, 0], [0, 1]), 0.0, abs_tol=1e-6)
 
@@ -74,7 +76,9 @@ def test_rrf_rewards_agreement() -> None:
 
 
 def test_rrf_weights() -> None:
-    fused = reciprocal_rank_fusion({"lex": ["a"], "vec": ["b"]}, weights={"lex": 1.0, "vec": 2.0})
+    fused = reciprocal_rank_fusion(
+        {"lex": ["a"], "vec": ["b"]}, weights={"lex": 1.0, "vec": 2.0}
+    )
     assert fused[0][0] == "b"
 
 
@@ -84,7 +88,10 @@ def test_rrf_ignores_repeated_keys_in_one_ranking() -> None:
 
 
 def test_rrf_deterministic_ties_and_validation() -> None:
-    assert [k for k, _ in reciprocal_rank_fusion({"x": ["b"], "y": ["a"]})] == ["a", "b"]
+    assert [k for k, _ in reciprocal_rank_fusion({"x": ["b"], "y": ["a"]})] == [
+        "a",
+        "b",
+    ]
     assert DEFAULT_RRF_K == 60
     with pytest.raises(ValueError):
         reciprocal_rank_fusion({"x": ["a"]}, k=0)

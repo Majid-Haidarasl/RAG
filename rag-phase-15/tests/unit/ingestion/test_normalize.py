@@ -30,7 +30,9 @@ def test_persian_digits_in_document_id_become_latin() -> None:
 
 
 def test_latin_digits_in_prose_are_kept_when_normalizing_persian() -> None:
-    text, counts = normalize_persian_text("مرخصی 26 روز و شناسه AR-HR-۰۰۵", language="fa")
+    text, counts = normalize_persian_text(
+        "مرخصی 26 روز و شناسه AR-HR-۰۰۵", language="fa"
+    )
     assert "26" in text
     assert "AR-HR-005" in text
     assert counts["id_digits"] == 1

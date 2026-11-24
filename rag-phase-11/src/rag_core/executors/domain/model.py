@@ -108,7 +108,9 @@ class Executor:
     events: list[DomainEvent] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "display_name", canonical_person_name(self.display_name))
+        object.__setattr__(
+            self, "display_name", canonical_person_name(self.display_name)
+        )
         if not self.display_name:
             raise InvariantError("executor name is required")
         if len(set(self.knowledge_documents)) != len(self.knowledge_documents):
@@ -122,14 +124,19 @@ class Executor:
     def answers_to(self, name: str) -> bool:
         """True for the display name or a registered alias (any spacing/case)."""
         wanted = " ".join(canonical_person_name(name).split()).lower()
-        names = {self.display_name.lower(), *(" ".join(a.split()).lower() for a in self.aliases)}
+        names = {
+            self.display_name.lower(),
+            *(" ".join(a.split()).lower() for a in self.aliases),
+        }
         names |= {canonical_person_name(a).lower() for a in self.aliases}
         return wanted in names
 
     def holds(self, document_id: str) -> bool:
         return any(str(d) == document_id for d in self.knowledge_documents)
 
-    def change_capacity(self, capacity: ReferralCapacity, *, reason: str, approved_by: str) -> None:
+    def change_capacity(
+        self, capacity: ReferralCapacity, *, reason: str, approved_by: str
+    ) -> None:
         """AR-EXE-023 §3: a ceiling never changes silently; reason, version and approval are required."""
         if not reason.strip():
             raise InvariantError("a profile change needs a reason")
@@ -142,9 +149,15 @@ class Executor:
         self.events.append(
             DomainEvent(
                 "ExecutorProfileChanged",
-                {"executor_id": str(self.identifier), "field": "capacity", "old": old.hours_per_week,
-                 "new": capacity.hours_per_week, "reason": reason, "approved_by": approved_by,
-                 "version": self.profile_version},
+                {
+                    "executor_id": str(self.identifier),
+                    "field": "capacity",
+                    "old": old.hours_per_week,
+                    "new": capacity.hours_per_week,
+                    "reason": reason,
+                    "approved_by": approved_by,
+                    "version": self.profile_version,
+                },
             )
         )
 

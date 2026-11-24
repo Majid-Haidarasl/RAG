@@ -27,14 +27,27 @@ def _issue(**kw) -> Issue:
 
 
 def _sub(code: str, pos: int, status=S.OPEN, depends=(), owner="N-SW-WEB") -> SubIssue:
-    return SubIssue(I(f"AR-ISS-050/{code}"), f"Sub {code}", status, pos, owner_node=N(owner), depends_on=depends)
+    return SubIssue(
+        I(f"AR-ISS-050/{code}"),
+        f"Sub {code}",
+        status,
+        pos,
+        owner_node=N(owner),
+        depends_on=depends,
+    )
 
 
 def test_create_emits_event_and_keeps_metadata() -> None:
     issue = _issue(
-        description="d", reporter_node=N("N-SW-SUP"), affected_nodes=(N("N-SW-WEB"), N("N-SW")),
-        related_documents=(DocumentId("AR-SW-017"),), contract_ref=ContractRef("ar-cnt-1402-118"),
-        category=IssueCategory.SOFTWARE, opened_on=date(2024, 8, 6), due_on=date(2024, 10, 11), tags=("Web", " web ", "API"),
+        description="d",
+        reporter_node=N("N-SW-SUP"),
+        affected_nodes=(N("N-SW-WEB"), N("N-SW")),
+        related_documents=(DocumentId("AR-SW-017"),),
+        contract_ref=ContractRef("ar-cnt-1402-118"),
+        category=IssueCategory.SOFTWARE,
+        opened_on=date(2024, 8, 6),
+        due_on=date(2024, 10, 11),
+        tags=("Web", " web ", "API"),
     )
     assert issue.events[0].name == "IssueCreated"
     assert str(issue.contract_ref) == "AR-CNT-1402-118"
@@ -67,10 +80,24 @@ def test_unknown_nodes_are_rejected_through_the_directory() -> None:
 
 
 def test_known_nodes_pass_the_directory_check() -> None:
-    _issue(affected_nodes=(N("N-SW-WEB"),), reporter_node=N("N-SW-SUP"), directory=org_directory())
+    _issue(
+        affected_nodes=(N("N-SW-WEB"),),
+        reporter_node=N("N-SW-SUP"),
+        directory=org_directory(),
+    )
 
 
-@pytest.mark.parametrize(("amount", "authority"), [(None, "unit"), (95, "unit"), (500, "unit"), (501, "ceo"), (2000, "ceo"), (2180, "board")])
+@pytest.mark.parametrize(
+    ("amount", "authority"),
+    [
+        (None, "unit"),
+        (95, "unit"),
+        (500, "unit"),
+        (501, "ceo"),
+        (2000, "ceo"),
+        (2180, "board"),
+    ],
+)
 def test_approval_authority_follows_ar_leg_009(amount, authority) -> None:
     assert approval_authority(amount) == authority
 
@@ -103,7 +130,11 @@ def test_dependency_cycle_is_rejected_and_rolled_back() -> None:
 
 def test_dependency_cycle_detection_reports_the_path() -> None:
     issue = _issue()
-    issue.subissues = [_sub("A", 1, depends=("C",)), _sub("B", 2, depends=("A",)), _sub("C", 3, depends=("B",))]
+    issue.subissues = [
+        _sub("A", 1, depends=("C",)),
+        _sub("B", 2, depends=("A",)),
+        _sub("C", 3, depends=("B",)),
+    ]
     cycle = issue.dependency_cycle()
     assert cycle[0] == cycle[-1] and set(cycle) == {"A", "B", "C"}
 
@@ -168,7 +199,11 @@ def test_failed_subissue_reopens_a_resolved_parent() -> None:
     issue.transition_subissue("WIN", S.REOPENED, reason="multi-station test failed")
     assert issue.status is S.REOPENED
     assert issue.history[-1][1] == "reopened"
-    assert issue.subissue("WIN").history[-1] == ("resolved", "reopened", "multi-station test failed")
+    assert issue.subissue("WIN").history[-1] == (
+        "resolved",
+        "reopened",
+        "multi-station test failed",
+    )
 
 
 def test_subissue_of_closed_parent_cannot_change() -> None:
@@ -186,7 +221,10 @@ def test_invalid_parent_closes_its_subissues_and_freezes_them() -> None:
     issue.add_subissue(_sub("WIN", 2, depends=("HW",)))
     issue.transition(S.CLOSED, resolution=Resolution.INVALID)
     assert issue.is_invalidated
-    assert all(s.status is S.CLOSED and s.resolution is Resolution.INVALID for s in issue.subissues)
+    assert all(
+        s.status is S.CLOSED and s.resolution is Resolution.INVALID
+        for s in issue.subissues
+    )
     with pytest.raises(InvariantError, match="is invalid"):
         issue.transition_subissue("HW", S.REOPENED, reason="x")
 
@@ -195,7 +233,9 @@ def test_duplicate_close_needs_target() -> None:
     issue = _issue()
     with pytest.raises(InvariantError, match="duplicate_of"):
         issue.transition(S.CLOSED, resolution=Resolution.DUPLICATE)
-    issue.transition(S.CLOSED, resolution=Resolution.DUPLICATE, duplicate_of=I("AR-ISS-024"))
+    issue.transition(
+        S.CLOSED, resolution=Resolution.DUPLICATE, duplicate_of=I("AR-ISS-024")
+    )
     assert issue.duplicate_of == I("AR-ISS-024")
 
 

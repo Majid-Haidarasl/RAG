@@ -18,12 +18,15 @@ def test_yeh_kaf_including_alef_maksura() -> None:
     assert normalize_yeh_kaf("علي \u0643تاب \u0649") == "علی کتاب ی"
 
 
-@pytest.mark.parametrize(("text", "expected"), [
-    ("می رود", f"می{ZWNJ}رود"),
-    ("نمیرود", f"نمی{ZWNJ}رود"),
-    (f"خانه{ZWNJ}{ZWNJ}ها", f"خانه{ZWNJ}ها"),
-    ("خانه ها", f"خانه{ZWNJ}ها"),
-])
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("می رود", f"می{ZWNJ}رود"),
+        ("نمیرود", f"نمی{ZWNJ}رود"),
+        (f"خانه{ZWNJ}{ZWNJ}ها", f"خانه{ZWNJ}ها"),
+        ("خانه ها", f"خانه{ZWNJ}ها"),
+    ],
+)
 def test_zwnj_rules(text: str, expected: str) -> None:
     assert normalize_zwnj(text) == expected
 
@@ -39,7 +42,10 @@ def test_document_ids_get_latin_digits_and_report_fixes() -> None:
 
 
 def test_empty_text_has_zero_counts() -> None:
-    assert normalize_persian_text("") == ("", {"yeh_kaf": 0, "zwnj": 0, "id_digits": 0, "arabic_indic": 0})
+    assert normalize_persian_text("") == (
+        "",
+        {"yeh_kaf": 0, "zwnj": 0, "id_digits": 0, "arabic_indic": 0},
+    )
 
 
 def test_arabic_indic_digits_become_persian_only_in_fa() -> None:

@@ -11,7 +11,9 @@ import zipfile
 import yaml
 
 SKIP_FOLDERS = frozenset({"__pycache__", "node_modules", "htmlcov"})
-_PACKAGE_VERSION_RE = re.compile(r'^__version__\s*=\s*["\']([^"\']+)["\']', re.MULTILINE)
+_PACKAGE_VERSION_RE = re.compile(
+    r'^__version__\s*=\s*["\']([^"\']+)["\']', re.MULTILINE
+)
 
 
 def read_text(root: Path, rel: str) -> str | None:
@@ -20,10 +22,14 @@ def read_text(root: Path, rel: str) -> str | None:
 
 
 def _excluded(rel: str, exclude: Sequence[str]) -> bool:
-    return any(rel == e.rstrip("/") or rel.startswith(e.rstrip("/") + "/") for e in exclude)
+    return any(
+        rel == e.rstrip("/") or rel.startswith(e.rstrip("/") + "/") for e in exclude
+    )
 
 
-def kit_texts(root: Path, suffixes: Sequence[str], exclude: Sequence[str]) -> Iterator[tuple[str, str]]:
+def kit_texts(
+    root: Path, suffixes: Sequence[str], exclude: Sequence[str]
+) -> Iterator[tuple[str, str]]:
     """(relative path, text) of every kit file with one of ``suffixes``; hidden folders are skipped."""
     root = Path(root)
     for path in sorted(root.rglob("*")):
@@ -31,7 +37,10 @@ def kit_texts(root: Path, suffixes: Sequence[str], exclude: Sequence[str]) -> It
             continue
         rel = path.relative_to(root).as_posix()
         parts = Path(rel).parts[:-1]
-        if any(p.startswith(".") or p.endswith(".egg-info") or p in SKIP_FOLDERS for p in parts) or _excluded(rel, exclude):
+        if any(
+            p.startswith(".") or p.endswith(".egg-info") or p in SKIP_FOLDERS
+            for p in parts
+        ) or _excluded(rel, exclude):
             continue
         try:
             yield rel, path.read_text(encoding="utf-8")
@@ -67,4 +76,6 @@ def zip_names(path: Path) -> list[str] | None:
 
 def evidence_matches(root: Path, pattern: str) -> list[str]:
     root = Path(root)
-    return sorted(p.relative_to(root).as_posix() for p in root.glob(pattern) if p.is_file())
+    return sorted(
+        p.relative_to(root).as_posix() for p in root.glob(pattern) if p.is_file()
+    )

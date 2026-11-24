@@ -12,9 +12,25 @@ from rag_core.shared_kernel.errors import InvariantError
 
 FILE_NAME = "proposal-registry.json"
 TOP_KEYS = {"schema_version", "note", "rfp_id", "proposals", "decision"}
-PROPOSAL_KEYS = {"id", "label_en", "label_fa", "vendor_en", "vendor_fa", "price_mtoman", "duration_weeks",
-                 "technology", "version", "scores", "published_weighted", "sections", "clarifications_en",
-                 "clarifications_fa", "feedback_en", "feedback_fa", "evidence"}
+PROPOSAL_KEYS = {
+    "id",
+    "label_en",
+    "label_fa",
+    "vendor_en",
+    "vendor_fa",
+    "price_mtoman",
+    "duration_weeks",
+    "technology",
+    "version",
+    "scores",
+    "published_weighted",
+    "sections",
+    "clarifications_en",
+    "clarifications_fa",
+    "feedback_en",
+    "feedback_fa",
+    "evidence",
+}
 DECISION_KEYS = {"selected", "reason_en", "reason_fa", "evidence"}
 
 
@@ -34,15 +50,25 @@ def proposal_from(rec: dict) -> ProposalRecord:
         raise InvariantError(f"{rec.get('id', '?')}: scores must be an object")
     published = rec.get("published_weighted")
     return ProposalRecord(
-        proposal_id=str(rec.get("id", "")), vendor_en=str(rec.get("vendor_en", "")),
-        vendor_fa=str(rec.get("vendor_fa", "")), price_mtoman=Decimal(str(rec.get("price_mtoman", "0"))),
-        duration_weeks=int(rec.get("duration_weeks", 0)), scores={k: Decimal(str(v)) for k, v in scores.items()},
-        label_en=str(rec.get("label_en", "")), label_fa=str(rec.get("label_fa", "")),
-        technology=str(rec.get("technology", "")), version=str(rec.get("version", "1.0")),
-        published_weighted=Decimal(str(published)) if published not in (None, "") else None,
-        sections=tuple(rec.get("sections") or ()), clarifications_en=tuple(rec.get("clarifications_en") or ()),
-        clarifications_fa=tuple(rec.get("clarifications_fa") or ()), feedback_en=str(rec.get("feedback_en", "")),
-        feedback_fa=str(rec.get("feedback_fa", "")), evidence=tuple(rec.get("evidence") or ()),
+        proposal_id=str(rec.get("id", "")),
+        vendor_en=str(rec.get("vendor_en", "")),
+        vendor_fa=str(rec.get("vendor_fa", "")),
+        price_mtoman=Decimal(str(rec.get("price_mtoman", "0"))),
+        duration_weeks=int(rec.get("duration_weeks", 0)),
+        scores={k: Decimal(str(v)) for k, v in scores.items()},
+        label_en=str(rec.get("label_en", "")),
+        label_fa=str(rec.get("label_fa", "")),
+        technology=str(rec.get("technology", "")),
+        version=str(rec.get("version", "1.0")),
+        published_weighted=Decimal(str(published))
+        if published not in (None, "")
+        else None,
+        sections=tuple(rec.get("sections") or ()),
+        clarifications_en=tuple(rec.get("clarifications_en") or ()),
+        clarifications_fa=tuple(rec.get("clarifications_fa") or ()),
+        feedback_en=str(rec.get("feedback_en", "")),
+        feedback_fa=str(rec.get("feedback_fa", "")),
+        evidence=tuple(rec.get("evidence") or ()),
     )
 
 
@@ -54,10 +80,17 @@ def registry_from_dict(data: dict) -> ProposalRegistry:
     decision = None
     if raw_decision is not None:
         d = _check(raw_decision, DECISION_KEYS, "decision")
-        decision = Decision(str(d.get("selected", "")), str(d.get("reason_en", "")), str(d.get("reason_fa", "")),
-                            tuple(d.get("evidence") or ()))
-    return ProposalRegistry(str(data.get("rfp_id", "")), tuple(proposal_from(p) for p in data.get("proposals") or ()),
-                            decision)
+        decision = Decision(
+            str(d.get("selected", "")),
+            str(d.get("reason_en", "")),
+            str(d.get("reason_fa", "")),
+            tuple(d.get("evidence") or ()),
+        )
+    return ProposalRegistry(
+        str(data.get("rfp_id", "")),
+        tuple(proposal_from(p) for p in data.get("proposals") or ()),
+        decision,
+    )
 
 
 def read_registry_dict(folder: Path) -> dict:

@@ -20,7 +20,12 @@ def test_clean_persian_is_ok() -> None:
 
 
 def test_clean_english_is_ok() -> None:
-    assert assess_text_quality("Annual leave is 26 days and must be approved in advance. " * 5).verdict == "ok"
+    assert (
+        assess_text_quality(
+            "Annual leave is 26 days and must be approved in advance. " * 5
+        ).verdict
+        == "ok"
+    )
 
 
 def test_empty_text_is_empty_not_garbled() -> None:
@@ -51,8 +56,16 @@ def test_reversed_visual_order_persian_is_garbled() -> None:
 
 
 def test_split_words_are_fragmented_but_usable() -> None:
-    fragmented = CLEAN_FA.replace("مرخصی", "مرخ صی").replace("حضور", "حض ور").replace("خدمت", "خ دمت")
-    fragmented = fragmented.replace("کارکنان", "کارکن ان").replace("مستقیم", "مست قیم").replace("نتیجه", "نت یجه")
+    fragmented = (
+        CLEAN_FA.replace("مرخصی", "مرخ صی")
+        .replace("حضور", "حض ور")
+        .replace("خدمت", "خ دمت")
+    )
+    fragmented = (
+        fragmented.replace("کارکنان", "کارکن ان")
+        .replace("مستقیم", "مست قیم")
+        .replace("نتیجه", "نت یجه")
+    )
     q = assess_text_quality(fragmented)
     assert q.verdict == "fragmented" and not q.is_garbled
     assert q.metrics["fragment_ratio"] > 0.03

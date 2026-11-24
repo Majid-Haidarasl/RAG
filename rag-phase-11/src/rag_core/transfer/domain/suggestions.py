@@ -28,7 +28,12 @@ from rag_core.transfer.domain.review import GroundingCheck, ground
 
 _ID_RE = re.compile(r"AR-ISS-\d{3}(?:/[A-Z0-9]+)?")
 _FENCE_RE = re.compile(r"^```[a-zA-Z]*\s*|\s*```$")
-MAX_SENTENCES = {"executive": 4, "managerial": 6, "technical_summary": 8, "detailed_technical": 10}
+MAX_SENTENCES = {
+    "executive": 4,
+    "managerial": 6,
+    "technical_summary": 8,
+    "detailed_technical": 10,
+}
 
 SYSTEM_EN = (
     "You advise ArmanRayan managers on what a team or deputy should pass upward in its periodic knowledge-transfer "
@@ -73,17 +78,17 @@ def suggestion_prompt(draft: PackageDraft, language: str) -> tuple[str, str]:
         user = (
             f"واقعیت‌ها:\n{block}\n\n"
             f"گیرنده: {AUDIENCE_FA.get(level, level)}. شناسه‌های قابل انتخاب: {ids}.\n"
-            f"یک شیء JSON با این کلیدها برگردان: \"summary\" (خلاصهٔ فارسی حداکثر {sentences} جمله برای گیرنده، "
-            "بدون جدول)، \"raise\" (فهرست شناسه‌هایی که گیرنده باید اول به آن‌ها رسیدگی کند؛ فقط از شناسه‌های "
-            "قابل انتخاب)، \"reason\" (یک جملهٔ فارسی دربارهٔ دلیل)."
+            f'یک شیء JSON با این کلیدها برگردان: "summary" (خلاصهٔ فارسی حداکثر {sentences} جمله برای گیرنده، '
+            'بدون جدول)، "raise" (فهرست شناسه‌هایی که گیرنده باید اول به آن‌ها رسیدگی کند؛ فقط از شناسه‌های '
+            'قابل انتخاب)، "reason" (یک جملهٔ فارسی دربارهٔ دلیل).'
         )
         return SYSTEM_FA, user
     user = (
         f"Facts:\n{block}\n\n"
         f"Receiver: {AUDIENCE_EN.get(level, level)}. Selectable ids: {ids}.\n"
-        f"Return one JSON object with these keys: \"summary\" (an English summary for the receiver in at most "
-        f"{sentences} sentences, no tables), \"raise\" (list of ids the receiver should act on first; only selectable "
-        "ids), \"reason\" (one English sentence why)."
+        f'Return one JSON object with these keys: "summary" (an English summary for the receiver in at most '
+        f'{sentences} sentences, no tables), "raise" (list of ids the receiver should act on first; only selectable '
+        'ids), "reason" (one English sentence why).'
     )
     return SYSTEM_EN, user
 
@@ -123,7 +128,7 @@ def parse_suggestion(raw: str) -> ParsedSuggestion:
         if start < 0 or end <= start:
             raise SuggestionParseError("no JSON object in the reply") from None
         try:
-            data = json.loads(text[start: end + 1])
+            data = json.loads(text[start : end + 1])
         except json.JSONDecodeError as exc:
             raise SuggestionParseError(f"invalid JSON: {exc.msg}") from None
         mode = "json_extracted"
@@ -135,14 +140,16 @@ def parse_suggestion(raw: str) -> ParsedSuggestion:
     reason = data.get("reason", "")
     if not isinstance(reason, str):
         reason = str(reason)
-    return ParsedSuggestion(summary.strip(), _ids(data.get("raise")), reason.strip(), mode)
+    return ParsedSuggestion(
+        summary.strip(), _ids(data.get("raise")), reason.strip(), mode
+    )
 
 
 @dataclass(frozen=True)
 class SuggestionCheck:
     grounding: GroundingCheck
     invented_ids: tuple[str, ...]
-    additions: tuple[str, ...]      # raised ids that the deterministic package left out
+    additions: tuple[str, ...]  # raised ids that the deterministic package left out
     known_raise: tuple[str, ...]
 
     @property
@@ -150,11 +157,18 @@ class SuggestionCheck:
         return self.grounding.grounded and not self.invented_ids
 
     def to_dict(self) -> dict[str, Any]:
-        return {"grounding": self.grounding.to_dict(), "invented_ids": list(self.invented_ids),
-                "additions": list(self.additions), "known_raise": list(self.known_raise), "ok": self.ok}
+        return {
+            "grounding": self.grounding.to_dict(),
+            "invented_ids": list(self.invented_ids),
+            "additions": list(self.additions),
+            "known_raise": list(self.known_raise),
+            "ok": self.ok,
+        }
 
 
-def check_suggestion(parsed: ParsedSuggestion, draft: PackageDraft, validator: FactValidator) -> SuggestionCheck:
+def check_suggestion(
+    parsed: ParsedSuggestion, draft: PackageDraft, validator: FactValidator
+) -> SuggestionCheck:
     text = parsed.summary + ("\n" + parsed.reason if parsed.reason else "")
     grounding = ground(text, draft.facts, validator)
     candidates = set(candidate_ids(draft))
@@ -171,7 +185,7 @@ class TransferSuggestion:
     source_node: str
     target_node: str
     language: str
-    status: str                      # accepted | rejected | error
+    status: str  # accepted | rejected | error
     raw: str = ""
     parsed: ParsedSuggestion | None = None
     check: SuggestionCheck | None = None
@@ -187,17 +201,26 @@ class TransferSuggestion:
 
     def content_dict(self) -> dict[str, Any]:
         return {
-            "cycle_id": self.cycle_id, "source_node": self.source_node, "target_node": self.target_node,
-            "language": self.language, "status": self.status, "summary": self.summary,
+            "cycle_id": self.cycle_id,
+            "source_node": self.source_node,
+            "target_node": self.target_node,
+            "language": self.language,
+            "status": self.status,
+            "summary": self.summary,
             "raise": list(self.parsed.raise_ids) if self.parsed else [],
             "reason": self.parsed.reason if self.parsed else "",
             "parse_mode": self.parsed.mode if self.parsed else "error",
-            "check": self.check.to_dict() if self.check else None, "error": self.error,
+            "check": self.check.to_dict() if self.check else None,
+            "error": self.error,
             "verdicts": list(self.verdicts),
         }
 
     def to_dict(self) -> dict[str, Any]:
         data = self.content_dict()
-        data.update(raw=self.raw, seconds=round(self.seconds, 3), prompt_tokens=self.prompt_tokens,
-                    completion_tokens=self.completion_tokens)
+        data.update(
+            raw=self.raw,
+            seconds=round(self.seconds, 3),
+            prompt_tokens=self.prompt_tokens,
+            completion_tokens=self.completion_tokens,
+        )
         return data

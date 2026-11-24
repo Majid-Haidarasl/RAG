@@ -19,7 +19,11 @@ from rag_core.shared_kernel.fact_ports import FactValidator
 from rag_core.transfer.domain.builder import PackageDraft, TransferPackageBuilder
 from rag_core.transfer.domain.items import NodeKnowledge
 from rag_core.transfer.domain.levels import RuleBook
-from rag_core.transfer.domain.review import BuiltPackage, PackageJudgePort, PackageReviewer
+from rag_core.transfer.domain.review import (
+    BuiltPackage,
+    PackageJudgePort,
+    PackageReviewer,
+)
 from rag_core.transfer.domain.suggestions import (
     SuggestionParseError,
     TransferSuggestion,
@@ -36,8 +40,13 @@ class StepLike(Protocol):
 
 
 class TransferService:
-    def __init__(self, knowledge: Mapping[str, NodeKnowledge], rules: RuleBook, builder: TransferPackageBuilder,
-                 reviewer: PackageReviewer) -> None:
+    def __init__(
+        self,
+        knowledge: Mapping[str, NodeKnowledge],
+        rules: RuleBook,
+        builder: TransferPackageBuilder,
+        reviewer: PackageReviewer,
+    ) -> None:
         self.knowledge = dict(knowledge)
         self.rules = rules
         self.builder = builder
@@ -47,14 +56,34 @@ class TransferService:
         found = self.knowledge.get(node_id)
         return found if found is not None else NodeKnowledge(node_id, layer, node_id)
 
-    def draft(self, cycle_id: str, step: StepLike, received: list[Any], expected_children: int = 0) -> PackageDraft:
+    def draft(
+        self,
+        cycle_id: str,
+        step: StepLike,
+        received: list[Any],
+        expected_children: int = 0,
+    ) -> PackageDraft:
         rule = self.rules.for_layer(step.target_layer)
         sender = self.knowledge_of(step.source_node, step.target_layer + 1)
-        return self.builder.build(cycle_id, sender, step.target_node, rule, received,
-                                  expected_children=expected_children)
+        return self.builder.build(
+            cycle_id,
+            sender,
+            step.target_node,
+            rule,
+            received,
+            expected_children=expected_children,
+        )
 
-    def transfer(self, cycle_id: str, step: StepLike, received: list[Any], expected_children: int = 0) -> BuiltPackage:
-        return self.reviewer.review(self.draft(cycle_id, step, received, expected_children))
+    def transfer(
+        self,
+        cycle_id: str,
+        step: StepLike,
+        received: list[Any],
+        expected_children: int = 0,
+    ) -> BuiltPackage:
+        return self.reviewer.review(
+            self.draft(cycle_id, step, received, expected_children)
+        )
 
 
 class SuggestionChatPort(Protocol):
@@ -62,8 +91,12 @@ class SuggestionChatPort(Protocol):
 
 
 class SuggestionService:
-    def __init__(self, chat: SuggestionChatPort, validator: FactValidator,
-                 judge: PackageJudgePort | None = None) -> None:
+    def __init__(
+        self,
+        chat: SuggestionChatPort,
+        validator: FactValidator,
+        judge: PackageJudgePort | None = None,
+    ) -> None:
         self.chat = chat
         self.validator = validator
         self.judge = judge
@@ -72,7 +105,13 @@ class SuggestionService:
         if language not in {"fa", "en"}:
             raise InvariantError(f"unsupported suggestion language {language!r}")
         system, user = suggestion_prompt(draft, language)
-        out = TransferSuggestion(draft.cycle_id, draft.source_node, draft.target_node, language, status="error")
+        out = TransferSuggestion(
+            draft.cycle_id,
+            draft.source_node,
+            draft.target_node,
+            language,
+            status="error",
+        )
         t0 = time.perf_counter()
         try:
             result = self.chat.generate(system, user)

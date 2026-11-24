@@ -17,7 +17,9 @@ pytestmark = pytest.mark.transfer
 
 
 def _citation() -> Citation:
-    return Citation(DocumentId("AR-TRN-026"), "1.0", LanguageCode.FA, section="decisions")
+    return Citation(
+        DocumentId("AR-TRN-026"), "1.0", LanguageCode.FA, section="decisions"
+    )
 
 
 def test_l0_package_requires_risks_decisions_and_sources() -> None:

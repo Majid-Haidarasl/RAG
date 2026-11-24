@@ -32,8 +32,15 @@ class SuggestionModelSettings:
     format: str = "json"
     keep_alive: str = "30m"
     timeout_s: float = 180.0
-    options: dict[str, Any] = field(default_factory=lambda: {
-        "temperature": 0.2, "top_p": 0.9, "seed": 42, "num_ctx": 8192, "num_predict": 768})
+    options: dict[str, Any] = field(
+        default_factory=lambda: {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "seed": 42,
+            "num_ctx": 8192,
+            "num_predict": 768,
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -69,8 +76,13 @@ class TransferSettings:
     update_check: UpdateCheckSettings = field(default_factory=UpdateCheckSettings)
 
 
-SECTIONS: dict[str, type] = {"cycle": CycleSettings, "storage": StorageSettings, "model": SuggestionModelSettings,
-                             "live": LiveSettings, "update_check": UpdateCheckSettings}
+SECTIONS: dict[str, type] = {
+    "cycle": CycleSettings,
+    "storage": StorageSettings,
+    "model": SuggestionModelSettings,
+    "live": LiveSettings,
+    "update_check": UpdateCheckSettings,
+}
 
 
 def _build(cls: type, data: Any, section: str) -> Any:
@@ -80,7 +92,9 @@ def _build(cls: type, data: Any, section: str) -> Any:
     known = {f.name for f in fields(cls)}
     unknown = sorted(set(data) - known)
     if unknown:
-        raise InvariantError(f"unknown keys in transfer config {section!r}: {', '.join(unknown)}")
+        raise InvariantError(
+            f"unknown keys in transfer config {section!r}: {', '.join(unknown)}"
+        )
     if "id" in data:
         data = {**data, "id": str(data["id"])}
     return cls(**data)
@@ -91,8 +105,11 @@ def transfer_settings_from_dict(data: dict[str, Any]) -> TransferSettings:
     if unknown:
         raise InvariantError(f"unknown transfer config sections: {', '.join(unknown)}")
     built = {name: _build(cls, data.get(name), name) for name, cls in SECTIONS.items()}
-    return TransferSettings(config_version=str(data.get("config_version", "0.11.0")),
-                            case=str(data.get("case", "AR-ISS-024")), **built)
+    return TransferSettings(
+        config_version=str(data.get("config_version", "0.11.0")),
+        case=str(data.get("case", "AR-ISS-024")),
+        **built,
+    )
 
 
 def load_transfer_settings(path: Path) -> TransferSettings:

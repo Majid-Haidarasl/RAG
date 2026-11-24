@@ -60,6 +60,8 @@ class CapacityLedger:
                 f"{executor_id}: {self.booked(executor_id)} + {hours} h exceeds the {ceiling} h/week referral ceiling; "
                 "the relevant VP must set priorities"
             )
-        booking = Booking(executor_id, item_id, hours, needs_unit_planning=ceiling is None)
+        booking = Booking(
+            executor_id, item_id, hours, needs_unit_planning=ceiling is None
+        )
         self.bookings.append(booking)
         return booking

@@ -8,7 +8,11 @@ from rag_core.judging.domain.rule_judge import RuleBasedJudge
 from rag_core.proposals.domain.evaluation import evaluate
 from rag_core.proposals.domain.feedback import build_feedback
 from rag_core.qa.domain.fact_check import CitedFactValidator
-from rag_core.rfp.infrastructure.judging_acl import feedback_task, negative_cases, summary_case
+from rag_core.rfp.infrastructure.judging_acl import (
+    feedback_task,
+    negative_cases,
+    summary_case,
+)
 from tests.fixtures.rfp.samples import shipped_blueprint, shipped_registry
 
 pytestmark = [pytest.mark.proposals]
@@ -21,26 +25,49 @@ def fb(pid: str, lang: str):  # noqa: ANN201
 
 def case(pid: str, lang: str):  # noqa: ANN201
     f = fb(pid, lang)
-    return summary_case(f"P13-fb-{pid}-{lang}", lang, feedback_task(pid, lang), f.text, f.facts, f.items, f.gaps,
-                        origin="feedback-template"), f
+    return summary_case(
+        f"P13-fb-{pid}-{lang}",
+        lang,
+        feedback_task(pid, lang),
+        f.text,
+        f.facts,
+        f.items,
+        f.gaps,
+        origin="feedback-template",
+    ), f
 
 
 def test_english_feedback_for_the_runner_up() -> None:
     f = fb("PRP-B", "en")
-    assert f.facts[0] == "Feedback on proposal PRP-B (B, Novin Gozaresh Pars) to RFP AR-RFP-1403-07, version 1.0."
-    assert f.facts[1] == ("Weighted score 75.2 of 100 = CRT-TECH (Technical) 68 × 60% = 40.8; CRT-FIN (Financial) "
-                          "86 × 40% = 34.4; rank 2 of 2.")
-    assert f.facts[2] == "Selected proposal PRP-A (Dadeh Pardaz Shafagh) with 78.8; gap 3.6 points."
-    assert f.facts[3] == ("Price 240 million toman and duration 5 weeks; lowest price 240 million toman (PRP-B) and "
-                          "shortest duration 5 weeks (PRP-B).")
+    assert (
+        f.facts[0]
+        == "Feedback on proposal PRP-B (B, Novin Gozaresh Pars) to RFP AR-RFP-1403-07, version 1.0."
+    )
+    assert f.facts[1] == (
+        "Weighted score 75.2 of 100 = CRT-TECH (Technical) 68 × 60% = 40.8; CRT-FIN (Financial) "
+        "86 × 40% = 34.4; rank 2 of 2."
+    )
+    assert (
+        f.facts[2]
+        == "Selected proposal PRP-A (Dadeh Pardaz Shafagh) with 78.8; gap 3.6 points."
+    )
+    assert f.facts[3] == (
+        "Price 240 million toman and duration 5 weeks; lowest price 240 million toman (PRP-B) and "
+        "shortest duration 5 weeks (PRP-B)."
+    )
     assert any(x.startswith("Recorded feedback: The shorter duration") for x in f.facts)
-    assert f.facts[-1] == "This result is recorded under AR-ISS-024/WEB, AR-ISS-024, AR-ISS-035 in node N-SW."
+    assert (
+        f.facts[-1]
+        == "This result is recorded under AR-ISS-024/WEB, AR-ISS-024, AR-ISS-035 in node N-SW."
+    )
 
 
 def test_english_feedback_for_the_winner() -> None:
     f = fb("PRP-A", "en")
     assert "This proposal was selected; lead over the next one 3.6 points." in f.facts
-    assert not any(x.startswith("Recorded feedback") for x in f.facts)       # nothing recorded for A
+    assert not any(
+        x.startswith("Recorded feedback") for x in f.facts
+    )  # nothing recorded for A
     assert any("assumptions behind the seven weeks" in x for x in f.facts)
 
 
@@ -53,14 +80,25 @@ def test_persian_feedback() -> None:
 
 def test_items_gaps_and_headings() -> None:
     f = fb("PRP-B", "en")
-    assert f.items == ("AR-RFP-1403-07", "PRP-B") and f.gaps == ("AR-ISS-024/WEB", "AR-ISS-024", "AR-ISS-035")
+    assert f.items == ("AR-RFP-1403-07", "PRP-B") and f.gaps == (
+        "AR-ISS-024/WEB",
+        "AR-ISS-024",
+        "AR-ISS-035",
+    )
     headings = [line for line in f.text.splitlines() if line not in f.facts]
-    assert headings == ["Result:", "Comparison:", "Evaluator notes:", "Knowledge record:"]
+    assert headings == [
+        "Result:",
+        "Comparison:",
+        "Evaluator notes:",
+        "Knowledge record:",
+    ]
 
 
 @pytest.mark.parametrize("pid", ["PRP-A", "PRP-B"])
 @pytest.mark.parametrize("lang", ["fa", "en"])
-def test_template_feedback_is_accepted_and_broken_copies_rejected(pid: str, lang: str) -> None:
+def test_template_feedback_is_accepted_and_broken_copies_rejected(
+    pid: str, lang: str
+) -> None:
     judge = RuleBasedJudge(default_rubric(), CitedFactValidator())
     c, f = case(pid, lang)
     r = judge_all(judge, [c])[0]

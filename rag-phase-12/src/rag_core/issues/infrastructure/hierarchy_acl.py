@@ -31,7 +31,10 @@ class HierarchyOrgDirectory:
 
     def exists(self, node_id: str) -> bool:
         try:
-            return NodeIdentifier(node_id) in self._org and self._org.get(NodeIdentifier(node_id)).is_active
+            return (
+                NodeIdentifier(node_id) in self._org
+                and self._org.get(NodeIdentifier(node_id)).is_active
+            )
         except InvariantError:
             return False
 
@@ -51,9 +54,17 @@ class HierarchyOrgDirectory:
     def lowest_common_ancestor(self, node_ids: list[str]) -> str:
         for n in node_ids:
             self.node(n)
-        return str(self._org.lowest_common_ancestor(*(NodeIdentifier(n) for n in node_ids)))
+        return str(
+            self._org.lowest_common_ancestor(*(NodeIdentifier(n) for n in node_ids))
+        )
 
-    def route(self, asking: str, evidence_owners: list[str], *, reserved_decision: bool = False) -> OrgRoute:
+    def route(
+        self,
+        asking: str,
+        evidence_owners: list[str],
+        *,
+        reserved_decision: bool = False,
+    ) -> OrgRoute:
         decision = route_question(
             self._org,
             NodeIdentifier(asking),

@@ -78,7 +78,9 @@ class ContentBlock:
     column: int | None = None
     cells: tuple[tuple[str, ...], ...] = ()
 
-    def anchor(self, document_id: str, start: int = 0, end: int | None = None) -> SourceAnchor:
+    def anchor(
+        self, document_id: str, start: int = 0, end: int | None = None
+    ) -> SourceAnchor:
         return SourceAnchor(
             document_id=document_id,
             block_index=self.index,

@@ -66,7 +66,11 @@ class CompositeDocumentParser:
         elif suffix == ".pdf":
             file_format = FileFormat.PDF
             result = parse_pdf_detailed(path)
-            blocks, scanned, page_count = result.blocks, result.scanned_pages, result.page_count
+            blocks, scanned, page_count = (
+                result.blocks,
+                result.scanned_pages,
+                result.page_count,
+            )
             engine = result.engine
             quality = result.quality.to_dict()
             warnings = result.warnings

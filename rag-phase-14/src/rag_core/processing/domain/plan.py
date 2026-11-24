@@ -18,7 +18,9 @@ from dataclasses import dataclass
 from rag_core.shared_kernel.errors import InvariantError
 
 ROOT_REASON = "root: receives packages, hands resolutions down only"
-REPOSITORY_REASON = "knowledge repository: indexes evidence, no upward package (AR-TRN-026 §1)"
+REPOSITORY_REASON = (
+    "knowledge repository: indexes evidence, no upward package (AR-TRN-026 §1)"
+)
 RETIRED_REASON = "retired node"
 PARENT_RETIRED_REASON = "parent is retired"
 
@@ -69,7 +71,11 @@ class ProcessingPlan:
     def is_bottom_up(self) -> bool:
         """Every sender comes after all senders that report to it."""
         order = {s.source_node: s.order for s in self.steps}
-        return all(order[child] < s.order for s in self.steps for child in self.children_of(s.source_node))
+        return all(
+            order[child] < s.order
+            for s in self.steps
+            for child in self.children_of(s.source_node)
+        )
 
 
 def _depths(index: dict[str, TreeNode]) -> dict[str, int]:
@@ -79,7 +85,9 @@ def _depths(index: dict[str, TreeNode]) -> dict[str, int]:
         current: str | None = node_id
         while current is not None and current not in depths:
             if current in chain:
-                raise InvariantError("cycle in the node tree: " + " -> ".join([*chain, current]))
+                raise InvariantError(
+                    "cycle in the node tree: " + " -> ".join([*chain, current])
+                )
             chain.append(current)
             current = index[current].parent_id
         base = -1 if current is None else depths[current]
@@ -115,8 +123,14 @@ def build_plan(nodes: list[TreeNode] | tuple[TreeNode, ...]) -> ProcessingPlan:
         else:
             senders.append(n)
     steps = tuple(
-        ProcessingStep(order=k, source_node=n.node_id, target_node=str(n.parent_id), source_layer=n.layer,
-                       target_layer=index[str(n.parent_id)].layer, depth=depths[n.node_id])
+        ProcessingStep(
+            order=k,
+            source_node=n.node_id,
+            target_node=str(n.parent_id),
+            source_layer=n.layer,
+            target_layer=index[str(n.parent_id)].layer,
+            depth=depths[n.node_id],
+        )
         for k, n in enumerate(senders, 1)
     )
     return ProcessingPlan(steps, tuple(skipped))

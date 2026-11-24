@@ -113,8 +113,13 @@ class TransferPackageBuilder:
     def __init__(self, versions: Mapping[str, str] | None = None) -> None:
         self.versions = dict(versions or {})
 
-    def _citations(self, sender: NodeKnowledge, items: list[TransferItem], rule: DetailLevelRule,
-                   received: list[Any]) -> tuple[str, ...]:
+    def _citations(
+        self,
+        sender: NodeKnowledge,
+        items: list[TransferItem],
+        rule: DetailLevelRule,
+        received: list[Any],
+    ) -> tuple[str, ...]:
         wanted: list[str] = []
         if rule.aggregation is AggregationMode.ITEMS:
             wanted.extend(d.document_id for d in sender.documents)
@@ -151,7 +156,11 @@ class TransferPackageBuilder:
         if not rule.include_closed:
             dropped = tuple(i.item_id for i in pool if not i.is_open)
             pool = [i for i in pool if i.is_open]
-        units: list[IssueGroup] = group_items(pool) if rule.aggregation is AggregationMode.BY_ISSUE else single_groups(pool)
+        units: list[IssueGroup] = (
+            group_items(pool)
+            if rule.aggregation is AggregationMode.BY_ISSUE
+            else single_groups(pool)
+        )
         capacity = CapacitySummary.of(sender.executors)
         for p in children:
             capacity = capacity.plus(p.capacity)
@@ -162,14 +171,27 @@ class TransferPackageBuilder:
         limit = n
         while True:
             selected = units[:n]
-            omitted = tuple(dict.fromkeys([*(i for g in units[n:] for i in g.item_ids), *child_omitted]))
+            omitted = tuple(
+                dict.fromkeys(
+                    [*(i for g in units[n:] for i in g.item_ids), *child_omitted]
+                )
+            )
             items = [i for g in selected for i in g.items]
             citations = self._citations(sender, items, rule, children)
             inp = RenderInput(
-                cycle_id=cycle_id, source_node=sender.node_id, source_name_en=sender.name_en,
-                source_name_fa=sender.name_fa, target_node=target_node, target_layer=rule.receiving_layer,
-                rule=rule, groups=tuple(selected), omitted=omitted, capacity=capacity, citations=citations,
-                received=len(children), expected_children=expected_children,
+                cycle_id=cycle_id,
+                source_node=sender.node_id,
+                source_name_en=sender.name_en,
+                source_name_fa=sender.name_fa,
+                target_node=target_node,
+                target_layer=rule.receiving_layer,
+                rule=rule,
+                groups=tuple(selected),
+                omitted=omitted,
+                capacity=capacity,
+                citations=citations,
+                received=len(children),
+                expected_children=expected_children,
             )
             rendered = render(inp)
             fits = all(rendered.words(lang) <= rule.max_words for lang in LANGUAGES)
@@ -178,7 +200,9 @@ class TransferPackageBuilder:
             n -= 1
         if not fits:
             longest = max(rendered.words(lang) for lang in LANGUAGES)
-            raise InvariantError(f"{sender.node_id}: package has {longest} words, max is {rule.max_words}")
+            raise InvariantError(
+                f"{sender.node_id}: package has {longest} words, max is {rule.max_words}"
+            )
         package = TransferPackage.assemble(
             source_node=NodeIdentifier(sender.node_id),
             target_node=NodeIdentifier(target_node),
@@ -187,9 +211,20 @@ class TransferPackageBuilder:
             citations=[_citation(c) for c in citations],
         )
         return PackageDraft(
-            cycle_id=cycle_id, source_node=sender.node_id, source_layer=sender.layer, target_node=target_node,
-            target_layer=rule.receiving_layer, rule=rule, items=tuple(items), omitted=omitted, capacity=capacity,
-            citations=citations, rendered=rendered, package=package,
-            received_from=tuple(p.source_node for p in children), expected_children=expected_children,
-            dropped_closed=dropped, trimmed=limit - n,
+            cycle_id=cycle_id,
+            source_node=sender.node_id,
+            source_layer=sender.layer,
+            target_node=target_node,
+            target_layer=rule.receiving_layer,
+            rule=rule,
+            items=tuple(items),
+            omitted=omitted,
+            capacity=capacity,
+            citations=citations,
+            rendered=rendered,
+            package=package,
+            received_from=tuple(p.source_node for p in children),
+            expected_children=expected_children,
+            dropped_closed=dropped,
+            trimmed=limit - n,
         )

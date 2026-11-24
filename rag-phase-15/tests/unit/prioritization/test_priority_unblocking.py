@@ -2,7 +2,12 @@
 
 import pytest
 
-from rag_core.prioritization.domain.unblocking import NextAction, SubTask, dependents_of, next_actions
+from rag_core.prioritization.domain.unblocking import (
+    NextAction,
+    SubTask,
+    dependents_of,
+    next_actions,
+)
 
 pytestmark = [pytest.mark.prioritization]
 
@@ -13,8 +18,12 @@ LEG = "AR-ISS-024/LEG"
 
 
 def case() -> list[SubTask]:
-    return [SubTask(HW, "in_progress", 1), SubTask(WIN, "blocked", 2, (HW,)), SubTask(WEB, "in_progress", 3),
-            SubTask(LEG, "blocked", 4, (HW,))]
+    return [
+        SubTask(HW, "in_progress", 1),
+        SubTask(WIN, "blocked", 2, (HW,)),
+        SubTask(WEB, "in_progress", 3),
+        SubTask(LEG, "blocked", 4, (HW,)),
+    ]
 
 
 def test_dependents_of_the_shipped_case() -> None:
@@ -28,22 +37,40 @@ def test_next_action_is_the_hardware_sub_issue() -> None:
 
 
 def test_chains_count_indirect_dependents() -> None:
-    tasks = [SubTask("A", "open", 1), SubTask("B", "blocked", 2, ("A",)), SubTask("C", "blocked", 3, ("B",))]
+    tasks = [
+        SubTask("A", "open", 1),
+        SubTask("B", "blocked", 2, ("A",)),
+        SubTask("C", "blocked", 3, ("B",)),
+    ]
     assert dependents_of(tasks)["A"] == ("B", "C")
 
 
 def test_closed_waiters_and_blocked_candidates_are_skipped() -> None:
-    tasks = [SubTask("A", "resolved", 1), SubTask("B", "closed", 2, ("A",)), SubTask("C", "blocked", 3),
-             SubTask("D", "blocked", 4, ("C",))]
+    tasks = [
+        SubTask("A", "resolved", 1),
+        SubTask("B", "closed", 2, ("A",)),
+        SubTask("C", "blocked", 3),
+        SubTask("D", "blocked", 4, ("C",)),
+    ]
     assert dependents_of(tasks)["A"] == () and next_actions(tasks) == []
 
 
 def test_most_unblocking_first_then_position() -> None:
-    tasks = [SubTask("A", "open", 2), SubTask("B", "open", 1), SubTask("X", "blocked", 3, ("A",)),
-             SubTask("Y", "blocked", 4, ("A", "B")), SubTask("Z", "blocked", 5, ("B",)), SubTask("W", "blocked", 6, ("A",))]
+    tasks = [
+        SubTask("A", "open", 2),
+        SubTask("B", "open", 1),
+        SubTask("X", "blocked", 3, ("A",)),
+        SubTask("Y", "blocked", 4, ("A", "B")),
+        SubTask("Z", "blocked", 5, ("B",)),
+        SubTask("W", "blocked", 6, ("A",)),
+    ]
     assert [a.item_id for a in next_actions(tasks)] == ["A", "B"]
-    tied = [SubTask("A", "open", 2), SubTask("B", "open", 1), SubTask("X", "blocked", 3, ("A",)),
-            SubTask("Z", "blocked", 4, ("B",))]
+    tied = [
+        SubTask("A", "open", 2),
+        SubTask("B", "open", 1),
+        SubTask("X", "blocked", 3, ("A",)),
+        SubTask("Z", "blocked", 4, ("B",)),
+    ]
     assert [a.item_id for a in next_actions(tied)] == ["B", "A"]
 
 

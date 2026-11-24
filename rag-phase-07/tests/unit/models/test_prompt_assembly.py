@@ -9,7 +9,10 @@ from rag_core.models.domain.model import (
     PromptVersion,
     TaskType,
 )
-from rag_core.models.infrastructure.memory import InMemoryModelRegistry, InMemoryPromptRegistry
+from rag_core.models.infrastructure.memory import (
+    InMemoryModelRegistry,
+    InMemoryPromptRegistry,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.identifiers import DocumentId
 from rag_core.shared_kernel.language import LanguageCode
@@ -21,13 +24,17 @@ pytestmark = pytest.mark.models
 def test_template_plus_context_includes_citations() -> None:
     template = PromptTemplate("qa.grounded", TaskType.QUESTION_ANSWERING)
     template.publish(
-        PromptVersion("1.0.0", "Question: $question\nContext: $context\nCitations: $citations")
+        PromptVersion(
+            "1.0.0", "Question: $question\nContext: $context\nCitations: $citations"
+        )
     )
     text = PromptAssembler().assemble(
         template,
         "1.0.0",
         {"question": "زمان پاسخ P1؟", "context": "۳۰ دقیقه"},
-        citations=[Citation(DocumentId("AR-SW-022"), "1.0", LanguageCode.FA, section="P1")],
+        citations=[
+            Citation(DocumentId("AR-SW-022"), "1.0", LanguageCode.FA, section="P1")
+        ],
     )
     assert "AR-SW-022@1.0#P1" in text
     assert "۳۰ دقیقه" in text

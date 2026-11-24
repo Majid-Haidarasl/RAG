@@ -19,8 +19,13 @@ def ground(raw: dict, languages=("fa", "en")):  # noqa: ANN001, ANN201
 
 def test_registered_numbers_of_a_proposal() -> None:
     a = shipped_registry().get("PRP-A")
-    assert [n for n, _ in registered_numbers(a)] == ["price", "duration", "score:CRT-TECH", "score:CRT-FIN",  # type: ignore[arg-type]
-                                                     "published"]
+    assert [n for n, _ in registered_numbers(a)] == [
+        "price",
+        "duration",
+        "score:CRT-TECH",
+        "score:CRT-FIN",  # type: ignore[arg-type]
+        "published",
+    ]
 
 
 def test_shipped_registry_grounds_in_both_languages() -> None:
@@ -28,7 +33,9 @@ def test_shipped_registry_grounds_in_both_languages() -> None:
     assert ev.ok
     for lang in ("fa", "en"):
         assert ev.grounded("numbers", lang) == ev.total("numbers", lang) == 2
-        assert ev.grounded("statements", lang) == ev.total("statements", lang) == 4   # A clar., B fb + clar., decision
+        assert (
+            ev.grounded("statements", lang) == ev.total("statements", lang) == 4
+        )  # A clar., B fb + clar., decision
 
 
 def test_wrong_price_is_missing() -> None:
@@ -41,7 +48,9 @@ def test_wrong_price_is_missing() -> None:
 def test_price_formula_score_is_missing() -> None:
     raw = raw_registry()
     raw["proposals"][0]["scores"]["CRT-FIN"] = "84.2"
-    assert [f.missing for f in ground(raw, ("fa",)).failures()] == [("score:CRT-FIN=84.2",)]
+    assert [f.missing for f in ground(raw, ("fa",)).failures()] == [
+        ("score:CRT-FIN=84.2",)
+    ]
 
 
 def test_invented_number_in_feedback() -> None:

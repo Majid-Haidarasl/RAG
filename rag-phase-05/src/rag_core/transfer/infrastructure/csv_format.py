@@ -16,7 +16,13 @@ from rag_core.transfer.domain.model import (
 )
 
 
-FIELD_ORDER = ("risks", "decisions_requested", "source_references", "key_issues", "summary")
+FIELD_ORDER = (
+    "risks",
+    "decisions_requested",
+    "source_references",
+    "key_issues",
+    "summary",
+)
 
 
 def package_to_csv(package: TransferPackage) -> str:
@@ -58,9 +64,12 @@ def package_from_csv(text: str) -> TransferPackage:
                     chunk_id=chunk,
                 )
             )
-    fields = {k: v for k, v in data.items() if k not in {
-        "source_node", "target_node", "target_layer", "detail_level", "status"
-    }}
+    fields = {
+        k: v
+        for k, v in data.items()
+        if k
+        not in {"source_node", "target_node", "target_layer", "detail_level", "status"}
+    }
     package = TransferPackage(
         source_node=NodeIdentifier(data["source_node"]),
         target_node=NodeIdentifier(data["target_node"]),

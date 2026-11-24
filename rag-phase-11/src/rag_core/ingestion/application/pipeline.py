@@ -12,10 +12,21 @@ from rag_core.ingestion.domain.model import (
     IngestedDocument,
     NormalizationReport,
 )
-from rag_core.ingestion.infrastructure.dispatcher import CompositeDocumentParser, ParsedWithBlocks
-from rag_core.ingestion.infrastructure.files import document_id_from_name, language_from_path, sha256_file
+from rag_core.ingestion.infrastructure.dispatcher import (
+    CompositeDocumentParser,
+    ParsedWithBlocks,
+)
+from rag_core.ingestion.infrastructure.files import (
+    document_id_from_name,
+    language_from_path,
+    sha256_file,
+)
 from rag_core.shared_kernel.language import LanguageCode
-from rag_core.shared_kernel.persian import merge_counts, normalize_document_ids, normalize_persian_text
+from rag_core.shared_kernel.persian import (
+    merge_counts,
+    normalize_document_ids,
+    normalize_persian_text,
+)
 
 
 def _normalize_blocks(

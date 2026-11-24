@@ -38,7 +38,9 @@ def shipped_executors() -> list[Executor]:
 
 
 def raw_records() -> list[dict]:
-    data = json.loads((EXECUTORS_DIR / "executor-registry.json").read_text(encoding="utf-8"))
+    data = json.loads(
+        (EXECUTORS_DIR / "executor-registry.json").read_text(encoding="utf-8")
+    )
     return copy.deepcopy(data["executors"])
 
 

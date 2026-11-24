@@ -8,5 +8,4 @@ from rag_core.projects.domain.model import ProjectRegistry
 
 
 class ProjectRegistrySource(Protocol):
-    def load(self) -> ProjectRegistry:
-        ...
+    def load(self) -> ProjectRegistry: ...

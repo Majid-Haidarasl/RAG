@@ -19,7 +19,9 @@ class CriterionWeight:
     weight: Decimal
 
     def __post_init__(self) -> None:
-        amount = self.weight if isinstance(self.weight, Decimal) else Decimal(self.weight)
+        amount = (
+            self.weight if isinstance(self.weight, Decimal) else Decimal(self.weight)
+        )
         object.__setattr__(self, "weight", amount)
         if not self.name.strip():
             raise InvariantError("criterion name is required")
@@ -83,10 +85,15 @@ class Rfp:
             raise InvariantError(f"criterion weights must sum to 1 or 100, got {total}")
 
     def add_proposal(self, proposal: Proposal) -> Proposal:
-        proposal.weighted = compute_weighted_score(proposal.criterion_scores, self.criteria)
+        proposal.weighted = compute_weighted_score(
+            proposal.criterion_scores, self.criteria
+        )
         self.proposals.append(proposal)
         self.events.append(
-            DomainEvent("ProposalEvaluated", {"vendor": proposal.vendor, "score": str(proposal.weighted.value)})
+            DomainEvent(
+                "ProposalEvaluated",
+                {"vendor": proposal.vendor, "score": str(proposal.weighted.value)},
+            )
         )
         return proposal
 
@@ -97,7 +104,9 @@ class Rfp:
         raise NotFoundError(vendor)
 
     def publish(self) -> None:
-        self.events.append(DomainEvent("RfpPublished", {"rfp_id": str(self.identifier)}))
+        self.events.append(
+            DomainEvent("RfpPublished", {"rfp_id": str(self.identifier)})
+        )
 
 
 # Recorded evaluation sheet of AR-RFP-025 (technical 60% + financial 40%):

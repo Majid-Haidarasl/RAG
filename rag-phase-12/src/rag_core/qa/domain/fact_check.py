@@ -39,17 +39,68 @@ _ID_PATTERNS: tuple[tuple[FactKind, re.Pattern[str]], ...] = (
     (FactKind.DOCUMENT_ID, re.compile(r"\bPRJ-[A-Z0-9]+(?:-[A-Z0-9]+)*\b")),
     (FactKind.NODE_ID, re.compile(r"\bN-[A-Z]{2,5}(?:-[A-Z]{2,5})*\b")),
 )
-_NUMBER_RE = re.compile(r"(?<![A-Za-z0-9.])(\d{1,3}(?:[,٬]\d{3})+(?:[.٫]\d+)?|\d+(?:[.٫]\d+)?)(?![A-Za-z0-9])")
+_NUMBER_RE = re.compile(
+    r"(?<![A-Za-z0-9.])(\d{1,3}(?:[,٬]\d{3})+(?:[.٫]\d+)?|\d+(?:[.٫]\d+)?)(?![A-Za-z0-9])"
+)
 
 NUMBER_WORDS: dict[str, int] = {
-    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
-    "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
-    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20, "thirty": 30,
-    "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90, "hundred": 100,
-    "یک": 1, "دو": 2, "سه": 3, "چهار": 4, "پنج": 5, "شش": 6, "هفت": 7, "هشت": 8, "نه": 9, "ده": 10,
-    "یازده": 11, "دوازده": 12, "سیزده": 13, "چهارده": 14, "پانزده": 15, "شانزده": 16, "هفده": 17,
-    "هجده": 18, "نوزده": 19, "بیست": 20, "سی": 30, "چهل": 40, "پنجاه": 50, "شصت": 60, "هفتاد": 70,
-    "هشتاد": 80, "نود": 90, "صد": 100,
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+    "hundred": 100,
+    "یک": 1,
+    "دو": 2,
+    "سه": 3,
+    "چهار": 4,
+    "پنج": 5,
+    "شش": 6,
+    "هفت": 7,
+    "هشت": 8,
+    "نه": 9,
+    "ده": 10,
+    "یازده": 11,
+    "دوازده": 12,
+    "سیزده": 13,
+    "چهارده": 14,
+    "پانزده": 15,
+    "شانزده": 16,
+    "هفده": 17,
+    "هجده": 18,
+    "نوزده": 19,
+    "بیست": 20,
+    "سی": 30,
+    "چهل": 40,
+    "پنجاه": 50,
+    "شصت": 60,
+    "هفتاد": 70,
+    "هشتاد": 80,
+    "نود": 90,
+    "صد": 100,
 }
 
 
@@ -134,7 +185,9 @@ class CitedFactValidator:
         from rag_core.qa.domain.citations import strip_citations
 
         body = strip_citations(generated_text)
-        cited_ids = source_identifiers(source_texts) | {str(d) for d in (source_document_ids or [])}
+        cited_ids = source_identifiers(source_texts) | {
+            str(d) for d in (source_document_ids or [])
+        }
         cited_nums = source_numbers(source_texts)
         ctx = context_texts or []
         ctx_ids = source_identifiers(ctx)
@@ -162,4 +215,8 @@ class CitedFactValidator:
 
 
 def flagged(report: FactValidationReport) -> list[FactCheckResult]:
-    return [r for r in report.results if r.verdict in {FactVerdict.FLAGGED, FactVerdict.UNSUPPORTED}]
+    return [
+        r
+        for r in report.results
+        if r.verdict in {FactVerdict.FLAGGED, FactVerdict.UNSUPPORTED}
+    ]

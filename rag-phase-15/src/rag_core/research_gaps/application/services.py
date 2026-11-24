@@ -34,20 +34,32 @@ class GapReport:
 
     def for_issue(self, issue_id: str) -> list[Gap]:
         """Gaps on the issue itself or on one of its sub-issues."""
-        return [g for g in self.gaps
-                if g.issue_id == issue_id or g.subject == issue_id or g.subject.startswith(issue_id + "/")]
+        return [
+            g
+            for g in self.gaps
+            if g.issue_id == issue_id
+            or g.subject == issue_id
+            or g.subject.startswith(issue_id + "/")
+        ]
 
     def count_by_issue(self) -> dict[str, int]:
         out: dict[str, int] = {}
         for g in self.gaps:
-            issue = g.issue_id or (g.subject.split("/", 1)[0] if g.subject.startswith("AR-ISS-") else "")
+            issue = g.issue_id or (
+                g.subject.split("/", 1)[0] if g.subject.startswith("AR-ISS-") else ""
+            )
             if issue:
                 out[issue] = out.get(issue, 0) + 1
         return out
 
     def to_dict(self) -> dict[str, object]:
-        return {"total": len(self.gaps), "by_rule": self.by_rule(), "by_severity": self.by_severity(),
-                "by_kind": self.by_kind(), "gaps": [g.to_dict() for g in self.gaps]}
+        return {
+            "total": len(self.gaps),
+            "by_rule": self.by_rule(),
+            "by_severity": self.by_severity(),
+            "by_kind": self.by_kind(),
+            "gaps": [g.to_dict() for g in self.gaps],
+        }
 
 
 class GapService:

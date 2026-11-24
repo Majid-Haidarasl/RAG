@@ -14,17 +14,58 @@ from pathlib import Path
 from typing import Any
 
 TABLES: dict[str, tuple[str, ...]] = {
-    "rfp_requirements": ("requirement_id", "rfp_id", "section", "mandatory", "answered_in", "statement_en",
-                         "statement_fa", "evidence"),
-    "proposals": ("proposal_id", "rfp_id", "vendor_en", "vendor_fa", "price_mtoman", "duration_weeks", "technology",
-                  "version", "sections", "evidence"),
-    "evaluation": ("row_id", "proposal_id", "criterion_id", "weight", "score", "contribution", "weighted",
-                   "published", "rank", "compliant"),
+    "rfp_requirements": (
+        "requirement_id",
+        "rfp_id",
+        "section",
+        "mandatory",
+        "answered_in",
+        "statement_en",
+        "statement_fa",
+        "evidence",
+    ),
+    "proposals": (
+        "proposal_id",
+        "rfp_id",
+        "vendor_en",
+        "vendor_fa",
+        "price_mtoman",
+        "duration_weeks",
+        "technology",
+        "version",
+        "sections",
+        "evidence",
+    ),
+    "evaluation": (
+        "row_id",
+        "proposal_id",
+        "criterion_id",
+        "weight",
+        "score",
+        "contribution",
+        "weighted",
+        "published",
+        "rank",
+        "compliant",
+    ),
     "feedback": ("row_id", "proposal_id", "language", "chars", "text"),
-    "knowledge_links": ("link_id", "rfp_id", "node", "executor", "requirements", "evidence", "valid"),
+    "knowledge_links": (
+        "link_id",
+        "rfp_id",
+        "node",
+        "executor",
+        "requirements",
+        "evidence",
+        "valid",
+    ),
 }
-ID_COLUMN = {"rfp_requirements": "requirement_id", "proposals": "proposal_id", "evaluation": "row_id",
-             "feedback": "row_id", "knowledge_links": "link_id"}
+ID_COLUMN = {
+    "rfp_requirements": "requirement_id",
+    "proposals": "proposal_id",
+    "evaluation": "row_id",
+    "feedback": "row_id",
+    "knowledge_links": "link_id",
+}
 
 
 def cell(value: Any) -> str:
@@ -41,7 +82,9 @@ def _safe(name: str) -> str:
     return "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)
 
 
-def export_tables(tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, rfp_id: str) -> list[Path]:
+def export_tables(
+    tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, rfp_id: str
+) -> list[Path]:
     folder = Path(csv_dir) / _safe(rfp_id)
     folder.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -62,7 +105,9 @@ def read_table(csv_dir: Path, rfp_id: str, name: str) -> list[dict[str, str]]:
         return list(csv.DictReader(fh))
 
 
-def round_trip_problems(tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, rfp_id: str) -> list[str]:
+def round_trip_problems(
+    tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, rfp_id: str
+) -> list[str]:
     problems: list[str] = []
     for name, columns in TABLES.items():
         try:

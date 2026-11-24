@@ -9,7 +9,10 @@ from rag_core.hierarchy.domain.model import (
     NodeType,
     Organization,
 )
-from rag_core.hierarchy.domain.repositories import LayerRegistryRepository, OrganizationRepository
+from rag_core.hierarchy.domain.repositories import (
+    LayerRegistryRepository,
+    OrganizationRepository,
+)
 from rag_core.hierarchy.domain.transfer import TransferDirection, TransferRequirement
 
 __all__ = [

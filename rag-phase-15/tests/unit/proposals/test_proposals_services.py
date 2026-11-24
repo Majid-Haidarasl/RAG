@@ -22,8 +22,13 @@ pytestmark = [pytest.mark.proposals]
 
 
 def service() -> ProposalService:
-    return ProposalService([shipped_blueprint()], DOCS, registry_texts(shipped_registry()), CitedFactValidator(),
-                           source_numbers)
+    return ProposalService(
+        [shipped_blueprint()],
+        DOCS,
+        registry_texts(shipped_registry()),
+        CitedFactValidator(),
+        source_numbers,
+    )
 
 
 def prp(raw: dict, pid: str) -> dict:
@@ -76,18 +81,21 @@ def _feedback(d: dict) -> None:
     prp(d, "PRP-B")["feedback_en"] += " Its score was 91."
 
 
-@pytest.mark.parametrize("change, code", [
-    (_price_formula, "published_mismatch"),
-    (_wrong_price, "ungrounded_number"),
-    (_subscore, "unknown_criterion"),
-    (_missing_score, "missing_score"),
-    (_range, "score_range"),
-    (_section, "missing_section"),
-    (_decision, "decision_mismatch"),
-    (_rfp, "unknown_rfp"),
-    (_duplicate, "duplicate_id"),
-    (_feedback, "ungrounded_statement"),
-])
+@pytest.mark.parametrize(
+    "change, code",
+    [
+        (_price_formula, "published_mismatch"),
+        (_wrong_price, "ungrounded_number"),
+        (_subscore, "unknown_criterion"),
+        (_missing_score, "missing_score"),
+        (_range, "score_range"),
+        (_section, "missing_section"),
+        (_decision, "decision_mismatch"),
+        (_rfp, "unknown_rfp"),
+        (_duplicate, "duplicate_id"),
+        (_feedback, "ungrounded_statement"),
+    ],
+)
 def test_negative_controls_are_rejected_for_the_right_reason(change, code: str) -> None:  # noqa: ANN001
     raw = raw_registry()
     change(raw)
@@ -119,5 +127,9 @@ def test_unknown_rfp_gives_no_feedback_or_knowledge() -> None:
     reg = registry_from_dict(raw)
     s = service()
     audit = s.audit(reg)
-    assert audit.evaluation is None and s.knowledge(reg, evaluate(shipped_blueprint(), reg), NODES, EXECUTORS) is None
+    assert (
+        audit.evaluation is None
+        and s.knowledge(reg, evaluate(shipped_blueprint(), reg), NODES, EXECUTORS)
+        is None
+    )
     assert s.feedback(reg, evaluate(shipped_blueprint(), reg)) == {}

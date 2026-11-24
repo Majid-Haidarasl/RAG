@@ -21,14 +21,20 @@ def test_weighted_scores_reproduce_the_published_sheet() -> None:
     a, b = e.get("PRP-A"), e.get("PRP-B")
     assert a is not None and b is not None
     assert (a.weighted, b.weighted) == (Decimal("78.8"), Decimal("75.2"))
-    assert a.matches_published and b.matches_published and e.published_match == e.published_total == 2
+    assert (
+        a.matches_published
+        and b.matches_published
+        and e.published_match == e.published_total == 2
+    )
 
 
 def test_contributions_are_transparent() -> None:
     e = ev()
     a, b = e.get("PRP-A"), e.get("PRP-B")
-    assert [(x.criterion_id, x.contribution) for x in a.lines] == [("CRT-TECH", Decimal("49.2")),  # type: ignore[union-attr]
-                                                                   ("CRT-FIN", Decimal("29.6"))]
+    assert [(x.criterion_id, x.contribution) for x in a.lines] == [
+        ("CRT-TECH", Decimal("49.2")),  # type: ignore[union-attr]
+        ("CRT-FIN", Decimal("29.6")),
+    ]
     assert [x.contribution for x in b.lines] == [Decimal("40.8"), Decimal("34.4")]  # type: ignore[union-attr]
     assert sum(x.contribution for x in a.lines) == a.weighted  # type: ignore[union-attr]
 
@@ -50,7 +56,7 @@ def test_the_cheaper_proposal_does_not_win_on_price() -> None:
 
 def test_price_formula_does_not_match_the_recorded_score() -> None:
     raw = raw_registry()
-    raw["proposals"][0]["scores"]["CRT-FIN"] = "84.2"     # 240 / 285 x 100
+    raw["proposals"][0]["scores"]["CRT-FIN"] = "84.2"  # 240 / 285 x 100
     a = ev(raw).get("PRP-A")
     assert a.weighted == Decimal("82.9") and not a.matches_published  # type: ignore[union-attr]
 
@@ -59,7 +65,9 @@ def test_missing_section_makes_a_proposal_non_compliant() -> None:
     raw = raw_registry()
     raw["proposals"][0]["sections"].remove("test_plan")
     e = ev(raw)
-    assert not e.get("PRP-A").compliant and e.get("PRP-A").missing_sections == ("test_plan",)  # type: ignore[union-attr]
+    assert not e.get("PRP-A").compliant and e.get("PRP-A").missing_sections == (
+        "test_plan",
+    )  # type: ignore[union-attr]
     assert e.winner.proposal_id == "PRP-B" and not e.decision_consistent  # type: ignore[union-attr]
 
 
@@ -78,10 +86,22 @@ def test_decision_for_the_lower_score_is_inconsistent() -> None:
 
 def test_to_dict() -> None:
     data = ev().to_dict()
-    assert data["winner"] == "PRP-A" and data["margin"] == "3.6" and data["price_gap_mtoman"] == "45"
+    assert (
+        data["winner"] == "PRP-A"
+        and data["margin"] == "3.6"
+        and data["price_gap_mtoman"] == "45"
+    )
     assert data["published_match"] == "2/2" and data["scores"][0]["lines"][0] == {  # type: ignore[index]
-        "criterion": "CRT-TECH", "weight": "0.6", "score": "82", "contribution": "49.2"}
+        "criterion": "CRT-TECH",
+        "weight": "0.6",
+        "score": "82",
+        "contribution": "49.2",
+    }
 
 
 def test_number_helpers() -> None:
-    assert q(Decimal("49.25")) == Decimal("49.3") and text(Decimal("45.0")) == "45" and text(None) == ""
+    assert (
+        q(Decimal("49.25")) == Decimal("49.3")
+        and text(Decimal("45.0")) == "45"
+        and text(None) == ""
+    )

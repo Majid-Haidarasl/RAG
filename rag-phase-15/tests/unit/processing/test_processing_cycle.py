@@ -2,7 +2,12 @@
 
 import pytest
 
-from rag_core.processing.domain.cycle import CycleReport, ProcessingCycle, StepOutcome, StepResult
+from rag_core.processing.domain.cycle import (
+    CycleReport,
+    ProcessingCycle,
+    StepOutcome,
+    StepResult,
+)
 from rag_core.shared_kernel.errors import InvariantError
 
 pytestmark = [pytest.mark.processing]
@@ -24,8 +29,17 @@ def test_invalid_cycle_ids_are_rejected(bad: str) -> None:
         ProcessingCycle(bad)
 
 
-def _step(order: int, node: str, layer: int, outcome: StepOutcome, status: str = "", action: str = "") -> StepResult:
-    return StepResult(order, node, "N-X", layer, outcome, status=status, store_action=action)
+def _step(
+    order: int,
+    node: str,
+    layer: int,
+    outcome: StepOutcome,
+    status: str = "",
+    action: str = "",
+) -> StepResult:
+    return StepResult(
+        order, node, "N-X", layer, outcome, status=status, store_action=action
+    )
 
 
 def test_report_counts_and_layers() -> None:
@@ -36,8 +50,17 @@ def test_report_counts_and_layers() -> None:
         _step(3, "N-C", 1, StepOutcome.FAILED),
     ]
     counts = report.counts()
-    assert counts == {"steps": 3, "built": 2, "failed": 1, "accepted": 1, "rejected": 1, "inserted": 1,
-                      "unchanged": 1, "updated": 0, "skipped": 1}
+    assert counts == {
+        "steps": 3,
+        "built": 2,
+        "failed": 1,
+        "accepted": 1,
+        "rejected": 1,
+        "inserted": 1,
+        "unchanged": 1,
+        "updated": 0,
+        "skipped": 1,
+    }
     assert report.by_layer() == {1: 1, 2: 2}
 
 

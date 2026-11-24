@@ -19,9 +19,18 @@ NEG_NUMBER = {"en": " Penalty 777 million toman.", "fa": " جریمهٔ ۷۷۷ �
 NEG_ID = {"en": " See AR-ISS-099.", "fa": " به AR-ISS-099 نگاه کنید."}
 
 
-def summary_case(case_id: str, language: str, task: str, output: str, facts: Sequence[str],
-                 items: Sequence[str], gaps: Sequence[str] = (), *, node: str = "N-SW",
-                 origin: str = "rfp-template") -> JudgeCase:
+def summary_case(
+    case_id: str,
+    language: str,
+    task: str,
+    output: str,
+    facts: Sequence[str],
+    items: Sequence[str],
+    gaps: Sequence[str] = (),
+    *,
+    node: str = "N-SW",
+    origin: str = "rfp-template",
+) -> JudgeCase:
     return JudgeCase(
         case_id=case_id,
         kind=OutputKind.IKE_SUMMARY,
@@ -37,15 +46,19 @@ def summary_case(case_id: str, language: str, task: str, output: str, facts: Seq
 
 
 def rfp_task(rfp_id: str, language: str) -> str:
-    return (f"Write the {LANGUAGE_NAMES.get(language, language)} request for proposal {rfp_id}: identity, the key "
-            "issues it serves, the knowledge gaps, every requirement by section, the weighted criteria and the "
-            "knowledge links. Use only the facts.")
+    return (
+        f"Write the {LANGUAGE_NAMES.get(language, language)} request for proposal {rfp_id}: identity, the key "
+        "issues it serves, the knowledge gaps, every requirement by section, the weighted criteria and the "
+        "knowledge links. Use only the facts."
+    )
 
 
 def feedback_task(proposal_id: str, language: str) -> str:
-    return (f"Write the {LANGUAGE_NAMES.get(language, language)} evaluation feedback for proposal {proposal_id}: "
-            "weighted score and its parts, rank, the selected proposal, price and duration differences, the "
-            "recorded feedback, open clarifications and where the result is recorded. Use only the facts.")
+    return (
+        f"Write the {LANGUAGE_NAMES.get(language, language)} evaluation feedback for proposal {proposal_id}: "
+        "weighted score and its parts, rank, the selected proposal, price and duration differences, the "
+        "recorded feedback, open clarifications and where the result is recorded. Use only the facts."
+    )
 
 
 def negative_cases(base: JudgeCase, items: Sequence[str]) -> list[JudgeCase]:
@@ -53,6 +66,8 @@ def negative_cases(base: JudgeCase, items: Sequence[str]) -> list[JudgeCase]:
     text = base.output
     lang = base.language
     kept = [line for line in text.splitlines() if not any(i in line for i in items)]
-    return [base.mutated("wrong_number", text + NEG_NUMBER.get(lang, NEG_NUMBER["en"])),
-            base.mutated("fabricated_id", text + NEG_ID.get(lang, NEG_ID["en"])),
-            base.mutated("drop_items", "\n".join(kept))]
+    return [
+        base.mutated("wrong_number", text + NEG_NUMBER.get(lang, NEG_NUMBER["en"])),
+        base.mutated("fabricated_id", text + NEG_ID.get(lang, NEG_ID["en"])),
+        base.mutated("drop_items", "\n".join(kept)),
+    ]

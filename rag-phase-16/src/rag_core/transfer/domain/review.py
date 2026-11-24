@@ -33,15 +33,27 @@ class GroundingCheck:
     claims: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        return {"grounded": self.grounded, "unsupported": list(self.unsupported), "flagged": list(self.flagged),
-                "claims": self.claims}
+        return {
+            "grounded": self.grounded,
+            "unsupported": list(self.unsupported),
+            "flagged": list(self.flagged),
+            "claims": self.claims,
+        }
 
 
-def ground(text: str, facts: tuple[str, ...] | list[str], validator: FactValidator) -> GroundingCheck:
+def ground(
+    text: str, facts: tuple[str, ...] | list[str], validator: FactValidator
+) -> GroundingCheck:
     report = validator.validate(text, ["\n".join(facts)])
-    unsupported = tuple(r.claim.raw_text for r in report.results if r.verdict is FactVerdict.UNSUPPORTED)
-    flagged = tuple(r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED)
-    return GroundingCheck(not unsupported and not flagged, unsupported, flagged, len(report.results))
+    unsupported = tuple(
+        r.claim.raw_text for r in report.results if r.verdict is FactVerdict.UNSUPPORTED
+    )
+    flagged = tuple(
+        r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED
+    )
+    return GroundingCheck(
+        not unsupported and not flagged, unsupported, flagged, len(report.results)
+    )
 
 
 @dataclass(frozen=True)
@@ -56,15 +68,24 @@ class JudgeVerdict:
     notes: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
-        return {"judge": self.judge, "language": self.language, "total": self.total, "out_of": self.out_of,
-                "accepted": self.accepted, "scores": dict(self.scores), "reasons": list(self.reasons),
-                "notes": list(self.notes)}
+        return {
+            "judge": self.judge,
+            "language": self.language,
+            "total": self.total,
+            "out_of": self.out_of,
+            "accepted": self.accepted,
+            "scores": dict(self.scores),
+            "reasons": list(self.reasons),
+            "notes": list(self.notes),
+        }
 
 
 class PackageJudgePort(Protocol):
     name: str
 
-    def judge_package(self, draft: PackageDraft, language: str, text: str | None = None) -> list[JudgeVerdict]: ...
+    def judge_package(
+        self, draft: PackageDraft, language: str, text: str | None = None
+    ) -> list[JudgeVerdict]: ...
 
 
 @dataclass(frozen=True)
@@ -75,9 +96,12 @@ class PackageReview:
     reasons: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
-        return {"grounding": {k: v.to_dict() for k, v in self.grounding.items()},
-                "verdicts": [v.to_dict() for v in self.verdicts], "accepted": self.accepted,
-                "reasons": list(self.reasons)}
+        return {
+            "grounding": {k: v.to_dict() for k, v in self.grounding.items()},
+            "verdicts": [v.to_dict() for v in self.verdicts],
+            "accepted": self.accepted,
+            "reasons": list(self.reasons),
+        }
 
     def total(self, judge: str, language: str) -> int | None:
         for v in self.verdicts:
@@ -87,21 +111,35 @@ class PackageReview:
 
 
 class PackageReviewer:
-    def __init__(self, validator: FactValidator, judge: PackageJudgePort | None = None,
-                 languages: tuple[str, ...] = LANGUAGES) -> None:
+    def __init__(
+        self,
+        validator: FactValidator,
+        judge: PackageJudgePort | None = None,
+        languages: tuple[str, ...] = LANGUAGES,
+    ) -> None:
         self.validator = validator
         self.judge = judge
         self.languages = languages
 
     def review(self, draft: PackageDraft) -> BuiltPackage:
-        grounding = {lang: ground(draft.text(lang), draft.facts, self.validator) for lang in self.languages}
-        reasons = [f"ungrounded_{lang}:" + ",".join([*g.unsupported, *g.flagged][:5])
-                   for lang, g in grounding.items() if not g.grounded]
+        grounding = {
+            lang: ground(draft.text(lang), draft.facts, self.validator)
+            for lang in self.languages
+        }
+        reasons = [
+            f"ungrounded_{lang}:" + ",".join([*g.unsupported, *g.flagged][:5])
+            for lang, g in grounding.items()
+            if not g.grounded
+        ]
         verdicts: list[JudgeVerdict] = []
         if self.judge is not None:
             for lang in self.languages:
                 verdicts.extend(self.judge.judge_package(draft, lang))
-        reasons += [f"{v.judge}_{v.language}:{v.total}/{v.out_of}" for v in verdicts if not v.accepted]
+        reasons += [
+            f"{v.judge}_{v.language}:{v.total}/{v.out_of}"
+            for v in verdicts
+            if not v.accepted
+        ]
         review = PackageReview(grounding, tuple(verdicts), not reasons, tuple(reasons))
         if review.accepted:
             draft.package.accept()
@@ -184,8 +222,15 @@ class BuiltPackage:
     def to_record(self) -> PackageRecord:
         content = self.content()
         return PackageRecord(
-            cycle_id=self.draft.cycle_id, source_node=self.source_node, target_node=self.target_node,
-            target_layer=self.target_layer, detail_level=self.detail_level, status=self.status,
-            words_en=self.draft.words("en"), words_fa=self.draft.words("fa"), items=len(self.items),
-            content_hash=content_hash(content), payload=content,
+            cycle_id=self.draft.cycle_id,
+            source_node=self.source_node,
+            target_node=self.target_node,
+            target_layer=self.target_layer,
+            detail_level=self.detail_level,
+            status=self.status,
+            words_en=self.draft.words("en"),
+            words_fa=self.draft.words("fa"),
+            items=len(self.items),
+            content_hash=content_hash(content),
+            payload=content,
         )

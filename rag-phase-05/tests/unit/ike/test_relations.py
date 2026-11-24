@@ -1,6 +1,11 @@
 import pytest
 
-from rag_core.ike.domain.model import IkeGraph, IkeRelation, RelationConfidence, RelationType
+from rag_core.ike.domain.model import (
+    IkeGraph,
+    IkeRelation,
+    RelationConfidence,
+    RelationType,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.identifiers import NodeIdentifier
 
@@ -41,5 +46,12 @@ def test_duplicate_and_reflexive_relations_are_rejected() -> None:
 
 def test_knowledge_lack_emits_dedicated_event() -> None:
     graph = IkeGraph(NodeIdentifier("N-HW-REP"))
-    graph.add(IkeRelation("AR-ISS-024/HW", "photo-diagnosis", RelationType.KNOWLEDGE_LACK, RelationConfidence(0.8)))
+    graph.add(
+        IkeRelation(
+            "AR-ISS-024/HW",
+            "photo-diagnosis",
+            RelationType.KNOWLEDGE_LACK,
+            RelationConfidence(0.8),
+        )
+    )
     assert graph.events[-1].name == "KnowledgeLackFlagged"

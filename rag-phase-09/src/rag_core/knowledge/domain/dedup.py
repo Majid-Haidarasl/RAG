@@ -59,9 +59,13 @@ class DedupConfig:
     boilerplate_source_fraction: float = 0.25
     boilerplate_min_sources: int = 5
     seed: int = 1405
-    shingle_mode: str = "word"  # "word" (k words) or "char" (char_k chars, spaces ignored)
+    shingle_mode: str = (
+        "word"  # "word" (k words) or "char" (char_k chars, spaces ignored)
+    )
     char_k: int = 5
-    exhaustive: bool = False  # compare all pairs exactly (small record sets, e.g. documents)
+    exhaustive: bool = (
+        False  # compare all pairs exactly (small record sets, e.g. documents)
+    )
 
 
 @dataclass
@@ -97,7 +101,11 @@ class ExactGroup:
     scope: str  # "rendition" (one doc+language, several formats) or "cross_document"
 
     def to_dict(self) -> dict[str, object]:
-        return {"scope": self.scope, "documents": list(self.documents), "members": list(self.members)}
+        return {
+            "scope": self.scope,
+            "documents": list(self.documents),
+            "members": list(self.members),
+        }
 
 
 @dataclass
@@ -154,7 +162,11 @@ def _pair(a: str, b: str) -> tuple[str, str]:
 
 
 def pair_scope(a: TextRecord, b: TextRecord) -> str:
-    return "rendition" if a.document_id == b.document_id and a.language == b.language else "cross_document"
+    return (
+        "rendition"
+        if a.document_id == b.document_id and a.language == b.language
+        else "cross_document"
+    )
 
 
 def is_bilingual_pair(a: TextRecord, b: TextRecord) -> bool:
@@ -224,8 +236,14 @@ class DuplicateFinder:
                 members = sorted(keep)
                 docs = sorted({by_key[k].document_id for k in members})
                 langs = {by_key[k].language for k in members}
-                scope = "rendition" if len(docs) == 1 and len(langs) == 1 else "cross_document"
-                report.exact_groups.append(ExactGroup(tuple(members), tuple(docs), scope))
+                scope = (
+                    "rendition"
+                    if len(docs) == 1 and len(langs) == 1
+                    else "cross_document"
+                )
+                report.exact_groups.append(
+                    ExactGroup(tuple(members), tuple(docs), scope)
+                )
         report.exact_groups.sort(key=lambda g: g.members)
         report.timings_s["exact"] = time.perf_counter() - t1
 
@@ -264,8 +282,13 @@ class DuplicateFinder:
                 near_set.add((a_key, b_key))
                 report.near_pairs.append(
                     PairFinding(
-                        a_key, b_key, "near", j,
-                        left_doc=a.document_id, right_doc=b.document_id, scope=pair_scope(a, b),
+                        a_key,
+                        b_key,
+                        "near",
+                        j,
+                        left_doc=a.document_id,
+                        right_doc=b.document_id,
+                        scope=pair_scope(a, b),
                     )
                 )
         report.timings_s["near_minhash_lsh"] = time.perf_counter() - t2
@@ -273,7 +296,10 @@ class DuplicateFinder:
         # ---------------- overlap (inverted index, boilerplate filtered)
         t3 = time.perf_counter()
         sources = {r.source for r in records}
-        max_sources = max(cfg.boilerplate_min_sources, int(cfg.boilerplate_source_fraction * len(sources)))
+        max_sources = max(
+            cfg.boilerplate_min_sources,
+            int(cfg.boilerplate_source_fraction * len(sources)),
+        )
         postings: dict[str, list[str]] = defaultdict(list)
         shared: dict[tuple[str, str], int] = defaultdict(int)
         if cfg.exhaustive:
@@ -302,7 +328,9 @@ class DuplicateFinder:
                 if why is None:
                     reference_near += 1
                 continue
-            small, big, small_key = (sa, sb, a_key) if len(sa) <= len(sb) else (sb, sa, b_key)
+            small, big, small_key = (
+                (sa, sb, a_key) if len(sa) <= len(sb) else (sb, sa, b_key)
+            )
             c = containment(small, big)
             if c >= cfg.containment_threshold and why == "bilingual":
                 exclude_bilingual(a, b, "overlap")
@@ -326,7 +354,8 @@ class DuplicateFinder:
         report.bilingual_pairs_excluded = len(bilingual_excluded)
         report.bilingual_candidates_seen = len(bilingual_candidates)
         report.bilingual_excluded_by_rule = {
-            rule: sum(1 for r in bilingual_excluded.values() if r == rule) for rule in ("exact", "near", "overlap")
+            rule: sum(1 for r in bilingual_excluded.values() if r == rule)
+            for rule in ("exact", "near", "overlap")
         }
         report.timings_s["total"] = time.perf_counter() - t0
         return report

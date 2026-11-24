@@ -13,15 +13,61 @@ from pathlib import Path
 from typing import Any
 
 TABLES: dict[str, tuple[str, ...]] = {
-    "projects": ("project_id", "name_en", "name_fa", "owner_node", "status", "health", "progress_percent",
-                 "remaining_mtoman", "contract_value_mtoman", "issues", "open_issues", "blocked_subissues"),
-    "records": ("record_id", "kind", "state", "project", "title_en", "title_fa", "issues", "nodes", "evidence",
-                "conditions"),
-    "gaps": ("gap_id", "rule", "kind", "severity", "subject", "issue_id", "title_en", "title_fa", "nodes",
-             "documents", "detail"),
-    "priorities": ("rank", "issue_id", "score", "key", "top_factors", "title_en", "title_fa"),
+    "projects": (
+        "project_id",
+        "name_en",
+        "name_fa",
+        "owner_node",
+        "status",
+        "health",
+        "progress_percent",
+        "remaining_mtoman",
+        "contract_value_mtoman",
+        "issues",
+        "open_issues",
+        "blocked_subissues",
+    ),
+    "records": (
+        "record_id",
+        "kind",
+        "state",
+        "project",
+        "title_en",
+        "title_fa",
+        "issues",
+        "nodes",
+        "evidence",
+        "conditions",
+    ),
+    "gaps": (
+        "gap_id",
+        "rule",
+        "kind",
+        "severity",
+        "subject",
+        "issue_id",
+        "title_en",
+        "title_fa",
+        "nodes",
+        "documents",
+        "detail",
+    ),
+    "priorities": (
+        "rank",
+        "issue_id",
+        "score",
+        "key",
+        "top_factors",
+        "title_en",
+        "title_fa",
+    ),
 }
-ID_COLUMN = {"projects": "project_id", "records": "record_id", "gaps": "gap_id", "priorities": "issue_id"}
+ID_COLUMN = {
+    "projects": "project_id",
+    "records": "record_id",
+    "gaps": "gap_id",
+    "priorities": "issue_id",
+}
 
 
 def _cell(value: Any) -> str:
@@ -34,7 +80,9 @@ def _cell(value: Any) -> str:
     return str(value)
 
 
-def export_tables(tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, cycle_id: str) -> list[Path]:
+def export_tables(
+    tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, cycle_id: str
+) -> list[Path]:
     folder = Path(csv_dir) / cycle_id
     folder.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -55,7 +103,9 @@ def read_table(csv_dir: Path, cycle_id: str, name: str) -> list[dict[str, str]]:
         return list(csv.DictReader(fh))
 
 
-def round_trip_problems(tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, cycle_id: str) -> list[str]:
+def round_trip_problems(
+    tables: Mapping[str, Sequence[Mapping[str, Any]]], csv_dir: Path, cycle_id: str
+) -> list[str]:
     problems: list[str] = []
     for name, columns in TABLES.items():
         try:

@@ -11,17 +11,28 @@ pytestmark = [pytest.mark.rfp_gen]
 
 def test_shipped_config() -> None:
     s = load_rfp_settings(CONFIG)
-    assert s.config_version == "0.13.0" and (s.cycle.id, s.cycle.cutoff) == ("1403-Q2", "1403-06-31")
-    assert s.candidates.categories == ("procurement",) and s.candidates.targets == {"AR-ISS-024": "AR-ISS-024/WEB"}
+    assert s.config_version == "0.13.0" and (s.cycle.id, s.cycle.cutoff) == (
+        "1403-Q2",
+        "1403-06-31",
+    )
+    assert s.candidates.categories == ("procurement",) and s.candidates.targets == {
+        "AR-ISS-024": "AR-ISS-024/WEB"
+    }
     assert s.judging.max_rfp_chars == 6000
     assert (s.model.model, s.model.think, s.model.format) == ("qwen3:8b", False, "json")
-    assert s.live.languages == ("fa", "en") and s.live.tasks == ("rfp_summary", "feedback") and s.live.llm_judge
+    assert (
+        s.live.languages == ("fa", "en")
+        and s.live.tasks == ("rfp_summary", "feedback")
+        and s.live.llm_judge
+    )
     assert s.storage.blueprint_dir == "data/rfp" and s.storage.csv_dir == "exports/rfp"
 
 
 def test_defaults_from_an_empty_file() -> None:
     s = rfp_settings_from_dict({})
-    assert s.config_version == "0.13.0" and s.candidates.targets == {"AR-ISS-024": "AR-ISS-024/WEB"}
+    assert s.config_version == "0.13.0" and s.candidates.targets == {
+        "AR-ISS-024": "AR-ISS-024/WEB"
+    }
 
 
 REJECTED = [

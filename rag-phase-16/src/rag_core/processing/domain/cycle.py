@@ -24,7 +24,9 @@ class ProcessingCycle:
     def __post_init__(self) -> None:
         text = normalize_digits(self.cycle_id.strip()).upper()
         if not _CYCLE_RE.match(text):
-            raise InvariantError(f"invalid cycle id {self.cycle_id!r} (use e.g. 1403-Q2 or 1403-M06)")
+            raise InvariantError(
+                f"invalid cycle id {self.cycle_id!r} (use e.g. 1403-Q2 or 1403-M06)"
+            )
         object.__setattr__(self, "cycle_id", text)
 
     @property
@@ -51,19 +53,29 @@ class StepResult:
     target_node: str
     target_layer: int
     outcome: StepOutcome
-    status: str = ""            # accepted | rejected (package status)
+    status: str = ""  # accepted | rejected (package status)
     detail_level: str = ""
-    store_action: str = ""      # inserted | unchanged | updated | ""
+    store_action: str = ""  # inserted | unchanged | updated | ""
     revision: int | None = None
     received: int = 0
     expected_children: int = 0
     reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return {"order": self.order, "source_node": self.source_node, "target_node": self.target_node,
-                "target_layer": self.target_layer, "outcome": self.outcome.value, "status": self.status,
-                "detail_level": self.detail_level, "store_action": self.store_action, "revision": self.revision,
-                "received": self.received, "expected_children": self.expected_children, "reason": self.reason}
+        return {
+            "order": self.order,
+            "source_node": self.source_node,
+            "target_node": self.target_node,
+            "target_layer": self.target_layer,
+            "outcome": self.outcome.value,
+            "status": self.status,
+            "detail_level": self.detail_level,
+            "store_action": self.store_action,
+            "revision": self.revision,
+            "received": self.received,
+            "expected_children": self.expected_children,
+            "reason": self.reason,
+        }
 
 
 @dataclass
@@ -93,5 +105,9 @@ class CycleReport:
         return dict(sorted(out.items()))
 
     def to_dict(self) -> dict[str, Any]:
-        return {"cycle_id": self.cycle_id, "counts": self.counts(), "steps": [s.to_dict() for s in self.steps],
-                "skipped": [{"node": n, "reason": r} for n, r in self.skipped]}
+        return {
+            "cycle_id": self.cycle_id,
+            "counts": self.counts(),
+            "steps": [s.to_dict() for s in self.steps],
+            "skipped": [{"node": n, "reason": r} for n, r in self.skipped],
+        }

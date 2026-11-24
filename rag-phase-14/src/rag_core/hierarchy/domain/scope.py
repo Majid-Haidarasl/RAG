@@ -55,9 +55,16 @@ class RetrievalScope:
             return True
         if confidentiality is Confidentiality.RESTRICTED:
             # S5: owner, co-owners and their chain of command only.
-            return any(self.node in self.chain_of_command_of.get(h, frozenset()) for h in holders)
+            return any(
+                self.node in self.chain_of_command_of.get(h, frozenset())
+                for h in holders
+            )
         # internal / per_item (document-level value decides; treated as internal here)
-        if owner in self.own_and_descendants or owner in self.repositories or owner in self.ancestors:
+        if (
+            owner in self.own_and_descendants
+            or owner in self.repositories
+            or owner in self.ancestors
+        ):
             return True
         return any(c in self.own_and_descendants for c in co_owners)
 
@@ -70,7 +77,15 @@ class ScopeResolver:
         node = self.org.get(node_id)
         if not node.is_active:
             raise InvariantError(f"retired node {node_id} cannot be a retrieval scope")
-        own = frozenset({node_id, *(d.identifier for d in self.org.descendants(node_id, active_only=True))})
+        own = frozenset(
+            {
+                node_id,
+                *(
+                    d.identifier
+                    for d in self.org.descendants(node_id, active_only=True)
+                ),
+            }
+        )
         ancestors = frozenset(a.identifier for a in self.org.ancestors(node_id))
         repos = frozenset(
             n.identifier
@@ -79,7 +94,12 @@ class ScopeResolver:
         )
         if node.node_type == NodeType.KNOWLEDGE_REPOSITORY:
             repos = frozenset()
-        chain = {n.identifier: frozenset(a.identifier for a in self.org.ancestors(n.identifier)) for n in self.org.active_nodes()}
+        chain = {
+            n.identifier: frozenset(
+                a.identifier for a in self.org.ancestors(n.identifier)
+            )
+            for n in self.org.active_nodes()
+        }
         return RetrievalScope(node_id, own, ancestors, repos, chain)
 
     def visible_documents(
@@ -95,7 +115,9 @@ class ScopeResolver:
             if owner is None:
                 continue
             conf = confidentiality_of.get(str(doc), Confidentiality.INTERNAL)
-            if scope.can_see(owner, conf, ownership.co_owners_of(doc), ownership.readers_of(doc)):
+            if scope.can_see(
+                owner, conf, ownership.co_owners_of(doc), ownership.readers_of(doc)
+            ):
                 out.append(doc)
         return out
 
@@ -123,7 +145,9 @@ class LeafBoundary:
     escalation_target: NodeIdentifier | None
 
 
-def leaf_boundary(org: Organization, node_id: NodeIdentifier, ownership: DocumentOwnership) -> LeafBoundary:
+def leaf_boundary(
+    org: Organization, node_id: NodeIdentifier, ownership: DocumentOwnership
+) -> LeafBoundary:
     from rag_core.hierarchy.domain.ownership import OwnershipRole
 
     node = org.get(node_id)
@@ -158,11 +182,15 @@ def route_question(
         raise InvariantError(f"retired node {asking} cannot route questions")
     if reserved_decision:
         root = org.root().identifier
-        return RoutingDecision(RoutingAction.ESCALATE, root, "reserved decision: Board approval required")
+        return RoutingDecision(
+            RoutingAction.ESCALATE, root, "reserved decision: Board approval required"
+        )
     scope = ScopeResolver(org).resolve(asking)
     outside = [o for o in evidence_owners if o not in scope.visible_nodes]
     if not outside:
-        return RoutingDecision(RoutingAction.ANSWER, asking, "all evidence is within the node's scope")
+        return RoutingDecision(
+            RoutingAction.ANSWER, asking, "all evidence is within the node's scope"
+        )
     target = org.lowest_common_ancestor(asking, *outside)
     if target == asking:  # cannot happen for out-of-scope owners, kept defensive
         target = node.escalation_target or asking

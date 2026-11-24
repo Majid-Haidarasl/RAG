@@ -26,9 +26,24 @@ def test_subissue_win_has_parent_and_position_two() -> None:
         "Azarpakhsh warehouse delivery delay",
         NodeIdentifier("N-LIB"),
     )
-    issue.add_subissue(SubIssue(IssueId("AR-ISS-024/HW"), "Hardware mismatch", IssueStatus.IN_PROGRESS, 1))
-    issue.add_subissue(SubIssue(IssueId("AR-ISS-024/WIN"), "Windows client", IssueStatus.IN_PROGRESS, 2))
-    issue.add_subissue(SubIssue(IssueId("AR-ISS-024/LEG"), "Legal amendment", IssueStatus.AWAITING_DECISION, 3))
+    issue.add_subissue(
+        SubIssue(
+            IssueId("AR-ISS-024/HW"), "Hardware mismatch", IssueStatus.IN_PROGRESS, 1
+        )
+    )
+    issue.add_subissue(
+        SubIssue(
+            IssueId("AR-ISS-024/WIN"), "Windows client", IssueStatus.IN_PROGRESS, 2
+        )
+    )
+    issue.add_subissue(
+        SubIssue(
+            IssueId("AR-ISS-024/LEG"),
+            "Legal amendment",
+            IssueStatus.AWAITING_DECISION,
+            3,
+        )
+    )
     win = issue.subissue(IssueId("AR-ISS-024/WIN"))
     assert win.identifier.parent_id == IssueId("AR-ISS-024")
     assert win.position == 2
@@ -36,18 +51,34 @@ def test_subissue_win_has_parent_and_position_two() -> None:
 
 def test_issue_progress_all_subissues_resolved_returns_100() -> None:
     issue = Issue.create(IssueId("AR-ISS-024"), "Azarpakhsh", NodeIdentifier("N-LIB"))
-    issue.add_subissue(SubIssue(IssueId("AR-ISS-024/HW"), "HW", IssueStatus.RESOLVED, 1))
-    issue.add_subissue(SubIssue(IssueId("AR-ISS-024/WIN"), "WIN", IssueStatus.RESOLVED, 2))
+    issue.add_subissue(
+        SubIssue(IssueId("AR-ISS-024/HW"), "HW", IssueStatus.RESOLVED, 1)
+    )
+    issue.add_subissue(
+        SubIssue(IssueId("AR-ISS-024/WIN"), "WIN", IssueStatus.RESOLVED, 2)
+    )
     assert issue.progress() == ProgressPercentage.from_int(100)
 
 
 def test_progress_is_mean_of_subissues_and_stays_in_range() -> None:
     issue = Issue.create(IssueId("AR-ISS-024"), "Azarpakhsh", NodeIdentifier("N-LIB"))
     issue.add_subissue(
-        SubIssue(IssueId("AR-ISS-024/HW"), "HW", IssueStatus.IN_PROGRESS, 1, ProgressPercentage.from_int(80))
+        SubIssue(
+            IssueId("AR-ISS-024/HW"),
+            "HW",
+            IssueStatus.IN_PROGRESS,
+            1,
+            ProgressPercentage.from_int(80),
+        )
     )
     issue.add_subissue(
-        SubIssue(IssueId("AR-ISS-024/WIN"), "WIN", IssueStatus.IN_PROGRESS, 2, ProgressPercentage.from_int(40))
+        SubIssue(
+            IssueId("AR-ISS-024/WIN"),
+            "WIN",
+            IssueStatus.IN_PROGRESS,
+            2,
+            ProgressPercentage.from_int(40),
+        )
     )
     assert issue.progress().value == Decimal("60.00")
     with pytest.raises(InvariantError):
@@ -55,9 +86,30 @@ def test_progress_is_mean_of_subissues_and_stays_in_range() -> None:
 
 
 def test_priority_ranking_is_stable_for_identical_input() -> None:
-    a = Issue.create(IssueId("AR-ISS-001"), "A", NodeIdentifier("N-SW"), urgency=5, risk=5, dependents=2)
-    b = Issue.create(IssueId("AR-ISS-002"), "B", NodeIdentifier("N-SW"), urgency=5, risk=5, dependents=2)
-    c = Issue.create(IssueId("AR-ISS-003"), "C", NodeIdentifier("N-SW"), urgency=9, risk=5, dependents=2)
+    a = Issue.create(
+        IssueId("AR-ISS-001"),
+        "A",
+        NodeIdentifier("N-SW"),
+        urgency=5,
+        risk=5,
+        dependents=2,
+    )
+    b = Issue.create(
+        IssueId("AR-ISS-002"),
+        "B",
+        NodeIdentifier("N-SW"),
+        urgency=5,
+        risk=5,
+        dependents=2,
+    )
+    c = Issue.create(
+        IssueId("AR-ISS-003"),
+        "C",
+        NodeIdentifier("N-SW"),
+        urgency=9,
+        risk=5,
+        dependents=2,
+    )
     first = [i.identifier for i in rank_issues([b, c, a])]
     second = [i.identifier for i in rank_issues([a, b, c])]
     assert first == second

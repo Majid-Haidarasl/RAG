@@ -43,7 +43,9 @@ def test_new_issue_is_registered_with_its_position() -> None:
 
 def test_duplicates_can_be_forced_in() -> None:
     svc = _service()
-    assert svc.intake(issue_from_sample(samples()[0]), register_duplicates=True).registered
+    assert svc.intake(
+        issue_from_sample(samples()[0]), register_duplicates=True
+    ).registered
 
 
 def test_existing_id_is_rejected() -> None:
@@ -64,5 +66,10 @@ def test_service_decomposes_with_registry_owners() -> None:
     issue = svc.repo.get(IssueId("AR-ISS-024"))
     issue.subissues = []
     added = svc.decompose(issue)
-    assert [str(s.owner_node) for s in added] == ["N-HW-REP", "N-SW-WIN", "N-SW-WEB", "N-ADM-LEG"]
+    assert [str(s.owner_node) for s in added] == [
+        "N-HW-REP",
+        "N-SW-WIN",
+        "N-SW-WEB",
+        "N-ADM-LEG",
+    ]
     assert svc.position(issue).escalation_target == "N-CEO"

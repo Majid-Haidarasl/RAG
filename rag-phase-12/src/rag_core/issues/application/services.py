@@ -5,11 +5,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from rag_core.issues.domain.comparison import ComparisonResult, IssueComparator, MatchLabel
+from rag_core.issues.domain.comparison import (
+    ComparisonResult,
+    IssueComparator,
+    MatchLabel,
+)
 from rag_core.issues.domain.decomposition import RuleBasedDecomposer, SubIssueDraft
 from rag_core.issues.domain.model import Issue, RelativePosition
 from rag_core.issues.domain.ports import IssueDecomposer, OrgDirectory
-from rag_core.issues.domain.validation import IssueRegistryValidator, IssueValidationReport
+from rag_core.issues.domain.validation import (
+    IssueRegistryValidator,
+    IssueValidationReport,
+)
 from rag_core.issues.infrastructure.memory import InMemoryIssueRepository
 from rag_core.issues.infrastructure.registry_json import JsonIssueRegistry
 from rag_core.shared_kernel.errors import InvariantError
@@ -63,7 +70,9 @@ class IssueService:
     def compare(self, issue: Issue) -> ComparisonResult:
         return self.comparator.compare(issue, self.repo.all())
 
-    def intake(self, issue: Issue, *, register_duplicates: bool = False) -> IntakeOutcome:
+    def intake(
+        self, issue: Issue, *, register_duplicates: bool = False
+    ) -> IntakeOutcome:
         """Validate nodes, compare with existing issues, register unless it is a duplicate."""
         issue.assert_nodes_exist(self.directory)
         if self.repo.exists(issue.identifier):
@@ -78,12 +87,25 @@ class IssueService:
 
                     issue.related_issues = (*issue.related_issues, IssueId(best_root))
             self.repo.save(issue)
-            self.events.append(DomainEvent("IssueRegistered", {"issue_id": str(issue.identifier), "label": result.label.value}))
+            self.events.append(
+                DomainEvent(
+                    "IssueRegistered",
+                    {"issue_id": str(issue.identifier), "label": result.label.value},
+                )
+            )
         else:
             self.events.append(
-                DomainEvent("DuplicateIssueDetected", {"issue_id": str(issue.identifier), "duplicate_of": result.best.key if result.best else ""})
+                DomainEvent(
+                    "DuplicateIssueDetected",
+                    {
+                        "issue_id": str(issue.identifier),
+                        "duplicate_of": result.best.key if result.best else "",
+                    },
+                )
             )
-        return IntakeOutcome(issue, result, registered, issue.relative_position(self.directory))
+        return IntakeOutcome(
+            issue, result, registered, issue.relative_position(self.directory)
+        )
 
     def plan_subissues(self, issue: Issue) -> list[SubIssueDraft]:
         return self.decomposer.decompose(issue)

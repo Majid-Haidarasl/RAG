@@ -19,7 +19,11 @@ from rag_core.hierarchy.domain.model import (
     NodeStatus,
     NodeType,
 )
-from rag_core.hierarchy.domain.transfer import MIN_APPROVALS, MIN_ARTEFACTS, TransferDirection
+from rag_core.hierarchy.domain.transfer import (
+    MIN_APPROVALS,
+    MIN_ARTEFACTS,
+    TransferDirection,
+)
 from rag_core.shared_kernel.confidentiality import Confidentiality
 
 NODE_RE = re.compile(r"^N-[A-Z0-9]+(?:-[A-Z0-9]+)*$")
@@ -116,7 +120,10 @@ class RegistryValidator:
             by_index[index] = row
             if row.get("layer_code", "").strip() != f"L{index}":
                 self._err("L-CODE", subject, f"layer_code must be L{index}")
-            if not row.get("layer_name_en", "").strip() or not row.get("layer_name_fa", "").strip():
+            if (
+                not row.get("layer_name_en", "").strip()
+                or not row.get("layer_name_fa", "").strip()
+            ):
                 self._err("L-NAME", subject, "layer needs English and Persian names")
             level = row.get("default_detail_level_received", "").strip()
             if level and level not in DETAIL_LEVELS:
@@ -126,17 +133,25 @@ class RegistryValidator:
                 self._err("L-SCORE", subject, "min_judge_score must be 0–20 or blank")
             words = row.get("max_package_words", "").strip()
             if words and not words.isdigit():
-                self._err("L-WORDS", subject, "max_package_words must be an integer or blank")
+                self._err(
+                    "L-WORDS", subject, "max_package_words must be an integer or blank"
+                )
             conf = normalize_confidentiality(row.get("default_confidentiality", ""))
             if conf and conf not in {c.value for c in Confidentiality}:
                 self._err("L-CONF", subject, f"unknown confidentiality {conf!r}")
         if by_index and sorted(by_index) != list(range(len(by_index))):
-            self._err("L-GAP", "layers", f"layer indices must be contiguous from 0, got {sorted(by_index)}")
+            self._err(
+                "L-GAP",
+                "layers",
+                f"layer indices must be contiguous from 0, got {sorted(by_index)}",
+            )
         for index, row in by_index.items():
             self._check_transfer(index, row, by_index)
         return by_index
 
-    def _check_transfer(self, index: int, row: dict[str, str], layers: dict[int, dict[str, str]]) -> None:
+    def _check_transfer(
+        self, index: int, row: dict[str, str], layers: dict[int, dict[str, str]]
+    ) -> None:
         subject = f"L{index}"
         direction = row.get("transfer_direction", "").strip()
         if not direction:
@@ -147,24 +162,38 @@ class RegistryValidator:
             return
         target = row.get("transfer_target", "").strip()
         if not re.fullmatch(r"L\d", target) or int(target[1:]) not in layers:
-            self._err("T-TARGET", subject, f"transfer_target {target!r} is not a registered layer")
+            self._err(
+                "T-TARGET",
+                subject,
+                f"transfer_target {target!r} is not a registered layer",
+            )
         else:
             t = int(target[1:])
             if direction == "up" and t != index - 1:
-                self._err("T-TARGET", subject, f"upward transfer must target L{index - 1}")
+                self._err(
+                    "T-TARGET", subject, f"upward transfer must target L{index - 1}"
+                )
             if direction == "down" and t != index + 1:
-                self._err("T-TARGET", subject, f"downward transfer must target L{index + 1}")
+                self._err(
+                    "T-TARGET", subject, f"downward transfer must target L{index + 1}"
+                )
         if not row.get("must_hand_over", "").strip():
             self._err("T-WHAT", subject, "must_hand_over is empty")
         if len(_split(row.get("min_artefacts", ""))) < MIN_ARTEFACTS:
-            self._err("T-ARTEFACTS", subject, f"at least {MIN_ARTEFACTS} minimum artefacts required")
+            self._err(
+                "T-ARTEFACTS",
+                subject,
+                f"at least {MIN_ARTEFACTS} minimum artefacts required",
+            )
         if len(_split(row.get("approvals_required", ""))) < MIN_APPROVALS:
             self._err("T-APPROVALS", subject, "at least one approval required")
         if not row.get("required_feedback", "").strip():
             self._err("T-FEEDBACK", subject, "required_feedback is empty")
         sources = _split(row.get("transfer_sources", ""))
         if not sources:
-            self._err("T-SOURCES", subject, "transfer requirement has no source documents")
+            self._err(
+                "T-SOURCES", subject, "transfer requirement has no source documents"
+            )
         for doc in sources:
             if self.catalog and doc not in self.catalog:
                 self._err("T-SOURCES", subject, f"unknown source document {doc}")
@@ -177,7 +206,9 @@ class RegistryValidator:
         for row in rows:
             nid = row.get("node_id", "").strip()
             if not NODE_RE.match(nid):
-                self._err("N-ID", nid or "<blank>", "node_id must look like N-XXX[-YYY]")
+                self._err(
+                    "N-ID", nid or "<blank>", "node_id must look like N-XXX[-YYY]"
+                )
                 continue
             if nid in by_id:
                 self._err("N-DUP", nid, "duplicate node_id (R1)")
@@ -220,11 +251,16 @@ class RegistryValidator:
         children: dict[str, list[str]],
         layers: dict[int, dict[str, str]],
     ) -> None:
-        if not row.get("node_name_en", "").strip() or not row.get("node_name_fa", "").strip():
+        if (
+            not row.get("node_name_en", "").strip()
+            or not row.get("node_name_fa", "").strip()
+        ):
             self._err("N-NAME", nid, "node needs English and Persian names")
         for name in (row.get("node_name_en", ""), row.get("node_name_fa", "")):
             if name.strip().lower() in FORBIDDEN_CAPABILITY_NAMES:
-                self._err("N-TECHNAME", nid, f"technology {name!r} used as a node name (R5)")
+                self._err(
+                    "N-TECHNAME", nid, f"technology {name!r} used as a node name (R5)"
+                )
         ntype = row.get("node_type", "").strip()
         raw_layer = row.get("layer_index", "").strip()
         layer = int(raw_layer) if raw_layer.isdigit() else None
@@ -232,7 +268,10 @@ class RegistryValidator:
             self._err("N-TYPE", nid, f"unknown node_type {ntype!r}")
         if layer is None or layer not in layers:
             self._err("N-LAYER", nid, f"layer {raw_layer!r} is not registered")
-        elif ntype in {t.value for t in NodeType} and layer not in _TYPE_LAYERS[NodeType(ntype)]:
+        elif (
+            ntype in {t.value for t in NodeType}
+            and layer not in _TYPE_LAYERS[NodeType(ntype)]
+        ):
             self._err("N-TYPE-LAYER", nid, f"{ntype} cannot sit on L{layer}")
         status = row.get("status", "active").strip() or "active"
         if status not in {s.value for s in NodeStatus}:
@@ -250,19 +289,40 @@ class RegistryValidator:
             if p_raw.isdigit():
                 p_layer = int(p_raw)
                 if parent.get("is_leaf", "").strip().lower() == "true":
-                    self._err("N-LEAF", nid, f"parent {parent_id} is marked as leaf (R4)")
+                    self._err(
+                        "N-LEAF", nid, f"parent {parent_id} is marked as leaf (R4)"
+                    )
                 adjacent = layer == p_layer + 1
                 exempt = (ntype, layer, p_layer) in LAYER_SKIP_EXEMPTIONS
                 if not adjacent and not exempt:
-                    self._err("N-ADJ", nid, f"L{layer} under L{p_layer} breaks layer adjacency (R3)")
-                expected = layers.get(p_layer, {}).get("default_detail_level_received", "").strip()
+                    self._err(
+                        "N-ADJ",
+                        nid,
+                        f"L{layer} under L{p_layer} breaks layer adjacency (R3)",
+                    )
+                expected = (
+                    layers.get(p_layer, {})
+                    .get("default_detail_level_received", "")
+                    .strip()
+                )
                 given = row.get("transfer_detail_level_to_parent", "").strip()
                 if given and given not in DETAIL_LEVELS:
                     self._err("N-DETAIL", nid, f"unknown detail level {given!r}")
                 elif given and expected and given != expected and not exempt:
-                    self._err("N-DETAIL", nid, f"sends {given} but L{p_layer} expects {expected}")
-            if status == "active" and parent.get("status", "active").strip() == "retired":
-                self._err("N-RETIRED-PARENT", nid, f"active node under retired parent {parent_id}")
+                    self._err(
+                        "N-DETAIL",
+                        nid,
+                        f"sends {given} but L{p_layer} expects {expected}",
+                    )
+            if (
+                status == "active"
+                and parent.get("status", "active").strip() == "retired"
+            ):
+                self._err(
+                    "N-RETIRED-PARENT",
+                    nid,
+                    f"active node under retired parent {parent_id}",
+                )
 
         is_leaf = row.get("is_leaf", "").strip().lower()
         if is_leaf not in {"true", "false", ""}:
@@ -284,15 +344,23 @@ class RegistryValidator:
                     chain.append(cursor)
                     cursor = by_id[cursor].get("parent_node_id", "").strip()
                 if esc not in chain:
-                    self._err("N-ESCALATION", nid, f"escalation node {esc} must be an ancestor")
+                    self._err(
+                        "N-ESCALATION",
+                        nid,
+                        f"escalation node {esc} must be an ancestor",
+                    )
         for doc in _split(row.get("source_docs", "")):
             if not DOC_RE.match(doc):
                 self._err("N-SOURCE", nid, f"bad document id {doc!r}")
             elif self.catalog and doc not in self.catalog:
-                self._err("N-SOURCE", nid, f"source document {doc} is not in the catalog")
+                self._err(
+                    "N-SOURCE", nid, f"source document {doc} is not in the catalog"
+                )
 
     # ----------------------------------------------------------- document map
-    def _check_doc_map(self, rows: list[dict[str, str]], nodes: dict[str, dict[str, str]]) -> None:
+    def _check_doc_map(
+        self, rows: list[dict[str, str]], nodes: dict[str, dict[str, str]]
+    ) -> None:
         owners: Counter[str] = Counter()
         seen: set[tuple[str, str]] = set()
         for row in rows:
@@ -317,7 +385,11 @@ class RegistryValidator:
                 expected = self.catalog.get(doc, (None, None))[0]
                 if expected and expected != nid:
                     self._err("M-OWNER", subject, f"catalog owner is {expected}")
-            if nid in nodes and nodes[nid].get("status", "active").strip() == "retired" and role != "described_in":
+            if (
+                nid in nodes
+                and nodes[nid].get("status", "active").strip() == "retired"
+                and role != "described_in"
+            ):
                 self._err("M-RETIRED", subject, "retired node still owns knowledge")
         for doc, count in owners.items():
             if count > 1:

@@ -41,12 +41,19 @@ class PrecheckFinding:
         return not self.reasons
 
     def to_dict(self) -> dict[str, object]:
-        return {"case_id": self.case_id, "applied": self.applied, "passed": self.passed, "reasons": list(self.reasons)}
+        return {
+            "case_id": self.case_id,
+            "applied": self.applied,
+            "passed": self.passed,
+            "reasons": list(self.reasons),
+        }
 
 
 def required_summary_ids(case: JudgeCase) -> tuple[str, ...]:
     exp = case.expectation
-    return tuple(dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads), *exp.gaps]))
+    return tuple(
+        dict.fromkeys([*exp.items, *(i for i, _ in exp.item_leads), *exp.gaps])
+    )
 
 
 def fact_precheck(case: JudgeCase) -> PrecheckFinding:
@@ -68,8 +75,9 @@ def fact_precheck(case: JudgeCase) -> PrecheckFinding:
     return PrecheckFinding(case.case_id, True, tuple(f"missing_id:{m}" for m in missed))
 
 
-def precheck_summary(findings: list[PrecheckFinding], gold: dict[str, str],
-                     mutation: dict[str, str]) -> dict[str, object]:
+def precheck_summary(
+    findings: list[PrecheckFinding], gold: dict[str, str], mutation: dict[str, str]
+) -> dict[str, object]:
     """Counts for the summary: flagged cases, false flags (gold accept) and flags per mutation kind."""
     flagged = [f for f in findings if not f.passed]
     false_flags = [f.case_id for f in flagged if gold.get(f.case_id) == "accept"]
@@ -110,8 +118,19 @@ class PrecheckedJudge:
         if not finding.passed:
             self.prechecked += 1
             out_of = self.policy.rubric.out_of if self.policy is not None else 20
-            outcome = PolicyOutcome(Decision.REJECT, 0, out_of, tuple(f"precheck:{r}" for r in finding.reasons))
-            return JudgeResult.for_case(case, self.name, {}, outcome, parse_mode="precheck",
-                                        notes=tuple(f"precheck:{r}" for r in finding.reasons))
+            outcome = PolicyOutcome(
+                Decision.REJECT,
+                0,
+                out_of,
+                tuple(f"precheck:{r}" for r in finding.reasons),
+            )
+            return JudgeResult.for_case(
+                case,
+                self.name,
+                {},
+                outcome,
+                parse_mode="precheck",
+                notes=tuple(f"precheck:{r}" for r in finding.reasons),
+            )
         self.model_calls += 1
         return replace(self.inner.judge(case), judge=self.name)

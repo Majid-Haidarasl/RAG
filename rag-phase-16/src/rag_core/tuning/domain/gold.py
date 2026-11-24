@@ -42,7 +42,9 @@ class Evidence:
         if not self.document_id.strip() or not self.quote.strip():
             raise InvariantError("evidence needs a document id and a quote")
         if self.language not in LANGUAGES:
-            raise InvariantError(f"evidence language must be fa or en, not {self.language!r}")
+            raise InvariantError(
+                f"evidence language must be fa or en, not {self.language!r}"
+            )
 
 
 @dataclass(frozen=True)
@@ -69,7 +71,9 @@ class GoldItem:
         if self.language not in LANGUAGES:
             raise InvariantError(f"{self.id}: language must be fa or en")
         if self.expected_status not in GOLD_STATUSES:
-            raise InvariantError(f"{self.id}: unknown expected_status {self.expected_status!r}")
+            raise InvariantError(
+                f"{self.id}: unknown expected_status {self.expected_status!r}"
+            )
         if self.detail not in DETAILS:
             raise InvariantError(f"{self.id}: unknown detail {self.detail!r}")
         if not self.question.strip() or not self.node.strip():
@@ -135,11 +139,15 @@ def _pair_problems(pair_id: str, by_lang: dict[str, GoldItem]) -> list[GoldProbl
         ("evidence", len(fa.evidence) == len(en.evidence)),
         ("origin", fa.origin == en.origin),
     )
-    out.extend(GoldProblem("pair_mismatch", pair_id, name) for name, ok in same if not ok)
+    out.extend(
+        GoldProblem("pair_mismatch", pair_id, name) for name, ok in same if not ok
+    )
     return out
 
 
-def _answered_problems(item: GoldItem, found: FactsFound, language_ok: LanguageCheck) -> list[GoldProblem]:
+def _answered_problems(
+    item: GoldItem, found: FactsFound, language_ok: LanguageCheck
+) -> list[GoldProblem]:
     out: list[GoldProblem] = []
     ref = item.id
     if not item.expected_docs:
@@ -186,14 +194,18 @@ def _refusal_problems(item: GoldItem) -> list[GoldProblem]:
         out.append(GoldProblem("refusal_with_facts", item.id))
     if not item.reference_answer.lstrip().upper().startswith(REFUSAL_TOKEN):
         out.append(GoldProblem("refusal_reference", item.id))
-    if item.expected_status == "out_of_scope" and not (item.expected_escalation and item.expected_outside_docs):
+    if item.expected_status == "out_of_scope" and not (
+        item.expected_escalation and item.expected_outside_docs
+    ):
         out.append(GoldProblem("escalation_missing", item.id))
     if item.detail != "refusal":
         out.append(GoldProblem("refusal_detail", item.id))
     return out
 
 
-def validate_gold(items: Iterable[GoldItem], found: FactsFound, language_ok: LanguageCheck) -> list[GoldProblem]:
+def validate_gold(
+    items: Iterable[GoldItem], found: FactsFound, language_ok: LanguageCheck
+) -> list[GoldProblem]:
     rows = list(items)
     out: list[GoldProblem] = []
     seen: set[str] = set()
@@ -212,7 +224,9 @@ def validate_gold(items: Iterable[GoldItem], found: FactsFound, language_ok: Lan
     return out
 
 
-def phase8_coverage(items: Iterable[GoldItem], phase8_ids: Iterable[str]) -> tuple[int, int, list[str]]:
+def phase8_coverage(
+    items: Iterable[GoldItem], phase8_ids: Iterable[str]
+) -> tuple[int, int, list[str]]:
     """(Phase 8 sample ids found as an origin, total, missing ids)."""
     have = {i.phase8_id for i in items if i.phase8_id}
     wanted = sorted(set(phase8_ids))

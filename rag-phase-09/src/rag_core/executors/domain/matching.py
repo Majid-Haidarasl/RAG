@@ -74,11 +74,16 @@ class ReferralRequest:
 
     def __post_init__(self) -> None:
         if not self.item_id.strip() or not self.owner_node.strip():
-            raise InvariantError("a referral request needs an item id and an owner node")
+            raise InvariantError(
+                "a referral request needs an item id and an owner node"
+            )
 
     @property
     def nodes(self) -> tuple[str, ...]:
-        return (self.owner_node, *(n for n in self.supporting_nodes if n != self.owner_node))
+        return (
+            self.owner_node,
+            *(n for n in self.supporting_nodes if n != self.owner_node),
+        )
 
     @property
     def acceptance_authority(self) -> str:
@@ -94,10 +99,17 @@ class MatchBreakdown:
 
     @property
     def score(self) -> float:
-        return round(W_NODE * self.node + W_KNOWLEDGE * self.knowledge + W_DOMAIN * self.domain, 4)
+        return round(
+            W_NODE * self.node + W_KNOWLEDGE * self.knowledge + W_DOMAIN * self.domain,
+            4,
+        )
 
     def to_dict(self) -> dict[str, float]:
-        return {"node": round(self.node, 4), "knowledge": round(self.knowledge, 4), "domain": round(self.domain, 4)}
+        return {
+            "node": round(self.node, 4),
+            "knowledge": round(self.knowledge, 4),
+            "domain": round(self.domain, 4),
+        }
 
 
 @dataclass(frozen=True)
@@ -123,10 +135,17 @@ class ExecutorMatch:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "executor_id": self.executor_id, "name": self.display_name, "home_node": self.home_node,
-            "node_role": self.node_role.value, "role": self.role.value, "score": self.score,
-            "breakdown": self.breakdown.to_dict(), "matched_terms": list(self.matched_terms),
-            "shared_documents": list(self.shared_documents), "capacity": self.capacity, "reasons": list(self.reasons),
+            "executor_id": self.executor_id,
+            "name": self.display_name,
+            "home_node": self.home_node,
+            "node_role": self.node_role.value,
+            "role": self.role.value,
+            "score": self.score,
+            "breakdown": self.breakdown.to_dict(),
+            "matched_terms": list(self.matched_terms),
+            "shared_documents": list(self.shared_documents),
+            "capacity": self.capacity,
+            "reasons": list(self.reasons),
         }
 
 
@@ -141,12 +160,18 @@ class ReferralPlan:
 
     @property
     def lead(self) -> ExecutorMatch | None:
-        return next((m for m in self.matches if m.role is ReferralRole.LEAD_CANDIDATE), None)
+        return next(
+            (m for m in self.matches if m.role is ReferralRole.LEAD_CANDIDATE), None
+        )
 
     @property
     def collaborators(self) -> list[ExecutorMatch]:
         lead = self.lead
-        return [m for m in self.recommended if lead is None or m.executor_id != lead.executor_id]
+        return [
+            m
+            for m in self.recommended
+            if lead is None or m.executor_id != lead.executor_id
+        ]
 
     @property
     def cross_node_candidates(self) -> list[ExecutorMatch]:
@@ -173,7 +198,9 @@ class ReferralPlan:
             "acceptance_authority": self.request.acceptance_authority,
             "lead": lead.executor_id if lead else None,
             "collaborators": [m.executor_id for m in self.collaborators],
-            "cross_node_candidates": [m.executor_id for m in self.cross_node_candidates],
+            "cross_node_candidates": [
+                m.executor_id for m in self.cross_node_candidates
+            ],
             "matches": [m.to_dict() for m in self.matches],
         }
 
@@ -186,11 +213,18 @@ class ExecutorMatcher:
 
     def __post_init__(self) -> None:
         if self.min_terms < 2:
-            raise InvariantError("a single matching keyword is insufficient (AR-EXE-023): min_terms must be >= 2")
+            raise InvariantError(
+                "a single matching keyword is insufficient (AR-EXE-023): min_terms must be >= 2"
+            )
         if self.full_terms < self.min_terms:
             raise InvariantError("full_terms must be >= min_terms")
 
-    def evaluate(self, executor: Executor, request: ReferralRequest, request_terms: frozenset[str] | None = None) -> ExecutorMatch:
+    def evaluate(
+        self,
+        executor: Executor,
+        request: ReferralRequest,
+        request_terms: frozenset[str] | None = None,
+    ) -> ExecutorMatch:
         req_terms = terms(request.text) if request_terms is None else request_terms
         profile = ExpertiseProfile.of(executor)
         home = str(executor.home_node)
@@ -220,7 +254,11 @@ class ExecutorMatcher:
             reasons.append(f"a single matching term ({matched[0]}) is not enough")
         else:
             reasons.append("matched terms: " + ", ".join(matched))
-        reasons.append("shares knowledge: " + ", ".join(shared) if shared else "no shared knowledge document")
+        reasons.append(
+            "shares knowledge: " + ", ".join(shared)
+            if shared
+            else "no shared knowledge document"
+        )
 
         if executor.capacity.is_published and executor.capacity.hours_per_week == 0:
             role = ReferralRole.EXCLUDED
@@ -237,12 +275,24 @@ class ExecutorMatcher:
             if node_role is NodeRole.NONE:
                 reasons.append("excluded: not in the item's nodes")
             else:
-                reasons.append("excluded: outside the allowed referral domain for this item")
+                reasons.append(
+                    "excluded: outside the allowed referral domain for this item"
+                )
         if not executor.capacity.is_published:
-            reasons.append("capacity allocated through unit planning (neither zero nor unlimited)")
+            reasons.append(
+                "capacity allocated through unit planning (neither zero nor unlimited)"
+            )
         return ExecutorMatch(
-            str(executor.identifier), executor.display_name, home, node_role, role,
-            MatchBreakdown(node_w, knowledge, domain), matched, shared, executor.capacity.describe(), tuple(reasons),
+            str(executor.identifier),
+            executor.display_name,
+            home,
+            node_role,
+            role,
+            MatchBreakdown(node_w, knowledge, domain),
+            matched,
+            shared,
+            executor.capacity.describe(),
+            tuple(reasons),
         )
 
     def plan(self, executors: list[Executor], request: ReferralRequest) -> ReferralPlan:

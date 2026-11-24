@@ -9,7 +9,11 @@ from hashlib import sha256
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.events import DomainEvent
-from rag_core.shared_kernel.identifiers import DocumentId, KnowledgeItemId, NodeIdentifier
+from rag_core.shared_kernel.identifiers import (
+    DocumentId,
+    KnowledgeItemId,
+    NodeIdentifier,
+)
 from rag_core.shared_kernel.language import LanguageCode
 from rag_core.shared_kernel.numerals import normalize_digits
 
@@ -155,7 +159,11 @@ class KnowledgeItem:
         self.events.append(
             DomainEvent(
                 "KnowledgeVersionActivated",
-                {"document_id": str(self.document_id), "version": str(version), "language": language.value},
+                {
+                    "document_id": str(self.document_id),
+                    "version": str(version),
+                    "language": language.value,
+                },
             )
         )
         return added
@@ -179,7 +187,10 @@ class KnowledgeItem:
             raise InvariantError(f"version {version} already exists for {language}")
         if not first:
             for existing in self.versions:
-                if existing.language == language and existing.status == VersionStatus.ACTIVE:
+                if (
+                    existing.language == language
+                    and existing.status == VersionStatus.ACTIVE
+                ):
                     existing.status = VersionStatus.INACTIVE
         added = KnowledgeVersion(
             tag=version,

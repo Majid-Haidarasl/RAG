@@ -48,11 +48,14 @@ class DuplicateVerdict:
 class DuplicateDetector:
     """Compare two versions or items. FA/EN of the same id is never a duplicate."""
 
-    def classify_items(self, left: KnowledgeItem, right: KnowledgeItem) -> DuplicateVerdict:
+    def classify_items(
+        self, left: KnowledgeItem, right: KnowledgeItem
+    ) -> DuplicateVerdict:
         if left.document_id == right.document_id and left is not right:
             return DuplicateVerdict(
                 DuplicateKind.CROSS_LANGUAGE_PAIR
-                if {v.language for v in left.versions} != {v.language for v in right.versions}
+                if {v.language for v in left.versions}
+                != {v.language for v in right.versions}
                 else DuplicateKind.EXACT,
                 "same document id",
             )

@@ -21,8 +21,13 @@ def hybrid(records=None, scope=None, config=None):  # noqa: ANN001, ANN201
     for r in records:
         if r.is_active:
             vectors.upsert(r.key, emb.vector(r.text))
-    retriever = build_retriever(records, vectors=vectors, embedder=emb,
-                                scope=scope if scope is not None else sample_scope(), config=config)
+    retriever = build_retriever(
+        records,
+        vectors=vectors,
+        embedder=emb,
+        scope=scope if scope is not None else sample_scope(),
+        config=config,
+    )
     return retriever, emb
 
 
@@ -33,7 +38,12 @@ def test_hybrid_mode_and_lexical_mode() -> None:
 
 def test_vector_index_and_embedder_must_come_together() -> None:
     with pytest.raises(InvariantError):
-        HybridRetriever(InMemoryChunkStore(), Bm25Index(), vectors=InMemoryVectorIndex(), embedder=None)
+        HybridRetriever(
+            InMemoryChunkStore(),
+            Bm25Index(),
+            vectors=InMemoryVectorIndex(),
+            embedder=None,
+        )
 
 
 def test_config_validation() -> None:
@@ -54,13 +64,20 @@ def test_owner_node_finds_its_document_first() -> None:
     r, _ = hybrid()
     res = r.retrieve("سقف مرخصی ساعتی در روز", "N-HR")
     assert res.hits[0].record.document_id == "AR-HR-005"
-    assert res.hits[0].rank == 1 and res.hits[0].lexical_rank is not None and res.hits[0].vector_rank is not None
+    assert (
+        res.hits[0].rank == 1
+        and res.hits[0].lexical_rank is not None
+        and res.hits[0].vector_rank is not None
+    )
 
 
 def test_out_of_scope_probe_reports_owner_without_text() -> None:
     r, _ = hybrid()
     res = r.retrieve("مرخصی ساعتی", "N-SUP")
-    assert any(e.document_id == "AR-HR-005" and e.owner_node == "N-HR" for e in res.out_of_scope)
+    assert any(
+        e.document_id == "AR-HR-005" and e.owner_node == "N-HR"
+        for e in res.out_of_scope
+    )
     assert not hasattr(res.out_of_scope[0], "text")
 
 
@@ -109,7 +126,9 @@ def test_document_and_class_filters() -> None:
 
 def test_layer_filter() -> None:
     r, _ = hybrid()
-    res = r.retrieve("RAID Azarpakhsh repair leave", "N-CEO", SearchFilters.of(layers=[4]))
+    res = r.retrieve(
+        "RAID Azarpakhsh repair leave", "N-CEO", SearchFilters.of(layers=[4])
+    )
     assert {h.record.layer for h in res.hits} == {4}
 
 
@@ -144,9 +163,21 @@ def test_timings_and_candidates_reported() -> None:
 
 def test_exact_duplicate_group_collapsed() -> None:
     base = sample_records()
-    a = rec("AR-HR-004", 1, "کنترل مرز: پیش از اقدام، واقعیت سازمانی را جدا کنید.", owner="N-HR", content_hash="h1")
-    b = rec("AR-HR-006", 1, "کنترل مرز: پیش از اقدام، واقعیت سازمانی را جدا کنید.", owner="N-HR", content_hash="h1",
-            duplicate_of=a.key)
+    a = rec(
+        "AR-HR-004",
+        1,
+        "کنترل مرز: پیش از اقدام، واقعیت سازمانی را جدا کنید.",
+        owner="N-HR",
+        content_hash="h1",
+    )
+    b = rec(
+        "AR-HR-006",
+        1,
+        "کنترل مرز: پیش از اقدام، واقعیت سازمانی را جدا کنید.",
+        owner="N-HR",
+        content_hash="h1",
+        duplicate_of=a.key,
+    )
     scope = sample_scope()
     scope.visible["N-HR"] |= {"AR-HR-004", "AR-HR-006"}
     r, _ = hybrid(base + [a, b], scope)
@@ -170,7 +201,9 @@ def test_near_duplicate_collapsed_by_shingle_jaccard() -> None:
 def test_fa_en_pair_is_never_collapsed() -> None:
     r, _ = hybrid()
     res = r.retrieve("RAID RAM Windows Azarpakhsh آذرپخش", "N-LIB")
-    langs = {h.record.language for h in res.hits if h.record.document_id == "AR-ISS-024"}
+    langs = {
+        h.record.language for h in res.hits if h.record.document_id == "AR-ISS-024"
+    }
     assert langs == {"fa", "en"}
 
 
@@ -178,7 +211,11 @@ def test_lexical_only_retriever_works_without_embedder() -> None:
     r = build_retriever(sample_records(), scope=sample_scope())
     res = r.retrieve("Priority 1 response minutes", "N-SUP")
     assert res.hits[0].record.document_id == "AR-SW-022"
-    assert res.hits[0].vector_score is None and res.best_vector is None and res.best_lexical > 0
+    assert (
+        res.hits[0].vector_score is None
+        and res.best_vector is None
+        and res.best_lexical > 0
+    )
     assert "embed_query" not in res.timings_s
 
 

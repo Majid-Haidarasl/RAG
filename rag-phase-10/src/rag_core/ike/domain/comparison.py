@@ -86,12 +86,24 @@ class IssueKnowledgeComparison:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "item_id": self.item_id, "node": self.node, "mode": self.mode, "cited": list(self.cited),
-            "retrieved": list(self.retrieved), "covered": list(self.covered), "suggested": list(self.suggested),
-            "missed": list(self.missed), "outside_scope": list(self.outside_scope),
-            "outside_owners": list(self.outside_owners), "evidence": self.evidence, "cited_recall": self.cited_recall,
-            "best_lexical": None if self.best_lexical is None else round(self.best_lexical, 4),
-            "best_vector": None if self.best_vector is None else round(self.best_vector, 4),
+            "item_id": self.item_id,
+            "node": self.node,
+            "mode": self.mode,
+            "cited": list(self.cited),
+            "retrieved": list(self.retrieved),
+            "covered": list(self.covered),
+            "suggested": list(self.suggested),
+            "missed": list(self.missed),
+            "outside_scope": list(self.outside_scope),
+            "outside_owners": list(self.outside_owners),
+            "evidence": self.evidence,
+            "cited_recall": self.cited_recall,
+            "best_lexical": None
+            if self.best_lexical is None
+            else round(self.best_lexical, 4),
+            "best_vector": None
+            if self.best_vector is None
+            else round(self.best_vector, 4),
             "seconds": round(self.seconds, 4),
         }
 
@@ -114,8 +126,22 @@ def compare_knowledge(
     if result.best_vector is not None:
         evidence = result.best_vector >= min_vector
     else:
-        evidence = result.best_lexical is not None and result.best_lexical >= min_lexical
+        evidence = (
+            result.best_lexical is not None and result.best_lexical >= min_lexical
+        )
     return IssueKnowledgeComparison(
-        item_id, result.node, cited, retrieved, covered, suggested, missed, outside,
-        tuple(result.outside_owners), evidence, result.mode, result.best_lexical, result.best_vector, result.seconds,
+        item_id,
+        result.node,
+        cited,
+        retrieved,
+        covered,
+        suggested,
+        missed,
+        outside,
+        tuple(result.outside_owners),
+        evidence,
+        result.mode,
+        result.best_lexical,
+        result.best_vector,
+        result.seconds,
     )

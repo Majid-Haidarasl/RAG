@@ -85,7 +85,17 @@ ARMANRAYAN_RULES: tuple[CausePathRule, ...] = (
         title_en="Hardware: RAID controller and server RAM compatibility",
         title_fa="سخت‌افزار: سازگاری کنترلر RAID و حافظه RAM سرور",
         owner_node="N-HW-REP",
-        phrases=("raid", "controller", "ram", "memory", "firmware", "کنترلر", "حافظه", "رم", "فرمور"),
+        phrases=(
+            "raid",
+            "controller",
+            "ram",
+            "memory",
+            "firmware",
+            "کنترلر",
+            "حافظه",
+            "رم",
+            "فرمور",
+        ),
         supporting_nodes=("N-HW-ADV", "N-HW-ASM"),
         related_documents=("AR-HW-012", "AR-HW-013", "AR-HW-015"),
         scope="Controller, RAM and assembly compatibility; diagnosis, replacement advice and joint bench tests",
@@ -95,7 +105,16 @@ ARMANRAYAN_RULES: tuple[CausePathRule, ...] = (
         title_en="Windows client requirements and drivers",
         title_fa="نیازمندی‌های کلاینت ویندوزی و درایورها",
         owner_node="N-SW-WIN",
-        phrases=("windows", "driver", "desktop", ".net", "ویندوز", "ویندوزی", "درایور", "کلاینت"),
+        phrases=(
+            "windows",
+            "driver",
+            "desktop",
+            ".net",
+            "ویندوز",
+            "ویندوزی",
+            "درایور",
+            "کلاینت",
+        ),
         related_documents=("AR-SW-019", "AR-SW-016", "AR-HW-015"),
         depends_on=("HW",),
         scope="C#/.NET client, installation prerequisites and multi-station tests after component changes",
@@ -105,7 +124,15 @@ ARMANRAYAN_RULES: tuple[CausePathRule, ...] = (
         title_en="Web reporting delay",
         title_fa="تأخیر ماژول گزارش‌گیری وب",
         owner_node="N-SW-WEB",
-        phrases=("web reporting", "web report", "reporting module", "dashboard", "گزارش وب", "گزارشگیری وب", "داشبورد"),
+        phrases=(
+            "web reporting",
+            "web report",
+            "reporting module",
+            "dashboard",
+            "گزارش وب",
+            "گزارشگیری وب",
+            "داشبورد",
+        ),
         supporting_nodes=("N-SW-UX",),
         related_documents=("AR-SW-017", "AR-RFP-025"),
         scope="Reporting API contract, dashboard compatibility and report-data acceptance",
@@ -115,8 +142,19 @@ ARMANRAYAN_RULES: tuple[CausePathRule, ...] = (
         title_en="Contract and delivery schedule",
         title_fa="قرارداد و زمان‌بندی تحویل",
         owner_node="N-ADM-LEG",
-        phrases=("contract", "penalty", "amendment", "delivery date", "delivery schedule", "delivery delay",
-                 "قرارداد", "جریمه", "الحاقیه", "تاریخ تحویل", "تأخیر تحویل"),
+        phrases=(
+            "contract",
+            "penalty",
+            "amendment",
+            "delivery date",
+            "delivery schedule",
+            "delivery delay",
+            "قرارداد",
+            "جریمه",
+            "الحاقیه",
+            "تاریخ تحویل",
+            "تأخیر تحویل",
+        ),
         supporting_nodes=("N-ADM-FIN",),
         related_documents=("AR-LEG-009", "AR-FIN-010"),
         depends_on=("HW",),
@@ -155,7 +193,13 @@ ARMANRAYAN_RULES: tuple[CausePathRule, ...] = (
         title_en="User experience and interface acceptance",
         title_fa="پذیرش تجربه کاربری و رابط",
         owner_node="N-SW-UX",
-        phrases=("wireframe", "usability", "user experience", "تجربه کاربری", "وایرفریم"),
+        phrases=(
+            "wireframe",
+            "usability",
+            "user experience",
+            "تجربه کاربری",
+            "وایرفریم",
+        ),
         related_documents=("AR-SW-020",),
         scope="Readability and workflow acceptance",
     ),
@@ -177,19 +221,33 @@ class RuleBasedDecomposer:
             if len(hits) >= rule.min_hits:
                 drafts.append(
                     SubIssueDraft(
-                        code=rule.code, title=rule.title_en, title_fa=rule.title_fa, owner_node=rule.owner_node,
-                        supporting_nodes=rule.supporting_nodes, related_documents=rule.related_documents,
-                        depends_on=rule.depends_on, reserved_decision=rule.reserved_decision,
-                        matched=tuple(hits), scope=rule.scope, rule=rule.code,
+                        code=rule.code,
+                        title=rule.title_en,
+                        title_fa=rule.title_fa,
+                        owner_node=rule.owner_node,
+                        supporting_nodes=rule.supporting_nodes,
+                        related_documents=rule.related_documents,
+                        depends_on=rule.depends_on,
+                        reserved_decision=rule.reserved_decision,
+                        matched=tuple(hits),
+                        scope=rule.scope,
+                        rule=rule.code,
                     )
                 )
         fired = {d.code for d in drafts}
         drafts = [  # dependencies only on paths that actually exist in this issue
-            SubIssueDraft(**{**d.__dict__, "depends_on": tuple(x for x in d.depends_on if x in fired)})
+            SubIssueDraft(
+                **{
+                    **d.__dict__,
+                    "depends_on": tuple(x for x in d.depends_on if x in fired),
+                }
+            )
             for d in drafts
         ]
         if self.per_unit_fallback:
-            covered = {d.owner_node for d in drafts} | {n for d in drafts for n in d.supporting_nodes}
+            covered = {d.owner_node for d in drafts} | {
+                n for d in drafts for n in d.supporting_nodes
+            }
             covered.add(str(issue.owning_node))
             for node in issue.affected_nodes:
                 nid = str(node)
@@ -198,9 +256,17 @@ class RuleBasedDecomposer:
                 code = "U" + nid.removeprefix("N-").replace("-", "")
                 drafts.append(
                     SubIssueDraft(
-                        code=code[:12], title=f"Contribution of {nid}", title_fa=f"سهم {nid}", owner_node=nid,
-                        supporting_nodes=(), related_documents=(), depends_on=(), reserved_decision=False,
-                        matched=(), scope="Per affected unit (no cause-path rule matched)", rule="per_unit",
+                        code=code[:12],
+                        title=f"Contribution of {nid}",
+                        title_fa=f"سهم {nid}",
+                        owner_node=nid,
+                        supporting_nodes=(),
+                        related_documents=(),
+                        depends_on=(),
+                        reserved_decision=False,
+                        matched=(),
+                        scope="Per affected unit (no cause-path rule matched)",
+                        rule="per_unit",
                     )
                 )
                 covered.add(nid)
@@ -208,10 +274,14 @@ class RuleBasedDecomposer:
             for d in drafts:
                 for n in (d.owner_node, *d.supporting_nodes):
                     if not self.directory.exists(n):
-                        raise NotFoundError(f"decomposition owner {n} for {d.code} is not in the registry")
+                        raise NotFoundError(
+                            f"decomposition owner {n} for {d.code} is not in the registry"
+                        )
         return drafts
 
-    def apply(self, issue: Issue, drafts: list[SubIssueDraft] | None = None) -> list[SubIssue]:
+    def apply(
+        self, issue: Issue, drafts: list[SubIssueDraft] | None = None
+    ) -> list[SubIssue]:
         """Add drafts as sub-issues (idempotent: existing codes are skipped)."""
         drafts = self.decompose(issue) if drafts is None else drafts
         existing = {s.code for s in issue.subissues}

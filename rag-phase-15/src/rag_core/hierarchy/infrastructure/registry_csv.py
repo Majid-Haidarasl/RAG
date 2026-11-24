@@ -6,8 +6,18 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from rag_core.hierarchy.domain.model import Layer, Node, NodeStatus, NodeType, Organization
-from rag_core.hierarchy.domain.ownership import DocumentOwnership, OwnershipLink, OwnershipRole
+from rag_core.hierarchy.domain.model import (
+    Layer,
+    Node,
+    NodeStatus,
+    NodeType,
+    Organization,
+)
+from rag_core.hierarchy.domain.ownership import (
+    DocumentOwnership,
+    OwnershipLink,
+    OwnershipRole,
+)
 from rag_core.hierarchy.domain.transfer import TransferDirection, TransferRequirement
 from rag_core.hierarchy.domain.validation import normalize_confidentiality
 from rag_core.shared_kernel.confidentiality import Confidentiality
@@ -22,7 +32,9 @@ DOC_MAP_FILE = "document-node-map.csv"
 
 def read_rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8-sig", newline="") as handle:
-        return [{k: (v or "") for k, v in row.items()} for row in csv.DictReader(handle)]
+        return [
+            {k: (v or "") for k, v in row.items()} for row in csv.DictReader(handle)
+        ]
 
 
 def _split(value: str) -> tuple[str, ...]:
@@ -60,7 +72,9 @@ def layer_from_row(row: dict[str, str]) -> Layer:
         knowledge_needed_from_children=row.get("knowledge_needed_from_children", ""),
         required_transfer_format=row.get("required_transfer_format", ""),
         source_citation_level=row.get("source_citation_level", ""),
-        default_confidentiality=normalize_confidentiality(row.get("default_confidentiality", "")),
+        default_confidentiality=normalize_confidentiality(
+            row.get("default_confidentiality", "")
+        ),
         transfer=transfer,
     )
 
@@ -83,7 +97,9 @@ def node_from_row(row: dict[str, str], layers: dict[int, Layer]) -> Node:
         status=NodeStatus(row.get("status", "").strip() or "active"),
         escalation_id=NodeIdentifier(escalation) if escalation else None,
         head_or_key_contact=row.get("head_or_key_contact", ""),
-        transfer_detail_level_to_parent=row.get("transfer_detail_level_to_parent", "").strip(),
+        transfer_detail_level_to_parent=row.get(
+            "transfer_detail_level_to_parent", ""
+        ).strip(),
         source_docs=_split(row.get("source_docs", "")),
     )
 
@@ -121,7 +137,9 @@ class CsvRegistryLoader:
         while pending:
             ready = [n for n in pending if n.parent_id is None or n.parent_id in org]
             if not ready:
-                raise InvariantError(f"unresolvable parents for {[str(n.identifier) for n in pending]}")
+                raise InvariantError(
+                    f"unresolvable parents for {[str(n.identifier) for n in pending]}"
+                )
             for node in ready:
                 org.register_node(node)
                 pending.remove(node)
@@ -150,5 +168,19 @@ def write_doc_map(path: Path, ownership: DocumentOwnership) -> None:
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle)
         writer.writerow(["document_id", "node_id", "role", "source"])
-        for link in sorted(ownership.links, key=lambda l: (l.document_id.value, l.role != OwnershipRole.OWNER, l.node_id.value)):
-            writer.writerow([link.document_id.value, link.node_id.value, link.role.value, link.source])
+        for link in sorted(
+            ownership.links,
+            key=lambda l: (
+                l.document_id.value,
+                l.role != OwnershipRole.OWNER,
+                l.node_id.value,
+            ),
+        ):
+            writer.writerow(
+                [
+                    link.document_id.value,
+                    link.node_id.value,
+                    link.role.value,
+                    link.source,
+                ]
+            )

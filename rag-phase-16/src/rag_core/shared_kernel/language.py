@@ -16,8 +16,16 @@ class LanguageCode(StrEnum):
         if not isinstance(value, str):
             raise InvariantError(f"unsupported language: {value!r}")
         key = value.strip().lower()
-        aliases = {"fa": cls.FA, "fas": cls.FA, "per": cls.FA, "persian": cls.FA, "farsi": cls.FA,
-                   "en": cls.EN, "eng": cls.EN, "english": cls.EN}
+        aliases = {
+            "fa": cls.FA,
+            "fas": cls.FA,
+            "per": cls.FA,
+            "persian": cls.FA,
+            "farsi": cls.FA,
+            "en": cls.EN,
+            "eng": cls.EN,
+            "english": cls.EN,
+        }
         if key not in aliases:
             raise InvariantError(f"unsupported language: {value!r}")
         return aliases[key]

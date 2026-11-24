@@ -38,25 +38,41 @@ class PolicyOutcome:
         return self.decision is Decision.ACCEPT
 
     def to_dict(self) -> dict[str, object]:
-        return {"decision": self.decision.value, "total": self.total, "out_of": self.out_of,
-                "reasons": list(self.reasons)}
+        return {
+            "decision": self.decision.value,
+            "total": self.total,
+            "out_of": self.out_of,
+            "reasons": list(self.reasons),
+        }
 
 
 @dataclass(frozen=True)
 class AcceptancePolicy:
     rubric: Rubric
 
-    def decide(self, scores: Mapping[str, int], *, hard_failures: tuple[str, ...] | list[str] = ()) -> PolicyOutcome:
+    def decide(
+        self,
+        scores: Mapping[str, int],
+        *,
+        hard_failures: tuple[str, ...] | list[str] = (),
+    ) -> PolicyOutcome:
         maximums = self.rubric.maximums
         unknown = sorted(set(scores) - set(maximums))
         if unknown:
             raise InvariantError(f"unknown criteria: {', '.join(unknown)}")
         for key, value in scores.items():
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= maximums[key]:
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value <= maximums[key]
+            ):
                 raise InvariantError(f"{key}={value!r} is outside 0..{maximums[key]}")
         total = sum(scores.get(k, 0) for k in self.rubric.keys)
         reasons: list[str] = []
-        if self.rubric.threshold.verdict(JudgeScore(total, self.rubric.out_of)) is Verdict.FAIL:
+        if (
+            self.rubric.threshold.verdict(JudgeScore(total, self.rubric.out_of))
+            is Verdict.FAIL
+        ):
             reasons.append(f"total {total}<{self.rubric.accept_total}")
         for c in self.rubric.criteria:
             if c.key not in scores:
@@ -68,4 +84,6 @@ class AcceptancePolicy:
         return PolicyOutcome(decision, total, self.rubric.out_of, tuple(reasons))
 
     def error(self, reason: str) -> PolicyOutcome:
-        return PolicyOutcome(Decision.ERROR, 0, self.rubric.out_of, (f"error:{reason}",))
+        return PolicyOutcome(
+            Decision.ERROR, 0, self.rubric.out_of, (f"error:{reason}",)
+        )

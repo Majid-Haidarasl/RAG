@@ -40,7 +40,10 @@ def load_scope(registry_dir: Path) -> HierarchyScope:
     loaded = load_and_validate(registry_dir)
     if loaded.organization is None or loaded.ownership is None:
         raise DomainError(f"registry invalid: {len(loaded.report.errors)} error(s)")
-    conf = {k: Confidentiality(normalize_confidentiality(v[1]) or "internal") for k, v in catalog_index().items()}
+    conf = {
+        k: Confidentiality(normalize_confidentiality(v[1]) or "internal")
+        for k, v in catalog_index().items()
+    }
     return HierarchyScope(loaded.organization, loaded.ownership, conf)
 
 
@@ -48,7 +51,8 @@ def build_corpus_records(root: Path) -> CorpusIndexInput:
     t0 = time.perf_counter()
     scope = load_scope(root / "data" / "registry")
     paths = [
-        p for lang in ("fa", "en")
+        p
+        for lang in ("fa", "en")
         for p in sorted((root / "corpus" / lang).glob("*"))
         if p.is_file() and p.suffix.lower() in FORMATS
     ]
@@ -58,9 +62,18 @@ def build_corpus_records(root: Path) -> CorpusIndexInput:
         try:
             docs.append(ingest_file(path, repo_root=root))
         except Exception as exc:  # noqa: BLE001 - reported, never hidden
-            failures.append({"path": str(path.relative_to(root)), "error": f"{type(exc).__name__}: {exc}"})
+            failures.append(
+                {
+                    "path": str(path.relative_to(root)),
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
     lifecycle = KnowledgeLifecycleService()
     for doc in docs:
         lifecycle.ingest(doc, effective_from=CORPUS_EFFECTIVE)
-    records = records_from_lifecycle(lifecycle.items(), docs, owner_of=scope.owner_of, layer_of=scope.layer_of)
-    return CorpusIndexInput(records, scope, len(paths), failures, time.perf_counter() - t0)
+    records = records_from_lifecycle(
+        lifecycle.items(), docs, owner_of=scope.owner_of, layer_of=scope.layer_of
+    )
+    return CorpusIndexInput(
+        records, scope, len(paths), failures, time.perf_counter() - t0
+    )

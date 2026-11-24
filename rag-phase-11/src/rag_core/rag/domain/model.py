@@ -83,11 +83,15 @@ class RetrievalSession:
             raise InvariantError("answer text is required")
         answer = Answer(AnswerKind.GROUNDED, text.strip(), tuple(citations))
         self.answer = answer
-        self.events.append(DomainEvent("AnswerGenerated", {"node": str(self.query.node_scope)}))
+        self.events.append(
+            DomainEvent("AnswerGenerated", {"node": str(self.query.node_scope)})
+        )
         return answer
 
     def abstain(self, reason: str) -> Answer:
-        answer = Answer(AnswerKind.ABSTAINED, reason.strip() or "INSUFFICIENT_CONTEXT", ())
+        answer = Answer(
+            AnswerKind.ABSTAINED, reason.strip() or "INSUFFICIENT_CONTEXT", ()
+        )
         self.answer = answer
         self.events.append(DomainEvent("AnswerAbstained", {"reason": answer.text}))
         return answer

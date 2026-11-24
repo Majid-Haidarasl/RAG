@@ -49,30 +49,66 @@ class ProposalEvidence:
         return sum(1 for r in rows if r.language == language)
 
     def to_dict(self) -> dict[str, object]:
-        return {"numbers": [r.to_dict() for r in self.numbers], "statements": [r.to_dict() for r in self.statements]}
+        return {
+            "numbers": [r.to_dict() for r in self.numbers],
+            "statements": [r.to_dict() for r in self.statements],
+        }
 
 
-def ground_registry(registry: ProposalRegistry, texts: DocumentTexts, validator: FactValidator,
-                    numbers_in: NumberExtractor, languages: Iterable[str] = LANGUAGES) -> ProposalEvidence:
+def ground_registry(
+    registry: ProposalRegistry,
+    texts: DocumentTexts,
+    validator: FactValidator,
+    numbers_in: NumberExtractor,
+    languages: Iterable[str] = LANGUAGES,
+) -> ProposalEvidence:
     out = ProposalEvidence()
     for lang in languages:
         for p in registry.proposals:
             sources = texts_for(p.evidence, lang, texts)
             found = {d.normalize() for d in numbers_in(sources)} if sources else set()
-            missing = tuple(f"{name}={value}" for name, value in registered_numbers(p) if value.normalize() not in found)
+            missing = tuple(
+                f"{name}={value}"
+                for name, value in registered_numbers(p)
+                if value.normalize() not in found
+            )
             if not sources:
                 missing = ("no evidence text",)
-            out.numbers.append(GroundingResult(p.proposal_id, lang, not missing, missing))
+            out.numbers.append(
+                GroundingResult(p.proposal_id, lang, not missing, missing)
+            )
             if p.feedback(lang):
-                out.statements.append(ground_statement(f"{p.proposal_id}/feedback", p.feedback(lang), p.evidence,
-                                                       lang, texts, validator))
+                out.statements.append(
+                    ground_statement(
+                        f"{p.proposal_id}/feedback",
+                        p.feedback(lang),
+                        p.evidence,
+                        lang,
+                        texts,
+                        validator,
+                    )
+                )
             if p.clarifications(lang):
-                out.statements.append(ground_statement(f"{p.proposal_id}/clarifications",
-                                                       "; ".join(p.clarifications(lang)), p.evidence, lang, texts,
-                                                       validator))
+                out.statements.append(
+                    ground_statement(
+                        f"{p.proposal_id}/clarifications",
+                        "; ".join(p.clarifications(lang)),
+                        p.evidence,
+                        lang,
+                        texts,
+                        validator,
+                    )
+                )
         d = registry.decision
         if d is not None and d.reason(lang):
-            out.statements.append(ground_statement(f"decision/{d.selected}", d.reason(lang), d.evidence, lang,
-                                                   texts, validator))
+            out.statements.append(
+                ground_statement(
+                    f"decision/{d.selected}",
+                    d.reason(lang),
+                    d.evidence,
+                    lang,
+                    texts,
+                    validator,
+                )
+            )
     return out
-

@@ -28,8 +28,17 @@ from dataclasses import dataclass, field
 
 from rag_core.shared_kernel.errors import InvariantError
 
-FACTORS: tuple[str, ...] = ("priority", "severity", "urgency", "risk", "dependents", "exposure", "blocked", "gaps",
-                            "spread")
+FACTORS: tuple[str, ...] = (
+    "priority",
+    "severity",
+    "urgency",
+    "risk",
+    "dependents",
+    "exposure",
+    "blocked",
+    "gaps",
+    "spread",
+)
 PRIORITY_VALUE = {"P1": 1.0, "P2": 0.75, "P3": 0.5, "P4": 0.25}
 SEVERITY_VALUE = {"critical": 1.0, "high": 0.75, "medium": 0.5, "low": 0.25}
 CLOSED_STATUSES = frozenset({"resolved", "closed"})
@@ -100,8 +109,17 @@ class IssueSignal:
         if not self.issue_id.strip():
             raise InvariantError("issue id is required")
         if self.blocked_subissues > self.subissues:
-            raise InvariantError(f"{self.issue_id}: more blocked sub-issues than sub-issues")
-        for name in ("urgency", "risk", "dependents", "exposure_mtoman", "gaps", "affected_nodes"):
+            raise InvariantError(
+                f"{self.issue_id}: more blocked sub-issues than sub-issues"
+            )
+        for name in (
+            "urgency",
+            "risk",
+            "dependents",
+            "exposure_mtoman",
+            "gaps",
+            "affected_nodes",
+        ):
             if getattr(self, name) < 0:
                 raise InvariantError(f"{self.issue_id}: {name} cannot be negative")
 
@@ -118,16 +136,27 @@ class ScoredIssue:
     score: float
     rank: int
     key: bool
-    factors: dict[str, float] = field(default_factory=dict)        # normalized values
-    contributions: dict[str, float] = field(default_factory=dict)  # weight x value x 100
+    factors: dict[str, float] = field(default_factory=dict)  # normalized values
+    contributions: dict[str, float] = field(
+        default_factory=dict
+    )  # weight x value x 100
     signal: IssueSignal | None = None
 
     def top_factors(self, n: int = 3) -> list[tuple[str, float]]:
-        ranked = sorted(self.contributions.items(), key=lambda kv: (-kv[1], FACTORS.index(kv[0])))
+        ranked = sorted(
+            self.contributions.items(), key=lambda kv: (-kv[1], FACTORS.index(kv[0]))
+        )
         return [(k, v) for k, v in ranked if v > 0][:n]
 
     def to_dict(self) -> dict[str, object]:
-        return {"issue_id": self.issue_id, "title_en": self.title_en, "title_fa": self.title_fa,
-                "score": self.score, "rank": self.rank, "key": self.key, "factors": dict(self.factors),
-                "contributions": dict(self.contributions),
-                "top_factors": [k for k, _ in self.top_factors()]}
+        return {
+            "issue_id": self.issue_id,
+            "title_en": self.title_en,
+            "title_fa": self.title_fa,
+            "score": self.score,
+            "rank": self.rank,
+            "key": self.key,
+            "factors": dict(self.factors),
+            "contributions": dict(self.contributions),
+            "top_factors": [k for k, _ in self.top_factors()],
+        }

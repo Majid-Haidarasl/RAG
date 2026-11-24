@@ -8,7 +8,12 @@ still retrievable.
 
 from __future__ import annotations
 
-from rag_core.ingestion.domain.model import BlockKind, ContentBlock, SourceAnchor, TextChunk
+from rag_core.ingestion.domain.model import (
+    BlockKind,
+    ContentBlock,
+    SourceAnchor,
+    TextChunk,
+)
 
 # ~512 tokens of mixed Persian/English is well under bge-m3's 8192 window.
 # A conservative 2.0 characters/token for Persian would make 1600 chars ≈ 800
@@ -45,7 +50,12 @@ def _split_long(text: str, max_chars: int, overlap: int) -> list[tuple[int, int,
         end = min(n, start + max_chars)
         if end < n:
             window = text[start:end]
-            cut = max(window.rfind("\n"), window.rfind(" "), window.rfind("،"), window.rfind("."))
+            cut = max(
+                window.rfind("\n"),
+                window.rfind(" "),
+                window.rfind("،"),
+                window.rfind("."),
+            )
             if cut >= max_chars // 2:
                 end = start + cut + 1
         pieces.append((start, end, text[start:end].strip()))
@@ -66,7 +76,9 @@ def chunk_blocks(
     """Pack blocks into chunks. Headings open a new section; tables stay atomic when they fit."""
     chunks: list[TextChunk] = []
 
-    def emit(parts: list[tuple[ContentBlock, str, int, int]], *, kind: str, heading: str) -> None:
+    def emit(
+        parts: list[tuple[ContentBlock, str, int, int]], *, kind: str, heading: str
+    ) -> None:
         if not parts:
             return
         text = "\n\n".join(p[1] for p in parts).strip()
@@ -121,12 +133,18 @@ def chunk_blocks(
             flush()
             buffer_heading = heading
             if _fits(block.text, max_chars, max_tokens):
-                emit([(block, block.text, 0, len(block.text))], kind="table", heading=heading)
+                emit(
+                    [(block, block.text, 0, len(block.text))],
+                    kind="table",
+                    heading=heading,
+                )
             else:
                 # Split by rows, repeating the header row when present.
-                rows = list(block.cells) if block.cells else [
-                    tuple(line.split(" | ")) for line in block.text.splitlines()
-                ]
+                rows = (
+                    list(block.cells)
+                    if block.cells
+                    else [tuple(line.split(" | ")) for line in block.text.splitlines()]
+                )
                 header = rows[0] if rows else tuple()
                 current: list[tuple[str, ...]] = []
 
@@ -135,9 +153,20 @@ def chunk_blocks(
 
                 for row in rows[1:] if header else rows:
                     candidate = [header, *current, row] if header else [*current, row]
-                    if current and not _fits(rows_text(candidate), max_chars, max_tokens):
+                    if current and not _fits(
+                        rows_text(candidate), max_chars, max_tokens
+                    ):
                         emit(
-                            [(block, rows_text([header, *current] if header else current), 0, 0)],
+                            [
+                                (
+                                    block,
+                                    rows_text(
+                                        [header, *current] if header else current
+                                    ),
+                                    0,
+                                    0,
+                                )
+                            ],
                             kind="table",
                             heading=heading,
                         )
@@ -148,7 +177,11 @@ def chunk_blocks(
                     payload = [header, *current] if header else current
                     if header and not current:
                         payload = [header]
-                    emit([(block, rows_text(payload), 0, 0)], kind="table", heading=heading)
+                    emit(
+                        [(block, rows_text(payload), 0, 0)],
+                        kind="table",
+                        heading=heading,
+                    )
             continue
 
         # Prose / list items / clauses: prefer to stay under the current heading.

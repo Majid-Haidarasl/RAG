@@ -23,16 +23,18 @@ from rag_core.judging.domain.rubric import Rubric
 from rag_core.shared_kernel.errors import InvariantError
 
 LANGUAGE_NAMES = {"fa": "Persian (فارسی)", "en": "English"}
-DEFAULT_RETRY_NOTE = "Your previous reply could not be read. Reply again with ONLY the JSON object."
+DEFAULT_RETRY_NOTE = (
+    "Your previous reply could not be read. Reply again with ONLY the JSON object."
+)
 REQUIRED_USER_VARS = ("output", "sources")
 REQUIRED_ANY_VARS = ("criteria", "reply_format")
 DEFAULT_SCOPE_NOTES = {
     "answered": "In-scope evidence was retrieved (SOURCES). The right behaviour is a short answer grounded in the "
-                "SOURCES with bracket labels.",
+    "SOURCES with bracket labels.",
     "out_of_scope": "The asking node has no evidence in its own scope; the evidence belongs to another node. The "
-                    "right behaviour is to decline and suggest escalation to ${expected_escalation}.",
+    "right behaviour is to decline and suggest escalation to ${expected_escalation}.",
     "not_found": "No document in the node's scope answers this question. The right behaviour is to decline briefly "
-                 "and say what is missing, without inventing an answer.",
+    "and say what is missing, without inventing an answer.",
     "summary": "The summary must use only the FACTS.",
 }
 
@@ -80,17 +82,23 @@ class JudgePromptSet:
     system: str
     user: str
     retry_note: str = DEFAULT_RETRY_NOTE
-    scope_notes: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_SCOPE_NOTES))
+    scope_notes: dict[str, str] = field(
+        default_factory=lambda: dict(DEFAULT_SCOPE_NOTES)
+    )
     language_names: dict[str, str] = field(default_factory=lambda: dict(LANGUAGE_NAMES))
 
     def __post_init__(self) -> None:
         if not self.prompt_id.strip() or not self.version.strip():
             raise InvariantError("prompt id and version are required")
         if not self.kinds:
-            raise InvariantError(f"{self.prompt_id}: at least one output kind is required")
+            raise InvariantError(
+                f"{self.prompt_id}: at least one output kind is required"
+            )
         for var in REQUIRED_USER_VARS:
             if "${" + var + "}" not in self.user:
-                raise InvariantError(f"{self.prompt_id}: user prompt must use ${{{var}}}")
+                raise InvariantError(
+                    f"{self.prompt_id}: user prompt must use ${{{var}}}"
+                )
         for var in REQUIRED_ANY_VARS:
             if "${" + var + "}" not in self.system + self.user:
                 raise InvariantError(f"{self.prompt_id}: prompt must use ${{{var}}}")
@@ -99,10 +107,18 @@ class JudgePromptSet:
     def label(self) -> str:
         return f"{self.prompt_id}@{self.version}"
 
-    def variables(self, case: JudgeCase, rubric: Rubric, sources_char_budget: int) -> dict[str, str]:
-        scope_key = case.expectation.status if case.expectation.status in self.scope_notes else "answered"
+    def variables(
+        self, case: JudgeCase, rubric: Rubric, sources_char_budget: int
+    ) -> dict[str, str]:
+        scope_key = (
+            case.expectation.status
+            if case.expectation.status in self.scope_notes
+            else "answered"
+        )
         scope = Template(self.scope_notes.get(scope_key, "")).safe_substitute(
-            expected_escalation=case.expectation.escalation or "the node that owns the evidence")
+            expected_escalation=case.expectation.escalation
+            or "the node that owns the evidence"
+        )
         return {
             "criteria": "\n".join(rubric.guidance_lines(case.kind.value)),
             "reply_format": rubric.reply_skeleton(),
@@ -119,9 +135,15 @@ class JudgePromptSet:
             "items": ", ".join(case.expectation.items) or "(not given)",
         }
 
-    def render(self, case: JudgeCase, rubric: Rubric, *, sources_char_budget: int = 6000) -> tuple[str, str]:
+    def render(
+        self, case: JudgeCase, rubric: Rubric, *, sources_char_budget: int = 6000
+    ) -> tuple[str, str]:
         values = self.variables(case, rubric, sources_char_budget)
         try:
-            return Template(self.system).substitute(values), Template(self.user).substitute(values)
+            return Template(self.system).substitute(values), Template(
+                self.user
+            ).substitute(values)
         except (KeyError, ValueError) as exc:
-            raise InvariantError(f"{self.prompt_id}: bad prompt variable {exc}") from exc
+            raise InvariantError(
+                f"{self.prompt_id}: bad prompt variable {exc}"
+            ) from exc

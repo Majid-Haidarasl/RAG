@@ -32,7 +32,12 @@ from rag_core import __version__  # noqa: E402
 from rag_core.ingestion.application.pipeline import ingest_file  # noqa: E402
 from rag_core.ingestion.domain.model import IngestedDocument  # noqa: E402
 from rag_core.knowledge.application.lifecycle import KnowledgeLifecycleService  # noqa: E402
-from rag_core.knowledge.domain.dedup import DedupConfig, DedupReport, DuplicateFinder, TextRecord  # noqa: E402
+from rag_core.knowledge.domain.dedup import (
+    DedupConfig,
+    DedupReport,
+    DuplicateFinder,
+    TextRecord,
+)  # noqa: E402
 from rag_core.knowledge.domain.fingerprint import guess_language  # noqa: E402
 from rag_core.knowledge.domain.model import ChunkStatus, VersionStatus  # noqa: E402
 from rag_core.shared_kernel.identifiers import DocumentId  # noqa: E402
@@ -64,14 +69,20 @@ def collect(corpus: Path, folder: str) -> list[Path]:
     base = corpus / folder
     if not base.exists():
         return []
-    return [p for p in sorted(base.rglob("*")) if p.is_file() and p.suffix.lower() in FORMATS]
+    return [
+        p
+        for p in sorted(base.rglob("*"))
+        if p.is_file() and p.suffix.lower() in FORMATS
+    ]
 
 
 def rel(path: Path, root: Path) -> str:
     return str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
 
 
-def to_records(docs: list[IngestedDocument], root: Path) -> tuple[list[TextRecord], list[TextRecord]]:
+def to_records(
+    docs: list[IngestedDocument], root: Path
+) -> tuple[list[TextRecord], list[TextRecord]]:
     chunk_records: list[TextRecord] = []
     doc_records: list[TextRecord] = []
     for doc in docs:
@@ -80,21 +91,36 @@ def to_records(docs: list[IngestedDocument], root: Path) -> tuple[list[TextRecor
         fmt = doc.file_format.value
         for chunk in doc.chunks:
             chunk_records.append(
-                TextRecord(f"{source}::{chunk.chunk_id}", doc.document_id, lang, source, chunk.text, file_format=fmt)
+                TextRecord(
+                    f"{source}::{chunk.chunk_id}",
+                    doc.document_id,
+                    lang,
+                    source,
+                    chunk.text,
+                    file_format=fmt,
+                )
             )
         if doc.text.strip():
-            doc_records.append(TextRecord(source, doc.document_id, lang, source, doc.text, file_format=fmt))
+            doc_records.append(
+                TextRecord(
+                    source, doc.document_id, lang, source, doc.text, file_format=fmt
+                )
+            )
     return chunk_records, doc_records
 
 
-def pdf_quality(docs: list[IngestedDocument], failures: list[dict[str, str]], root: Path) -> dict[str, object]:
+def pdf_quality(
+    docs: list[IngestedDocument], failures: list[dict[str, str]], root: Path
+) -> dict[str, object]:
     """PDF text-quality tally (finding F5-1 and its 0.5.1 fix).
 
     ``garbled`` = PDFs whose text was rejected (GarbledTextError) or still
     contains cid placeholders; ``fragmented`` = readable PDFs with spurious
     intra-word spaces (warning only).
     """
-    garbled: list[str] = [f["path"] for f in failures if f.get("error_type") == "GarbledTextError"]
+    garbled: list[str] = [
+        f["path"] for f in failures if f.get("error_type") == "GarbledTextError"
+    ]
     fragmented: list[str] = []
     engines: Counter[str] = Counter()
     for doc in docs:
@@ -106,7 +132,11 @@ def pdf_quality(docs: list[IngestedDocument], failures: list[dict[str, str]], ro
             garbled.append(rel(doc.path, root))
         elif verdict == "fragmented":
             fragmented.append(rel(doc.path, root))
-    return {"garbled": sorted(garbled), "fragmented": sorted(fragmented), "engines": dict(engines)}
+    return {
+        "garbled": sorted(garbled),
+        "fragmented": sorted(fragmented),
+        "engines": dict(engines),
+    }
 
 
 def doc_pair_counts(report: DedupReport) -> list[dict[str, object]]:
@@ -127,13 +157,21 @@ def doc_pair_counts(report: DedupReport) -> list[dict[str, object]]:
     ]
 
 
-def simulate_update(root: Path, svc: KnowledgeLifecycleService, official: dict[tuple[str, str], Path]) -> dict:
+def simulate_update(
+    root: Path, svc: KnowledgeLifecycleService, official: dict[tuple[str, str], Path]
+) -> dict:
     source = official.get((UPDATE_DOC, "fa"))
     if source is None:
         return {"status": "skipped", "reason": f"{UPDATE_DOC} (fa) not found"}
-    result: dict[str, object] = {"document_id": UPDATE_DOC, "language": "fa", "source": rel(source, root)}
+    result: dict[str, object] = {
+        "document_id": UPDATE_DOC,
+        "language": "fa",
+        "source": rel(source, root),
+    }
     # 1) unchanged file → no new version
-    unchanged = svc.ingest(ingest_file(source, repo_root=root), effective_from=UPDATE_EFFECTIVE)
+    unchanged = svc.ingest(
+        ingest_file(source, repo_root=root), effective_from=UPDATE_EFFECTIVE
+    )
     result["reingest_unchanged"] = unchanged.action
     # 2) modified temp copy (same name under a temporary corpus/fa) → new version
     with tempfile.TemporaryDirectory(prefix="rag-phase5-") as tmp:
@@ -158,8 +196,12 @@ def simulate_update(root: Path, svc: KnowledgeLifecycleService, official: dict[t
                 {
                     "version": str(v.tag),
                     "status": v.status.value,
-                    "effective_from": v.effective_from.isoformat() if v.effective_from else None,
-                    "effective_to": v.effective_to.isoformat() if v.effective_to else None,
+                    "effective_from": v.effective_from.isoformat()
+                    if v.effective_from
+                    else None,
+                    "effective_to": v.effective_to.isoformat()
+                    if v.effective_to
+                    else None,
                     "supersedes": str(v.supersedes) if v.supersedes else None,
                     "file_sha256": v.file_sha256[:16],
                     "chunks_active": v.count(ChunkStatus.ACTIVE),
@@ -186,14 +228,23 @@ def lifecycle_totals(svc: KnowledgeLifecycleService) -> dict[str, int]:
                 totals[f"chunks_{status.value}"] += v.count(status)
         if len({v.language for v in item.versions}) == 2:
             totals["bilingual_items"] += 1
-    for key in ("versions_draft", "versions_active", "versions_superseded", "versions_archived",
-                "chunks_active", "chunks_stale", "chunks_retired"):
+    for key in (
+        "versions_draft",
+        "versions_active",
+        "versions_superseded",
+        "versions_archived",
+        "chunks_active",
+        "chunks_stale",
+        "chunks_retired",
+    ):
         totals.setdefault(key, 0)
     return dict(totals)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Phase 5 lifecycle + dedup over the corpus.")
+    parser = argparse.ArgumentParser(
+        description="Phase 5 lifecycle + dedup over the corpus."
+    )
     parser.add_argument("--root", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--pytest-passed", default=None)
@@ -223,7 +274,13 @@ def main() -> int:
             try:
                 bucket.append(ingest_file(path, repo_root=root))
             except Exception as exc:  # noqa: BLE001
-                failures.append({"path": rel(path, root), "reason": str(exc), "error_type": type(exc).__name__})
+                failures.append(
+                    {
+                        "path": rel(path, root),
+                        "reason": str(exc),
+                        "error_type": type(exc).__name__,
+                    }
+                )
     timings["ingest"] = time.perf_counter() - t
 
     t = time.perf_counter()
@@ -245,7 +302,9 @@ def main() -> int:
     t = time.perf_counter()
     chunk_report = finder.find(chunk_records)
     timings["dedup_chunks"] = time.perf_counter() - t
-    doc_config = DedupConfig(shingle_mode="char", char_k=5, exhaustive=True, containment_threshold=0.80)
+    doc_config = DedupConfig(
+        shingle_mode="char", char_k=5, exhaustive=True, containment_threshold=0.80
+    )
     t = time.perf_counter()
     doc_report = DuplicateFinder(doc_config).find(doc_records)
     timings["dedup_documents"] = time.perf_counter() - t
@@ -257,17 +316,32 @@ def main() -> int:
     sim_ok = (
         simulation.get("action") == "new_version"
         and simulation.get("reingest_unchanged") == "unchanged"
-        and any(v["status"] == VersionStatus.SUPERSEDED.value and v["chunks_retired"] > 0
-                for v in simulation.get("versions", []))  # type: ignore[union-attr]
+        and any(
+            v["status"] == VersionStatus.SUPERSEDED.value and v["chunks_retired"] > 0
+            for v in simulation.get("versions", [])
+        )  # type: ignore[union-attr]
     )
     pytest_ok = args.pytest_exit in (None, "0", 0)
-    status = "PASS" if (not failures and sim_ok and pytest_ok and chunk_report.bilingual_pairs_excluded >= 0) else "FAIL"
+    status = (
+        "PASS"
+        if (
+            not failures
+            and sim_ok
+            and pytest_ok
+            and chunk_report.bilingual_pairs_excluded >= 0
+        )
+        else "FAIL"
+    )
 
     payload = {
         "kit": KIT,
         "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
-        "files": {"official": len(official_paths), "derived": len(derived_paths), "failures": failures},
+        "files": {
+            "official": len(official_paths),
+            "derived": len(derived_paths),
+            "failures": failures,
+        },
         "lifecycle": {
             "actions": dict(actions),
             "before_update": before,
@@ -282,11 +356,16 @@ def main() -> int:
         "pdf_text_quality": pdfq,
         "timings_s": {k: round(v, 3) for k, v in timings.items()},
         "pytest": {
-            "passed": args.pytest_passed, "failed": args.pytest_failed, "errors": args.pytest_errors,
-            "exit": args.pytest_exit, "result_line": args.pytest_line,
+            "passed": args.pytest_passed,
+            "failed": args.pytest_failed,
+            "errors": args.pytest_errors,
+            "exit": args.pytest_exit,
+            "result_line": args.pytest_line,
         },
     }
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     sim_versions = simulation.get("versions", [])
     print()
@@ -315,42 +394,70 @@ def main() -> int:
     print(f"chunks_retired: {after['chunks_retired']}")
     print(f"update_doc: {UPDATE_DOC} fa")
     print(f"update_reingest_unchanged: {simulation.get('reingest_unchanged')}")
-    print(f"update_action: {simulation.get('action')} -> {simulation.get('new_version')}")
-    print(f"update_supersedes_chain: {' <- '.join(simulation.get('supersedes_chain', []))}")  # type: ignore[arg-type]
+    print(
+        f"update_action: {simulation.get('action')} -> {simulation.get('new_version')}"
+    )
+    print(
+        f"update_supersedes_chain: {' <- '.join(simulation.get('supersedes_chain', []))}"
+    )  # type: ignore[arg-type]
     for v in sim_versions:  # type: ignore[union-attr]
         print(
             f"update_version_{v['version']}: {v['status']} from={v['effective_from']} to={v['effective_to']} "
             f"active={v['chunks_active']} retired={v['chunks_retired']}"
         )
     print(f"dedup_records_chunks: {chunk_report.records}")
-    print(f"exact_dup_groups: {len(chunk_report.exact_groups)} "
-          f"(rendition {scope['exact_groups']['rendition']}, cross_document {scope['exact_groups']['cross_document']})")
-    print(f"near_dup_pairs: {len(chunk_report.near_pairs)} "
-          f"(rendition {scope['near_pairs']['rendition']}, cross_document {scope['near_pairs']['cross_document']})")
-    print(f"overlap_pairs: {len(chunk_report.overlap_pairs)} "
-          f"(rendition {scope['overlap_pairs']['rendition']}, cross_document {scope['overlap_pairs']['cross_document']})")
-    print(f"bilingual_pairs_excluded: {chunk_report.bilingual_pairs_excluded} "
-          f"(would-flag; candidates skipped {chunk_report.bilingual_candidates_seen})")
+    print(
+        f"exact_dup_groups: {len(chunk_report.exact_groups)} "
+        f"(rendition {scope['exact_groups']['rendition']}, cross_document {scope['exact_groups']['cross_document']})"
+    )
+    print(
+        f"near_dup_pairs: {len(chunk_report.near_pairs)} "
+        f"(rendition {scope['near_pairs']['rendition']}, cross_document {scope['near_pairs']['cross_document']})"
+    )
+    print(
+        f"overlap_pairs: {len(chunk_report.overlap_pairs)} "
+        f"(rendition {scope['overlap_pairs']['rendition']}, cross_document {scope['overlap_pairs']['cross_document']})"
+    )
+    print(
+        f"bilingual_pairs_excluded: {chunk_report.bilingual_pairs_excluded} "
+        f"(would-flag; candidates skipped {chunk_report.bilingual_candidates_seen})"
+    )
     print(f"lsh_candidates: {chunk_report.lsh_candidates}")
     recall = chunk_report.lsh_recall
-    print(f"lsh_recall_vs_exact_jaccard: {'n/a' if recall is None else f'{recall:.3f}'}")
+    print(
+        f"lsh_recall_vs_exact_jaccard: {'n/a' if recall is None else f'{recall:.3f}'}"
+    )
     print(f"doc_level_records: {doc_report.records}")
     print(f"doc_level_exact_groups: {len(doc_report.exact_groups)}")
-    print(f"doc_level_near_pairs: {len(doc_report.near_pairs)} "
-          f"(rendition {doc_scope['near_pairs']['rendition']}, cross_document {doc_scope['near_pairs']['cross_document']})")
-    print(f"doc_level_overlap_pairs: {len(doc_report.overlap_pairs)} "
-          f"(rendition {doc_scope['overlap_pairs']['rendition']}, cross_document {doc_scope['overlap_pairs']['cross_document']})")
+    print(
+        f"doc_level_near_pairs: {len(doc_report.near_pairs)} "
+        f"(rendition {doc_scope['near_pairs']['rendition']}, cross_document {doc_scope['near_pairs']['cross_document']})"
+    )
+    print(
+        f"doc_level_overlap_pairs: {len(doc_report.overlap_pairs)} "
+        f"(rendition {doc_scope['overlap_pairs']['rendition']}, cross_document {doc_scope['overlap_pairs']['cross_document']})"
+    )
     print(f"doc_level_bilingual_excluded: {doc_report.bilingual_pairs_excluded}")
-    print(f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(pdfq['engines'].items())) or 'none'}")
-    print(f"garbled_pdf_text: {len(pdfq['garbled'])} "
-          f"({', '.join(Path(p).name for p in pdfq['garbled']) or 'none'})")
-    print(f"fragmented_pdf_text: {len(pdfq['fragmented'])} "
-          f"({', '.join(Path(p).name for p in pdfq['fragmented']) or 'none'})")
-    print(f"doc_level_mode: char{doc_config.char_k} exhaustive near>={doc_config.near_threshold} "
-          f"containment>={doc_config.containment_threshold}")
-    print(f"chunk_thresholds: near_jaccard>={config.near_threshold} containment>={config.containment_threshold} "
-          f"k={config.shingle_k} perms={config.num_perm} bands={config.bands} "
-          f"min_exact_chars={config.min_exact_chars} min_shingles={config.min_shingles}")
+    print(
+        f"pdf_engines: {', '.join(f'{k}={v}' for k, v in sorted(pdfq['engines'].items())) or 'none'}"
+    )
+    print(
+        f"garbled_pdf_text: {len(pdfq['garbled'])} "
+        f"({', '.join(Path(p).name for p in pdfq['garbled']) or 'none'})"
+    )
+    print(
+        f"fragmented_pdf_text: {len(pdfq['fragmented'])} "
+        f"({', '.join(Path(p).name for p in pdfq['fragmented']) or 'none'})"
+    )
+    print(
+        f"doc_level_mode: char{doc_config.char_k} exhaustive near>={doc_config.near_threshold} "
+        f"containment>={doc_config.containment_threshold}"
+    )
+    print(
+        f"chunk_thresholds: near_jaccard>={config.near_threshold} containment>={config.containment_threshold} "
+        f"k={config.shingle_k} perms={config.num_perm} bands={config.bands} "
+        f"min_exact_chars={config.min_exact_chars} min_shingles={config.min_shingles}"
+    )
     print("timings_s: " + " ".join(f"{k}={v:.2f}" for k, v in timings.items()))
     print(f"results_json: {out_json}")
     if failures:

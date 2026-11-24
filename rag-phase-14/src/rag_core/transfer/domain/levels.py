@@ -34,16 +34,16 @@ CAPACITY_MODES = ("per_person", "counts", "none")
 
 
 class AggregationMode(StrEnum):
-    ITEMS = "items"          # one line per item
-    BY_ISSUE = "by_issue"    # sub-issues grouped under their parent issue
+    ITEMS = "items"  # one line per item
+    BY_ISSUE = "by_issue"  # sub-issues grouped under their parent issue
 
 
 @dataclass(frozen=True)
 class DetailLevelRule:
     level: TransferDetailLevel
     receiving_layer: int
-    max_items: int                 # items (ITEMS) or issue groups (BY_ISSUE)
-    max_words: int                 # per language version
+    max_items: int  # items (ITEMS) or issue groups (BY_ISSUE)
+    max_words: int  # per language version
     aggregation: AggregationMode
     include_closed: bool
     show_people: bool
@@ -81,43 +81,102 @@ class DetailLevelRule:
         The word limit is enforced per language by the builder, so the rule set
         itself carries no ``max_words`` (the package holds both languages).
         """
-        return TransferRuleSet(LayerIndex(self.receiving_layer), self.level, min_judge_score=18, max_words=None,
-                               required_fields=self.required_fields)
+        return TransferRuleSet(
+            LayerIndex(self.receiving_layer),
+            self.level,
+            min_judge_score=18,
+            max_words=None,
+            required_fields=self.required_fields,
+        )
 
 
 DEFAULT_RULES: tuple[DetailLevelRule, ...] = (
-    DetailLevelRule(TransferDetailLevel.EXECUTIVE, 0, max_items=3, max_words=400,
-                    aggregation=AggregationMode.BY_ISSUE, include_closed=False, show_people=False,
-                    show_collaborators=False, show_documents=False, max_documents_per_item=0, show_gaps="count",
-                    show_capacity="none", show_dependencies=False, citation_level="document",
-                    required_fields=("risks", "decisions_requested", "source_references")),
-    DetailLevelRule(TransferDetailLevel.MANAGERIAL, 1, max_items=6, max_words=800,
-                    aggregation=AggregationMode.BY_ISSUE, include_closed=False, show_people=True,
-                    show_collaborators=False, show_documents=False, max_documents_per_item=0, show_gaps="list",
-                    show_capacity="counts", show_dependencies=True, citation_level="document"),
-    DetailLevelRule(TransferDetailLevel.TECHNICAL_SUMMARY, 2, max_items=8, max_words=1500,
-                    aggregation=AggregationMode.ITEMS, include_closed=True, show_people=True,
-                    show_collaborators=True, show_documents=True, max_documents_per_item=3, show_gaps="per_item",
-                    show_capacity="per_person", show_dependencies=True, citation_level="document + section"),
-    DetailLevelRule(TransferDetailLevel.DETAILED_TECHNICAL, 3, max_items=12, max_words=3000,
-                    aggregation=AggregationMode.ITEMS, include_closed=True, show_people=True,
-                    show_collaborators=True, show_documents=True, max_documents_per_item=6, show_gaps="per_item",
-                    show_capacity="per_person", show_dependencies=True, citation_level="document + section + chunk"),
+    DetailLevelRule(
+        TransferDetailLevel.EXECUTIVE,
+        0,
+        max_items=3,
+        max_words=400,
+        aggregation=AggregationMode.BY_ISSUE,
+        include_closed=False,
+        show_people=False,
+        show_collaborators=False,
+        show_documents=False,
+        max_documents_per_item=0,
+        show_gaps="count",
+        show_capacity="none",
+        show_dependencies=False,
+        citation_level="document",
+        required_fields=("risks", "decisions_requested", "source_references"),
+    ),
+    DetailLevelRule(
+        TransferDetailLevel.MANAGERIAL,
+        1,
+        max_items=6,
+        max_words=800,
+        aggregation=AggregationMode.BY_ISSUE,
+        include_closed=False,
+        show_people=True,
+        show_collaborators=False,
+        show_documents=False,
+        max_documents_per_item=0,
+        show_gaps="list",
+        show_capacity="counts",
+        show_dependencies=True,
+        citation_level="document",
+    ),
+    DetailLevelRule(
+        TransferDetailLevel.TECHNICAL_SUMMARY,
+        2,
+        max_items=8,
+        max_words=1500,
+        aggregation=AggregationMode.ITEMS,
+        include_closed=True,
+        show_people=True,
+        show_collaborators=True,
+        show_documents=True,
+        max_documents_per_item=3,
+        show_gaps="per_item",
+        show_capacity="per_person",
+        show_dependencies=True,
+        citation_level="document + section",
+    ),
+    DetailLevelRule(
+        TransferDetailLevel.DETAILED_TECHNICAL,
+        3,
+        max_items=12,
+        max_words=3000,
+        aggregation=AggregationMode.ITEMS,
+        include_closed=True,
+        show_people=True,
+        show_collaborators=True,
+        show_documents=True,
+        max_documents_per_item=6,
+        show_gaps="per_item",
+        show_capacity="per_person",
+        show_dependencies=True,
+        citation_level="document + section + chunk",
+    ),
 )
 
 
 class RuleBook:
     """Detail-level rules indexed by the receiving layer."""
 
-    def __init__(self, rules: tuple[DetailLevelRule, ...] | list[DetailLevelRule] = DEFAULT_RULES) -> None:
+    def __init__(
+        self, rules: tuple[DetailLevelRule, ...] | list[DetailLevelRule] = DEFAULT_RULES
+    ) -> None:
         by_layer: dict[int, DetailLevelRule] = {}
         for rule in rules:
             if rule.receiving_layer in by_layer:
-                raise InvariantError(f"two rules for receiving layer L{rule.receiving_layer}")
+                raise InvariantError(
+                    f"two rules for receiving layer L{rule.receiving_layer}"
+                )
             by_layer[rule.receiving_layer] = rule
         levels = [r.level for r in by_layer.values()]
         if len(set(levels)) != len(levels):
-            raise InvariantError("each detail level may be used by one receiving layer only")
+            raise InvariantError(
+                "each detail level may be used by one receiving layer only"
+            )
         self._by_layer = by_layer
 
     def for_layer(self, layer: int) -> DetailLevelRule:
@@ -136,7 +195,9 @@ class RuleBook:
     def rules(self) -> list[DetailLevelRule]:
         return [self._by_layer[k] for k in sorted(self._by_layer)]
 
-    def registry_mismatches(self, layers: dict[int, tuple[str, int | None]]) -> list[str]:
+    def registry_mismatches(
+        self, layers: dict[int, tuple[str, int | None]]
+    ) -> list[str]:
         """Compare with the layer registry: layer → (default_detail_level, max_package_words)."""
         problems: list[str] = []
         for index, (level, words) in sorted(layers.items()):
@@ -144,7 +205,11 @@ class RuleBook:
                 continue
             rule = self._by_layer[index]
             if level and level != rule.level.value:
-                problems.append(f"L{index}: registry level {level} != rule {rule.level.value}")
+                problems.append(
+                    f"L{index}: registry level {level} != rule {rule.level.value}"
+                )
             if words is not None and words != rule.max_words:
-                problems.append(f"L{index}: registry max words {words} != rule {rule.max_words}")
+                problems.append(
+                    f"L{index}: registry max words {words} != rule {rule.max_words}"
+                )
         return problems

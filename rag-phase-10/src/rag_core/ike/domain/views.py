@@ -29,7 +29,9 @@ class SubItemView:
 
     def __post_init__(self) -> None:
         if "/" not in self.item_id or not self.owner_node:
-            raise InvariantError(f"sub-item {self.item_id!r} needs a parent/CODE id and an owner node")
+            raise InvariantError(
+                f"sub-item {self.item_id!r} needs a parent/CODE id and an owner node"
+            )
 
     @property
     def parent_id(self) -> str:
@@ -76,4 +78,6 @@ class ReferralView:
 
     def __post_init__(self) -> None:
         if self.role not in {"lead", "collaborator"}:
-            raise InvariantError(f"referral role must be lead or collaborator, got {self.role!r}")
+            raise InvariantError(
+                f"referral role must be lead or collaborator, got {self.role!r}"
+            )

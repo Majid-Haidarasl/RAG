@@ -25,7 +25,10 @@ def test_pipeline_normalizes_ids_and_arabic_letters(tmp_path: Path) -> None:
     assert doc.chunks
     assert doc.metadata["owning_node"] == "N-ADM-HR"
     assert doc.metadata["language"] == "fa"
-    assert doc.metadata["bilingual_pair"] is None or doc.metadata["bilingual_pair"]["language"] == "en"
+    assert (
+        doc.metadata["bilingual_pair"] is None
+        or doc.metadata["bilingual_pair"]["language"] == "en"
+    )
     validate_metadata(doc.metadata, repo_root=REPO)
     # Source anchors present for Phase 8
     assert doc.chunks[0].anchors[0].document_id == "AR-HR-005"

@@ -10,7 +10,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from string import Template
 
-from rag_core.models.domain.model import PromptAssembler, PromptTemplate, PromptVersion, TaskType
+from rag_core.models.domain.model import (
+    PromptAssembler,
+    PromptTemplate,
+    PromptVersion,
+    TaskType,
+)
 from rag_core.shared_kernel.errors import InvariantError
 
 REQUIRED_SYSTEM_VARS = ("answer_language", "refusal_token")
@@ -25,7 +30,9 @@ class QaPromptSet:
     system: str
     user: str
     refusal_token: str = "INSUFFICIENT_CONTEXT"
-    language_names: dict[str, str] = field(default_factory=lambda: {"fa": "Persian (فارسی)", "en": "English"})
+    language_names: dict[str, str] = field(
+        default_factory=lambda: {"fa": "Persian (فارسی)", "en": "English"}
+    )
     messages: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -45,7 +52,9 @@ class QaPromptSet:
         tpl.publish(PromptVersion(self.version, text))
         return tpl
 
-    def render(self, *, question: str, context: str, language: str, node: str) -> tuple[str, str]:
+    def render(
+        self, *, question: str, context: str, language: str, node: str
+    ) -> tuple[str, str]:
         variables = {
             "answer_language": self.language_names.get(language, language),
             "refusal_token": self.refusal_token,
@@ -54,8 +63,12 @@ class QaPromptSet:
             "context": context,
         }
         assembler = PromptAssembler()
-        system = assembler.assemble(self._template("system", self.system), self.version, variables)
-        user = assembler.assemble(self._template("user", self.user), self.version, variables)
+        system = assembler.assemble(
+            self._template("system", self.system), self.version, variables
+        )
+        user = assembler.assemble(
+            self._template("user", self.user), self.version, variables
+        )
         return system, user
 
     def message(self, kind: str, language: str, **values: str) -> str:
@@ -63,4 +76,7 @@ class QaPromptSet:
         return Template(text).safe_substitute(values)
 
     def is_refusal(self, text: str) -> bool:
-        return self.refusal_token in (text or "")[:200].upper().replace(" ", "_") or not (text or "").strip()
+        return (
+            self.refusal_token in (text or "")[:200].upper().replace(" ", "_")
+            or not (text or "").strip()
+        )

@@ -50,16 +50,16 @@ def advice_prompt(brief: KeyIssueBrief) -> tuple[str, str]:
         user = (
             f"واقعیت‌ها:\n{block}\n\n"
             f"مسئله‌های کلیدی: {ids}.\n"
-            "یک شیء JSON با این کلیدها برگردان: \"brief\" (خلاصهٔ فارسی حداکثر ۶ جمله برای مدیرعامل، بدون جدول؛ "
-            "هر مسئلهٔ کلیدی را با شناسه‌اش نام ببر و شکاف‌های مهم را بگو)، \"order\" (فهرست شناسهٔ مسئله‌های کلیدی "
+            'یک شیء JSON با این کلیدها برگردان: "brief" (خلاصهٔ فارسی حداکثر ۶ جمله برای مدیرعامل، بدون جدول؛ '
+            'هر مسئلهٔ کلیدی را با شناسه‌اش نام ببر و شکاف‌های مهم را بگو)، "order" (فهرست شناسهٔ مسئله‌های کلیدی '
             "به ترتیبی که باید رسیدگی شوند)."
         )
         return SYSTEM_FA, user
     user = (
         f"Facts:\n{block}\n\n"
         f"Key issues: {ids}.\n"
-        "Return one JSON object with these keys: \"brief\" (an English brief for the chief executive in at most "
-        "6 sentences, no tables; name every key issue by its id and mention the important gaps), \"order\" (list of "
+        'Return one JSON object with these keys: "brief" (an English brief for the chief executive in at most '
+        '6 sentences, no tables; name every key issue by its id and mention the important gaps), "order" (list of '
         "the key issue ids in the order they should be handled)."
     )
     return SYSTEM_EN, user
@@ -99,7 +99,7 @@ def parse_advice(raw: str) -> ParsedAdvice:
         if start < 0 or end <= start:
             raise AdviceParseError("no JSON object in the reply") from None
         try:
-            data = json.loads(text[start: end + 1])
+            data = json.loads(text[start : end + 1])
         except json.JSONDecodeError as exc:
             raise AdviceParseError(f"invalid JSON: {exc.msg}") from None
         mode = "json_extracted"
@@ -124,27 +124,41 @@ class AdviceCheck:
         return self.grounded and not self.invented_ids
 
     def to_dict(self) -> dict[str, Any]:
-        return {"grounded": self.grounded, "unsupported": list(self.unsupported),
-                "invented_ids": list(self.invented_ids), "same_top": self.same_top, "mentioned": self.mentioned,
-                "ok": self.ok}
+        return {
+            "grounded": self.grounded,
+            "unsupported": list(self.unsupported),
+            "invented_ids": list(self.invented_ids),
+            "same_top": self.same_top,
+            "mentioned": self.mentioned,
+            "ok": self.ok,
+        }
 
 
-def check_advice(parsed: ParsedAdvice, brief: KeyIssueBrief, validator: FactValidator) -> AdviceCheck:
+def check_advice(
+    parsed: ParsedAdvice, brief: KeyIssueBrief, validator: FactValidator
+) -> AdviceCheck:
     report = validator.validate(parsed.brief, list(brief.facts))
-    unsupported = tuple(r.claim.raw_text for r in report.results
-                        if r.verdict in {FactVerdict.UNSUPPORTED, FactVerdict.FLAGGED})
+    unsupported = tuple(
+        r.claim.raw_text
+        for r in report.results
+        if r.verdict in {FactVerdict.UNSUPPORTED, FactVerdict.FLAGGED}
+    )
     known = set(brief.candidates) | set(brief.items)
     text_ids = set(_ISSUE_RE.findall(normalize_digits(parsed.brief).upper()))
     invented = tuple(sorted({i for i in [*parsed.order, *text_ids] if i not in known}))
-    same_top = bool(parsed.order) and bool(brief.items) and parsed.order[0] == brief.items[0]
-    mentioned = sum(1 for i in brief.items if i in normalize_digits(parsed.brief).upper())
+    same_top = (
+        bool(parsed.order) and bool(brief.items) and parsed.order[0] == brief.items[0]
+    )
+    mentioned = sum(
+        1 for i in brief.items if i in normalize_digits(parsed.brief).upper()
+    )
     return AdviceCheck(not unsupported, unsupported, invented, same_top, mentioned)
 
 
 @dataclass
 class AiBrief:
     language: str
-    status: str                      # accepted | rejected | error
+    status: str  # accepted | rejected | error
     raw: str = ""
     parsed: ParsedAdvice | None = None
     check: AdviceCheck | None = None
@@ -155,10 +169,17 @@ class AiBrief:
     completion_tokens: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        return {"language": self.language, "status": self.status,
-                "brief": self.parsed.brief if self.parsed else "",
-                "order": list(self.parsed.order) if self.parsed else [],
-                "parse_mode": self.parsed.mode if self.parsed else "error",
-                "check": self.check.to_dict() if self.check else None, "error": self.error,
-                "verdicts": list(self.verdicts), "raw": self.raw, "seconds": round(self.seconds, 3),
-                "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens}
+        return {
+            "language": self.language,
+            "status": self.status,
+            "brief": self.parsed.brief if self.parsed else "",
+            "order": list(self.parsed.order) if self.parsed else [],
+            "parse_mode": self.parsed.mode if self.parsed else "error",
+            "check": self.check.to_dict() if self.check else None,
+            "error": self.error,
+            "verdicts": list(self.verdicts),
+            "raw": self.raw,
+            "seconds": round(self.seconds, 3),
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+        }

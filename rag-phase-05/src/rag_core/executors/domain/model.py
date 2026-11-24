@@ -62,7 +62,9 @@ class Executor:
     events: list[DomainEvent] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "display_name", canonical_person_name(self.display_name))
+        object.__setattr__(
+            self, "display_name", canonical_person_name(self.display_name)
+        )
         if not self.display_name:
             raise InvariantError("executor name is required")
 

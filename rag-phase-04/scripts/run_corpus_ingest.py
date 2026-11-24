@@ -84,7 +84,9 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             failures.append(
                 {
-                    "path": str(path.relative_to(root) if path.is_relative_to(root) else path),
+                    "path": str(
+                        path.relative_to(root) if path.is_relative_to(root) else path
+                    ),
                     "format": suffix,
                     "reason": str(exc),
                     "error_type": type(exc).__name__,
@@ -133,7 +135,9 @@ def main() -> int:
             "result_line": args.pytest_line,
         },
     }
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     pytest_ok = args.pytest_exit in (None, "0", 0)
     status = "PASS" if (not failures and success and pytest_ok) else "FAIL"

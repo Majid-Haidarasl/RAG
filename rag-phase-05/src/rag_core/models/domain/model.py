@@ -80,7 +80,10 @@ class PromptTemplate:
             raise InvariantError(f"prompt version {version.version} already exists")
         self.versions.append(version)
         self.events.append(
-            DomainEvent("PromptVersionPublished", {"prompt_id": self.prompt_id, "version": version.version})
+            DomainEvent(
+                "PromptVersionPublished",
+                {"prompt_id": self.prompt_id, "version": version.version},
+            )
         )
 
     def get(self, version: str) -> PromptVersion:
@@ -128,7 +131,11 @@ PHASE2_BASELINE = (
         model_id="llm-qwen3-8b",
         role=ModelRole.LLM,
         ollama_name="qwen3:8b",
-        task_types=(TaskType.QUESTION_ANSWERING, TaskType.ISSUE_DECOMPOSITION, TaskType.LLM_AS_JUDGE),
+        task_types=(
+            TaskType.QUESTION_ANSWERING,
+            TaskType.ISSUE_DECOMPOSITION,
+            TaskType.LLM_AS_JUDGE,
+        ),
     ),
     ModelRegistryEntry(
         model_id="lvm-qwen2.5vl-3b",

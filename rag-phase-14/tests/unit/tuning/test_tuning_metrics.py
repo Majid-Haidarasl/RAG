@@ -45,16 +45,24 @@ def test_ranking_row() -> None:
     row = RankingRow("GQ-1", ("A", "A", "B", "C"), ("C",), (1, 2), 0.01234)
     assert row.first_rank == 3
     d = row.to_dict()
-    assert d["top_docs"] == ["A", "B", "C"] and d["context_facts"] == "1/2" and d["seconds"] == 0.0123
+    assert (
+        d["top_docs"] == ["A", "B", "C"]
+        and d["context_facts"] == "1/2"
+        and d["seconds"] == 0.0123
+    )
     assert RankingRow("x", ("A",), ("B",)).first_rank is None
 
 
 def test_summarize_ranking() -> None:
-    rows = [RankingRow("a", ("D1",), ("D1",), (2, 2), 0.1),
-            RankingRow("b", ("D2", "D1"), ("D1",), (1, 2), 0.3),
-            RankingRow("c", ("D2", "D3", "D4", "D5", "D6", "D1"), ("D1",), (0, 1), 0.2)]
+    rows = [
+        RankingRow("a", ("D1",), ("D1",), (2, 2), 0.1),
+        RankingRow("b", ("D2", "D1"), ("D1",), (1, 2), 0.3),
+        RankingRow("c", ("D2", "D3", "D4", "D5", "D6", "D1"), ("D1",), (0, 1), 0.2),
+    ]
     s = summarize_ranking(rows)
-    assert s.n == 3 and s.hit_at_1 == 0.333 and s.hit_at_3 == 0.667 and s.hit_at_5 == 0.667
+    assert (
+        s.n == 3 and s.hit_at_1 == 0.333 and s.hit_at_3 == 0.667 and s.hit_at_5 == 0.667
+    )
     assert s.mrr == round((1 + 0.5 + 1 / 6) / 3, 3)
     assert (s.context_facts_hit, s.context_facts_total, s.full_context) == (3, 5, 1)
     assert s.context_facts == 0.6 and s.seconds_avg == 0.2 and s.misses == ["b", "c"]
@@ -67,7 +75,11 @@ def test_summary_ignores_rows_without_expected_documents() -> None:
 
 def test_summary_metric_lookup_and_dict() -> None:
     s = summarize_ranking([RankingRow("a", ("D1",), ("D1",), (1, 1))])
-    assert s.metric("hit_at_5") == 1.0 and s.metric("context_facts") == 1.0 and s.metric("nope") is None
+    assert (
+        s.metric("hit_at_5") == 1.0
+        and s.metric("context_facts") == 1.0
+        and s.metric("nope") is None
+    )
     d = s.to_dict()
     assert d["context_facts_count"] == "1/1" and d["rows"][0]["id"] == "a"
 
@@ -79,7 +91,12 @@ def test_binary_agreement_perfect() -> None:
 
 def test_binary_agreement_lenient_judge() -> None:
     a = binary_agreement([(True, True), (True, False), (True, False), (False, False)])
-    assert (a.true_accepts, a.false_accepts, a.true_rejects, a.false_rejects) == (1, 2, 1, 0)
+    assert (a.true_accepts, a.false_accepts, a.true_rejects, a.false_rejects) == (
+        1,
+        2,
+        1,
+        0,
+    )
     assert a.accuracy == 0.5 and a.leniency == 0.667 and a.kappa == 0.2
 
 
@@ -100,6 +117,10 @@ def test_sentences() -> None:
 
 def test_detail_levels() -> None:
     four = "A. B. C. D."
-    assert detail_ok("A.", "short") and not detail_ok(four, "short") and detail_ok(four, "list")
+    assert (
+        detail_ok("A.", "short")
+        and not detail_ok(four, "short")
+        and detail_ok(four, "list")
+    )
     assert not detail_ok("A. B. C.", "refusal") and detail_ok("A. B.", "refusal")
     assert not detail_ok("", "short") and detail_ok(four, "unknown")

@@ -49,35 +49,73 @@ def answered_item(language: str = "en", **changes: object) -> GoldItem:
     quote_fa = "اولویت ۱ قطع کامل سرویس است: پاسخ ۳۰ دقیقه و رفع موقت ۴ ساعت."
     if language == "fa":
         item = GoldItem(
-            id="T-P01-fa", pair="P01", language="fa", node="N-SW-SUP", question="زمان پاسخ اولویت ۱ چقدر است؟",
-            expected_status="answered", expected_docs=("AR-SW-022",), expected_facts=(("30", "۳۰"), ("4", "۴")),
+            id="T-P01-fa",
+            pair="P01",
+            language="fa",
+            node="N-SW-SUP",
+            question="زمان پاسخ اولویت ۱ چقدر است؟",
+            expected_status="answered",
+            expected_docs=("AR-SW-022",),
+            expected_facts=(("30", "۳۰"), ("4", "۴")),
             evidence=(Evidence("AR-SW-022", "fa", quote_fa),),
             reference_answer="پاسخ ظرف ۳۰ دقیقه و رفع موقت ظرف ۴ ساعت است [AR-SW-022 §1].",
-            partial_answer="پاسخ ظرف ۳۰ دقیقه است [AR-SW-022 §1].", origin="phase8:Q01")
+            partial_answer="پاسخ ظرف ۳۰ دقیقه است [AR-SW-022 §1].",
+            origin="phase8:Q01",
+        )
     else:
         item = GoldItem(
-            id="T-P01-en", pair="P01", language="en", node="N-SW-SUP", question="What is the Priority 1 response time?",
-            expected_status="answered", expected_docs=("AR-SW-022",), expected_facts=(("30",), ("4",)),
+            id="T-P01-en",
+            pair="P01",
+            language="en",
+            node="N-SW-SUP",
+            question="What is the Priority 1 response time?",
+            expected_status="answered",
+            expected_docs=("AR-SW-022",),
+            expected_facts=(("30",), ("4",)),
             evidence=(Evidence("AR-SW-022", "en", quote_en),),
             reference_answer="Response within 30 minutes and temporary restoration within 4 hours [AR-SW-022 §1].",
-            partial_answer="Response within 30 minutes [AR-SW-022 §1].", origin="phase8:Q01")
+            partial_answer="Response within 30 minutes [AR-SW-022 §1].",
+            origin="phase8:Q01",
+        )
     return replace(item, **changes)  # type: ignore[arg-type]
 
 
 def refusal_item(language: str = "en", **changes: object) -> GoldItem:
-    text = ("INSUFFICIENT_CONTEXT No document in this scope covers unpaid leave." if language == "en"
-            else "INSUFFICIENT_CONTEXT در دامنهٔ این تیم سندی دربارهٔ مرخصی بدون حقوق نیست.")
-    question = "How many days of unpaid leave?" if language == "en" else "سقف مرخصی بدون حقوق چند روز است؟"
-    item = GoldItem(id=f"T-P09-{language}", pair="P09", language=language, node="N-SW-WEB", question=question,
-                    expected_status="out_of_scope", expected_outside_docs=("AR-HR-005",), expected_escalation="N-CEO",
-                    reference_answer=text, detail="refusal", origin="phase8:Q09")
+    text = (
+        "INSUFFICIENT_CONTEXT No document in this scope covers unpaid leave."
+        if language == "en"
+        else "INSUFFICIENT_CONTEXT در دامنهٔ این تیم سندی دربارهٔ مرخصی بدون حقوق نیست."
+    )
+    question = (
+        "How many days of unpaid leave?"
+        if language == "en"
+        else "سقف مرخصی بدون حقوق چند روز است؟"
+    )
+    item = GoldItem(
+        id=f"T-P09-{language}",
+        pair="P09",
+        language=language,
+        node="N-SW-WEB",
+        question=question,
+        expected_status="out_of_scope",
+        expected_outside_docs=("AR-HR-005",),
+        expected_escalation="N-CEO",
+        reference_answer=text,
+        detail="refusal",
+        origin="phase8:Q09",
+    )
     return replace(item, **changes)  # type: ignore[arg-type]
 
 
 class FakeScope:
     """``ScopePort`` stand-in: node -> visible documents, document -> owner, fixed escalation target."""
 
-    def __init__(self, visible: dict[str, set[str]], owners: dict[str, str], target: str = "N-CEO") -> None:
+    def __init__(
+        self,
+        visible: dict[str, set[str]],
+        owners: dict[str, str],
+        target: str = "N-CEO",
+    ) -> None:
         self.visible = {k: frozenset(v) for k, v in visible.items()}
         self.owners = owners
         self.target = target
@@ -93,6 +131,7 @@ class FakeScope:
 
     def route(self, asking: str, evidence_owners: list[str]):  # noqa: ANN201
         from rag_core.rag.domain.ports import EscalationRoute
+
         return EscalationRoute("escalate", self.target, "common ancestor")
 
 

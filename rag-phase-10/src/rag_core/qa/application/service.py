@@ -28,7 +28,11 @@ from rag_core.qa.domain.ports import ChatModelPort
 from rag_core.qa.domain.prompts import QaPromptSet
 from rag_core.rag.domain.context import ContextAssembler
 from rag_core.rag.domain.ports import EscalationRoute
-from rag_core.rag.domain.retriever import HybridRetriever, OutOfScopeEvidence, RetrievalResult
+from rag_core.rag.domain.retriever import (
+    HybridRetriever,
+    OutOfScopeEvidence,
+    RetrievalResult,
+)
 from rag_core.shared_kernel.identifiers import DocumentId
 
 
@@ -66,7 +70,11 @@ class NodeScopedQaService:
         return lexical
 
     def _threshold(self) -> float:
-        return self.config.evidence_min_vector if self.retriever.mode == "hybrid" else self.config.evidence_min_lexical
+        return (
+            self.config.evidence_min_vector
+            if self.retriever.mode == "hybrid"
+            else self.config.evidence_min_lexical
+        )
 
     def inside_strength(self, result: RetrievalResult) -> float | None:
         return self._strength(result.best_vector, result.best_lexical)
@@ -74,11 +82,15 @@ class NodeScopedQaService:
     def strong_outside(self, result: RetrievalResult) -> list[OutOfScopeEvidence]:
         th = self._threshold()
         return [
-            e for e in result.out_of_scope
-            if (s := self._strength(e.vector_score, e.lexical_score)) is not None and s >= th
+            e
+            for e in result.out_of_scope
+            if (s := self._strength(e.vector_score, e.lexical_score)) is not None
+            and s >= th
         ]
 
-    def _escalation(self, node: str, evidence: list[OutOfScopeEvidence]) -> EscalationRoute | None:
+    def _escalation(
+        self, node: str, evidence: list[OutOfScopeEvidence]
+    ) -> EscalationRoute | None:
         scope = self.retriever.scope
         owners = list(dict.fromkeys(e.owner_node for e in evidence if e.owner_node))
         if scope is None or not owners:
@@ -89,13 +101,25 @@ class NodeScopedQaService:
     def ask(self, request: QaRequest) -> QaAnswer:
         t0 = time.perf_counter()
         lang = question_language(request.question)
-        result = self.retriever.retrieve(request.question, request.node, request.filters, top_k=request.top_k)
+        result = self.retriever.retrieve(
+            request.question, request.node, request.filters, top_k=request.top_k
+        )
         timings = {"retrieval": result.timings_s.get("total", 0.0)}
-        answer = QaAnswer(request.question, request.node, lang, QaStatus.NOT_FOUND_IN_SCOPE, "",
-                          retrieved=[h.key for h in result.hits], prompt_version=self.prompts.version,
-                          model=self.model_name, timings_s=timings)
+        answer = QaAnswer(
+            request.question,
+            request.node,
+            lang,
+            QaStatus.NOT_FOUND_IN_SCOPE,
+            "",
+            retrieved=[h.key for h in result.hits],
+            prompt_version=self.prompts.version,
+            model=self.model_name,
+            timings_s=timings,
+        )
         inside = self.inside_strength(result)
-        has_evidence = bool(result.hits) and inside is not None and inside >= self._threshold()
+        has_evidence = (
+            bool(result.hits) and inside is not None and inside >= self._threshold()
+        )
         outside = self.strong_outside(result)
         if not has_evidence:
             self._refuse(answer, outside, inside)
@@ -104,21 +128,30 @@ class NodeScopedQaService:
 
         context = self.assembler.assemble(result.hits)
         answer.used_chunks = [b.source for b in context.blocks]
-        system, user = self.prompts.render(question=request.question, context=context.text,
-                                           language=lang, node=request.node)
+        system, user = self.prompts.render(
+            question=request.question,
+            context=context.text,
+            language=lang,
+            node=request.node,
+        )
         t = time.perf_counter()
         reply = self.chat.generate(system, user)
         timings["generation"] = time.perf_counter() - t
         answer.raw_model_text = reply.text
         if self.prompts.is_refusal(reply.text):
-            stronger = [e for e in outside
-                        if (s := self._strength(e.vector_score, e.lexical_score)) is not None
-                        and s >= (inside or 0.0) + self.config.escalate_margin]
+            stronger = [
+                e
+                for e in outside
+                if (s := self._strength(e.vector_score, e.lexical_score)) is not None
+                and s >= (inside or 0.0) + self.config.escalate_margin
+            ]
             if stronger:
                 self._refuse(answer, stronger, inside)
             else:
                 answer.status = QaStatus.INSUFFICIENT_CONTEXT
-                answer.text = self.prompts.message("insufficient", lang, node=request.node)
+                answer.text = self.prompts.message(
+                    "insufficient", lang, node=request.node
+                )
             timings["total"] = time.perf_counter() - t0
             return answer
 
@@ -135,18 +168,32 @@ class NodeScopedQaService:
         timings["total"] = time.perf_counter() - t0
         return answer
 
-    def _refuse(self, answer: QaAnswer, outside: list[OutOfScopeEvidence], inside: float | None) -> None:
-        stronger = [e for e in outside
-                    if inside is None
-                    or ((s := self._strength(e.vector_score, e.lexical_score)) is not None
-                        and s >= inside + self.config.escalate_margin)
-                    or inside < self._threshold()]
+    def _refuse(
+        self, answer: QaAnswer, outside: list[OutOfScopeEvidence], inside: float | None
+    ) -> None:
+        stronger = [
+            e
+            for e in outside
+            if inside is None
+            or (
+                (s := self._strength(e.vector_score, e.lexical_score)) is not None
+                and s >= inside + self.config.escalate_margin
+            )
+            or inside < self._threshold()
+        ]
         route = self._escalation(answer.node, stronger) if stronger else None
         if route is not None and route.action == "escalate":
             answer.status = QaStatus.OUT_OF_SCOPE
             answer.escalation = route
-            answer.text = self.prompts.message("out_of_scope", answer.language, node=answer.node,
-                                               target=route.target, reason=route.reason)
+            answer.text = self.prompts.message(
+                "out_of_scope",
+                answer.language,
+                node=answer.node,
+                target=route.target,
+                reason=route.reason,
+            )
         else:
             answer.status = QaStatus.NOT_FOUND_IN_SCOPE
-            answer.text = self.prompts.message("not_found", answer.language, node=answer.node)
+            answer.text = self.prompts.message(
+                "not_found", answer.language, node=answer.node
+            )

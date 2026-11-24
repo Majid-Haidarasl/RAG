@@ -9,7 +9,9 @@ from rag_core.shared_kernel.layer import LayerIndex
 
 class TransferPackageRepository(Protocol):
     def save(self, package: TransferPackage) -> None: ...
-    def latest_accepted(self, source_node: NodeIdentifier, target_node: NodeIdentifier) -> TransferPackage | None: ...
+    def latest_accepted(
+        self, source_node: NodeIdentifier, target_node: NodeIdentifier
+    ) -> TransferPackage | None: ...
 
 
 class TransferRuleSetRepository(Protocol):

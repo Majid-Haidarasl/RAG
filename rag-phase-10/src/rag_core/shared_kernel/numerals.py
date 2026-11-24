@@ -88,9 +88,7 @@ def extract_numbers(text: str) -> list[tuple[str, Decimal]]:
     # Number with optional grouping and optional decimal part.
     seps = r"[\s,٬،_]*"
     dec = r"[\.٫]"
-    pattern = re.compile(
-        rf"{_DIGIT}+(?:{seps}{_DIGIT}+)*(?:{dec}{_DIGIT}+)?"
-    )
+    pattern = re.compile(rf"{_DIGIT}+(?:{seps}{_DIGIT}+)*(?:{dec}{_DIGIT}+)?")
     found: list[tuple[str, Decimal]] = []
     for match in pattern.finditer(text):
         span = match.group(0)

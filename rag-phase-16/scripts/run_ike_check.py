@@ -79,11 +79,31 @@ TOP_K = 8
 
 # Referral-policy cases (AR-EXE-023 §1 and §3): (item, executor, expected role).
 POLICY_CASES = (
-    ("AR-ISS-024/WEB", "EX-KIAN-RAZAVI", "excluded"),       # web team, but only one matching term
-    ("AR-ISS-024/WEB", "EX-AMIN-TOURANI", "excluded"),      # matching terms, but not in the item's nodes
-    ("AR-ISS-024/HW", "EX-ROOZBEH-MOHSENI", "excluded"),    # compatibility tests, but no shared knowledge
-    ("AR-ISS-024/HW", "EX-KAMRAN-NIKPOUR", "excluded"),     # hardware deputy, sales is outside the domain
-    ("AR-ISS-024/WIN", "EX-FARZANEH-JAVADI", "excluded"),   # holds AR-HW-015 but a single matching term
+    (
+        "AR-ISS-024/WEB",
+        "EX-KIAN-RAZAVI",
+        "excluded",
+    ),  # web team, but only one matching term
+    (
+        "AR-ISS-024/WEB",
+        "EX-AMIN-TOURANI",
+        "excluded",
+    ),  # matching terms, but not in the item's nodes
+    (
+        "AR-ISS-024/HW",
+        "EX-ROOZBEH-MOHSENI",
+        "excluded",
+    ),  # compatibility tests, but no shared knowledge
+    (
+        "AR-ISS-024/HW",
+        "EX-KAMRAN-NIKPOUR",
+        "excluded",
+    ),  # hardware deputy, sales is outside the domain
+    (
+        "AR-ISS-024/WIN",
+        "EX-FARZANEH-JAVADI",
+        "excluded",
+    ),  # holds AR-HW-015 but a single matching term
 )
 # AR-EXE-023 §3 names who serves which AR-ISS-024 sub-issue.
 EXPECTED_LEADS = {
@@ -98,7 +118,9 @@ def find_root(explicit: Path | None) -> Path:
         return explicit.resolve()
     cwd = Path.cwd().resolve()
     for candidate in [cwd, *cwd.parents, ROOT_CANDIDATE]:
-        if (candidate / "pyproject.toml").is_file() and (candidate / "data" / "executors").is_dir():
+        if (candidate / "pyproject.toml").is_file() and (
+            candidate / "data" / "executors"
+        ).is_dir():
             return candidate
     raise SystemExit("could not find the repo root (pyproject.toml + data/executors/)")
 
@@ -133,28 +155,49 @@ def comparison_metrics(comparisons: dict) -> dict:  # noqa: ANN001
 
 
 def graph_summary(graph: IkeGraph) -> dict:
-    return {"relations": len(graph.relations), "counts": graph.counts(), "endpoints": graph.endpoints(),
-            "problems": graph.validate()}
+    return {
+        "relations": len(graph.relations),
+        "counts": graph.counts(),
+        "endpoints": graph.endpoints(),
+        "problems": graph.validate(),
+    }
 
 
 def probe_ollama(settings: RagSettings) -> tuple[OllamaClient | None, str, dict]:
     info: dict[str, object] = {"base_url": settings.ollama.base_url}
     try:
-        client = OllamaClient(settings.ollama.base_url, timeout_s=settings.ollama.generate_timeout_s,
-                              retries=settings.ollama.retries)
+        client = OllamaClient(
+            settings.ollama.base_url,
+            timeout_s=settings.ollama.generate_timeout_s,
+            retries=settings.ollama.retries,
+        )
         info["version"] = client.version(timeout=settings.ollama.connect_timeout_s)
         names = client.model_names(timeout=max(5.0, settings.ollama.connect_timeout_s))
     except OllamaError as exc:
         return None, f"Ollama not reachable at {settings.ollama.base_url} ({exc})", info
     info["models"] = names
-    missing = [m for m in (settings.embedding.model, settings.generation.model) if not OllamaClient.has_model(names, m)]
+    missing = [
+        m
+        for m in (settings.embedding.model, settings.generation.model)
+        if not OllamaClient.has_model(names, m)
+    ]
     if missing:
-        return None, "model(s) not installed: " + ", ".join(missing) + " (run: ollama pull " + " && ollama pull ".join(missing) + ")", info
+        return (
+            None,
+            "model(s) not installed: "
+            + ", ".join(missing)
+            + " (run: ollama pull "
+            + " && ollama pull ".join(missing)
+            + ")",
+            info,
+        )
     return client, "", info
 
 
 def main() -> int:  # noqa: C901 - one linear report
-    parser = argparse.ArgumentParser(description="Phase 9 executor analysis + IKE check.")
+    parser = argparse.ArgumentParser(
+        description="Phase 9 executor analysis + IKE check."
+    )
     parser.add_argument("--root", type=Path, default=None)
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=None)
@@ -184,7 +227,11 @@ def main() -> int:  # noqa: C901 - one linear report
 
     # ---- matching
     case = next((i for i in issues if str(i.identifier) == CASE), None)
-    case_plans: list[ReferralPlan] = matching.plans(referral_requests(case)) if case is not None and executors else []
+    case_plans: list[ReferralPlan] = (
+        matching.plans(referral_requests(case))
+        if case is not None and executors
+        else []
+    )
     flat_plans: list[ReferralPlan] = []
     if executors:
         for issue in issues:
@@ -200,22 +247,40 @@ def main() -> int:  # noqa: C901 - one linear report
     for item, executor_id, expected in POLICY_CASES:
         plan = plan_by_item.get(item)
         role = plan.match_for(executor_id).role.value if plan is not None else "missing"
-        policy.append({"item": item, "executor": executor_id, "expected": expected, "role": role, "ok": role == expected})
+        policy.append(
+            {
+                "item": item,
+                "executor": executor_id,
+                "expected": expected,
+                "role": role,
+                "ok": role == expected,
+            }
+        )
     leads_ok = bool(case_plans) and all(
-        (plan_by_item[i].lead is not None and plan_by_item[i].lead.executor_id in allowed)
-        for i, allowed in EXPECTED_LEADS.items() if i in plan_by_item
+        (
+            plan_by_item[i].lead is not None
+            and plan_by_item[i].lead.executor_id in allowed
+        )
+        for i, allowed in EXPECTED_LEADS.items()
+        if i in plan_by_item
     )
     load = matching.load(case_plans)
 
     # ---- issue-knowledge comparison (offline, lexical) and IKE graphs
     corpus = build_corpus_records(root)
-    lexical = build_retriever(corpus.records, scope=corpus.scope, config=settings.retrieval)
+    lexical = build_retriever(
+        corpus.records, scope=corpus.scope, config=settings.retrieval
+    )
     view = issue_view(case) if case is not None else None
     referrals = referrals_by_item(case_plans, executors)
     names = executor_names(executors)
     validator = CitedFactValidator()
-    offline_ike = IkeService(RetrieverKnowledgeSearch(lexical, corpus.scope), top_k=TOP_K,
-                             min_lexical=settings.qa.evidence_min_lexical, min_vector=settings.qa.evidence_min_vector)
+    offline_ike = IkeService(
+        RetrieverKnowledgeSearch(lexical, corpus.scope),
+        top_k=TOP_K,
+        min_lexical=settings.qa.evidence_min_lexical,
+        min_vector=settings.qa.evidence_min_vector,
+    )
     graph_error = ""
     registry_graph = offline_graph = None
     offline_cmp: dict = {}
@@ -231,7 +296,10 @@ def main() -> int:  # noqa: C901 - one linear report
     facts: list[str] = []
     if view is not None and offline_graph is not None:
         facts = summaries.facts(view, offline_graph, names)
-        template = {lang: summaries.template(view, offline_graph, names, lang) for lang in ("fa", "en")}
+        template = {
+            lang: summaries.template(view, offline_graph, names, lang)
+            for lang in ("fa", "en")
+        }
 
     # ---- live step
     live: dict[str, object] = {"status": "skipped", "reason": "disabled with --no-live"}
@@ -241,12 +309,32 @@ def main() -> int:  # noqa: C901 - one linear report
         if client is None:
             live = {"status": "skipped", "reason": reason}
         else:
-            print("live step: Ollama", ollama_info.get("version"), "→ hybrid comparison and IKE summaries", flush=True)
+            print(
+                "live step: Ollama",
+                ollama_info.get("version"),
+                "→ hybrid comparison and IKE summaries",
+                flush=True,
+            )
             try:
-                live = {"status": "ok", **live_step(root, settings, corpus, client, view, referrals, names, validator)}
+                live = {
+                    "status": "ok",
+                    **live_step(
+                        root,
+                        settings,
+                        corpus,
+                        client,
+                        view,
+                        referrals,
+                        names,
+                        validator,
+                    ),
+                }
             except Exception as exc:  # noqa: BLE001 - the live step never breaks the kit status
-                live = {"status": "fail", "reason": f"{type(exc).__name__}: {exc}",
-                        "traceback": traceback.format_exc(limit=5)}
+                live = {
+                    "status": "fail",
+                    "reason": f"{type(exc).__name__}: {exc}",
+                    "traceback": traceback.format_exc(limit=5),
+                }
     elif not args.no_live:
         live = {"status": "skipped", "reason": "offline IKE graph not available"}
     total_s = time.perf_counter() - t0
@@ -264,38 +352,62 @@ def main() -> int:  # noqa: C901 - one linear report
         "referral_policy": bool(policy) and all(p["ok"] for p in policy),
         "leads_match_exe023": leads_ok,
         "records_built": bool(corpus.records) and not corpus.failures,
-        "ike_graph_valid": not graph_error and registry_graph is not None and offline_graph is not None
-                           and not registry_graph.validate() and not offline_graph.validate(),
+        "ike_graph_valid": not graph_error
+        and registry_graph is not None
+        and offline_graph is not None
+        and not registry_graph.validate()
+        and not offline_graph.validate(),
         "ike_graph_consistent": registry_graph is not None
-                                and reg_counts.get("part_of") == len(subs)
-                                and reg_counts.get("depends_on") == sum(len(s.depends_on) for s in subs)
-                                and reg_counts.get("can_handle") == recommended,
-        "template_summaries_grounded": bool(template) and all(s.check.grounded for s in template.values())
-                                       and all(len(s.check.mentioned) == len(subs) for s in template.values()),
+        and reg_counts.get("part_of") == len(subs)
+        and reg_counts.get("depends_on") == sum(len(s.depends_on) for s in subs)
+        and reg_counts.get("can_handle") == recommended,
+        "template_summaries_grounded": bool(template)
+        and all(s.check.grounded for s in template.values())
+        and all(len(s.check.mentioned) == len(subs) for s in template.values()),
     }
     status = "PASS" if all(checks.values()) else "FAIL"
 
-    flat_rows = [{"item_id": p.request.item_id, "owner": p.request.owner_node,
-                  "lead": p.lead.executor_id if p.lead else None,
-                  "collaborators": [m.executor_id for m in p.collaborators]} for p in flat_plans]
+    flat_rows = [
+        {
+            "item_id": p.request.item_id,
+            "owner": p.request.owner_node,
+            "lead": p.lead.executor_id if p.lead else None,
+            "collaborators": [m.executor_id for m in p.collaborators],
+        }
+        for p in flat_plans
+    ]
     payload = {
         "kit": KIT,
         "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "python": args.python_version,
-        "pytest": {"passed": args.pytest_passed, "failed": args.pytest_failed, "errors": args.pytest_errors,
-                   "skipped": args.pytest_skipped, "exit": args.pytest_exit, "result_line": args.pytest_line},
+        "pytest": {
+            "passed": args.pytest_passed,
+            "failed": args.pytest_failed,
+            "errors": args.pytest_errors,
+            "skipped": args.pytest_skipped,
+            "exit": args.pytest_exit,
+            "result_line": args.pytest_line,
+        },
         "prior_steps": prior,
-        "models": {"embedding": settings.embedding.model, "generation": settings.generation.model,
-                   "think": settings.generation.think, "options": settings.generation.options},
+        "models": {
+            "embedding": settings.embedding.model,
+            "generation": settings.generation.model,
+            "think": settings.generation.think,
+            "options": settings.generation.options,
+        },
         "ollama": ollama_info,
         "executors": {
             "total": len(executors),
-            "validation": {"errors": [str(e) for e in loaded.report.errors],
-                           "warnings": [str(w) for w in loaded.report.warnings]},
+            "validation": {
+                "errors": [str(e) for e in loaded.report.errors],
+                "warnings": [str(w) for w in loaded.report.warnings],
+            },
             "capacity_published": sum(1 for e in executors if e.capacity.is_published),
-            "capacity_unpublished": sum(1 for e in executors if not e.capacity.is_published),
+            "capacity_unpublished": sum(
+                1 for e in executors if not e.capacity.is_published
+            ),
             "home_nodes": sorted({str(e.home_node) for e in executors}),
             "load": [row.to_dict() for row in load],
         },
@@ -311,8 +423,12 @@ def main() -> int:  # noqa: C901 - one linear report
         },
         "knowledge_offline": comparison_metrics(offline_cmp),
         "ike": {
-            "registry_graph": graph_summary(registry_graph) if registry_graph is not None else None,
-            "offline_graph": offline_graph.to_dict() if offline_graph is not None else None,
+            "registry_graph": graph_summary(registry_graph)
+            if registry_graph is not None
+            else None,
+            "offline_graph": offline_graph.to_dict()
+            if offline_graph is not None
+            else None,
             "error": graph_error,
             "facts": facts,
             "template_summaries": {k: v.to_dict() for k, v in template.items()},
@@ -320,7 +436,9 @@ def main() -> int:  # noqa: C901 - one linear report
         "live": live,
         "total_seconds": round(total_s, 2),
     }
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     # ---- summary block
     print()
@@ -338,98 +456,195 @@ def main() -> int:  # noqa: C901 - one linear report
     if prior:
         print("prior_steps: " + " ".join(f"{k}={v}" for k, v in prior.items()))
     ex = payload["executors"]
-    print(f"executors: total={ex['total']} home_nodes={len(ex['home_nodes'])} capacity_published={ex['capacity_published']} "
-          f"unpublished={ex['capacity_unpublished']} validation_errors={len(loaded.report.errors)} "
-          f"warnings={len(loaded.report.warnings)}")
+    print(
+        f"executors: total={ex['total']} home_nodes={len(ex['home_nodes'])} capacity_published={ex['capacity_published']} "
+        f"unpublished={ex['capacity_unpublished']} validation_errors={len(loaded.report.errors)} "
+        f"warnings={len(loaded.report.warnings)}"
+    )
     for e in loaded.report.errors[:10]:
         print(f"  - {e}")
     m = payload["matching"]
-    print(f"matching: case={CASE} sub_issues={len(case_plans)} recommended={recommended} named={named} "
-          f"seed_agreement={sum(1 for s in seeds if s.agrees)}/{len(seeds)} precision={m['precision']} recall={m['recall']}")
+    print(
+        f"matching: case={CASE} sub_issues={len(case_plans)} recommended={recommended} named={named} "
+        f"seed_agreement={sum(1 for s in seeds if s.agrees)}/{len(seeds)} precision={m['precision']} recall={m['recall']}"
+    )
     for p in case_plans:
         lead = p.lead
         collab = ",".join(c.display_name for c in p.collaborators) or "-"
         seed = next((s for s in seeds if s.item_id == p.request.item_id), None)
-        print(f"  {p.request.item_id}: lead={lead.display_name if lead else '-'} collab={collab} "
-              f"authority={p.request.acceptance_authority} seed={'ok' if seed and seed.agrees else 'MISMATCH'}")
+        print(
+            f"  {p.request.item_id}: lead={lead.display_name if lead else '-'} collab={collab} "
+            f"authority={p.request.acceptance_authority} seed={'ok' if seed and seed.agrees else 'MISMATCH'}"
+        )
     print("referral_roles: " + " ".join(f"{k}={v}" for k, v in m["roles"].items()))
-    print("referral_policy: " + " ".join(f"{p['executor']}@{p['item'].split('/')[1]}={p['role']}"
-                                         f"{'' if p['ok'] else '(MISMATCH)'}" for p in policy))
+    print(
+        "referral_policy: "
+        + " ".join(
+            f"{p['executor']}@{p['item'].split('/')[1]}={p['role']}"
+            f"{'' if p['ok'] else '(MISMATCH)'}"
+            for p in policy
+        )
+    )
     busy = [row for row in load if row.referrals]
-    print(f"executor_load: with_referrals={len(busy)}/{len(load)} "
-          + " ".join(f"{row.executor_id}={len(row.lead)}L+{len(row.collaborator)}C" for row in busy))
-    print(f"flat_issue_matching: issues={len(flat_plans)} with_lead={sum(1 for p in flat_plans if p.lead)}")
+    print(
+        f"executor_load: with_referrals={len(busy)}/{len(load)} "
+        + " ".join(
+            f"{row.executor_id}={len(row.lead)}L+{len(row.collaborator)}C"
+            for row in busy
+        )
+    )
+    print(
+        f"flat_issue_matching: issues={len(flat_plans)} with_lead={sum(1 for p in flat_plans if p.lead)}"
+    )
     ko = payload["knowledge_offline"]
-    print(f"knowledge_offline: mode=lexical items={ko['items']} cited_recall@{TOP_K}={ko['cited_recall_mean']} "
-          f"covered={ko['covered']}/{ko['cited']} suggested={ko['suggested']} cited_outside_scope={ko['cited_outside_scope']} "
-          f"with_evidence={ko['with_evidence']}/{ko['items']}")
+    print(
+        f"knowledge_offline: mode=lexical items={ko['items']} cited_recall@{TOP_K}={ko['cited_recall_mean']} "
+        f"covered={ko['covered']}/{ko['cited']} suggested={ko['suggested']} cited_outside_scope={ko['cited_outside_scope']} "
+        f"with_evidence={ko['with_evidence']}/{ko['items']}"
+    )
     if registry_graph is not None:
-        print("ike_registry_graph: relations=" + str(len(registry_graph.relations)) + " "
-              + " ".join(f"{k}={v}" for k, v in registry_graph.counts().items()))
+        print(
+            "ike_registry_graph: relations="
+            + str(len(registry_graph.relations))
+            + " "
+            + " ".join(f"{k}={v}" for k, v in registry_graph.counts().items())
+        )
     if offline_graph is not None:
-        print("ike_offline_graph: relations=" + str(len(offline_graph.relations)) + " "
-              + " ".join(f"{k}={v}" for k, v in offline_graph.counts().items()))
+        print(
+            "ike_offline_graph: relations="
+            + str(len(offline_graph.relations))
+            + " "
+            + " ".join(f"{k}={v}" for k, v in offline_graph.counts().items())
+        )
         lacks = offline_graph.of_type(RelationType.KNOWLEDGE_LACK)
-        print("knowledge_lacks: " + (" ".join(f"{r.source_id.split('/')[-1]}->{r.target_id}" for r in lacks) or "none"))
+        print(
+            "knowledge_lacks: "
+            + (
+                " ".join(f"{r.source_id.split('/')[-1]}->{r.target_id}" for r in lacks)
+                or "none"
+            )
+        )
     if graph_error:
         print(f"ike_error: {graph_error}")
     if template:
-        print("summary_template: " + " ".join(
-            f"{k}=grounded:{v.check.grounded} coverage={v.check.coverage} claims={v.check.claims}" for k, v in template.items()))
-    print(f"live: {live['status']}" + (f" ({live.get('reason')})" if live.get("reason") else ""))
+        print(
+            "summary_template: "
+            + " ".join(
+                f"{k}=grounded:{v.check.grounded} coverage={v.check.coverage} claims={v.check.claims}"
+                for k, v in template.items()
+            )
+        )
+    print(
+        f"live: {live['status']}"
+        + (f" ({live.get('reason')})" if live.get("reason") else "")
+    )
     if live["status"] == "ok":
         ix = live["index"]  # type: ignore[index]
         kl = live["knowledge"]  # type: ignore[index]
-        print(f"live_index: active={ix['active']} embedded={ix['embedded']} reused={ix['reused']} dim={ix['dim']} "
-              f"build_s={ix['seconds']}")
-        print(f"live_knowledge: mode=hybrid cited_recall@{TOP_K}={kl['cited_recall_mean']} covered={kl['covered']}/{kl['cited']} "
-              f"suggested={kl['suggested']} with_evidence={kl['with_evidence']}/{kl['items']} search_avg_s={kl['search_avg_s']}")
-        print("live_graph: relations=" + str(live["graph"]["relations"]) + " "  # type: ignore[index]
-              + " ".join(f"{k}={v}" for k, v in live["graph"]["counts"].items()))  # type: ignore[index,union-attr]
+        print(
+            f"live_index: active={ix['active']} embedded={ix['embedded']} reused={ix['reused']} dim={ix['dim']} "
+            f"build_s={ix['seconds']}"
+        )
+        print(
+            f"live_knowledge: mode=hybrid cited_recall@{TOP_K}={kl['cited_recall_mean']} covered={kl['covered']}/{kl['cited']} "
+            f"suggested={kl['suggested']} with_evidence={kl['with_evidence']}/{kl['items']} search_avg_s={kl['search_avg_s']}"
+        )
+        print(
+            "live_graph: relations="
+            + str(live["graph"]["relations"])
+            + " "  # type: ignore[index]
+            + " ".join(f"{k}={v}" for k, v in live["graph"]["counts"].items())
+        )  # type: ignore[index,union-attr]
         for lang, s in live["summaries"].items():  # type: ignore[union-attr]
-            print(f"live_summary_{lang}: grounded={s['check']['grounded']} unsupported={len(s['check']['unsupported'])} "
-                  f"coverage={s['check']['coverage']} chars={len(s['text'])} gen_s={s['seconds']} "
-                  f"tokens={s['prompt_tokens']}+{s['completion_tokens']}")
+            print(
+                f"live_summary_{lang}: grounded={s['check']['grounded']} unsupported={len(s['check']['unsupported'])} "
+                f"coverage={s['check']['coverage']} chars={len(s['text'])} gen_s={s['seconds']} "
+                f"tokens={s['prompt_tokens']}+{s['completion_tokens']}"
+            )
         print(f"live_timings: total_s={round(total_s, 1)}")
-    print("checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items()))
+    print(
+        "checks: " + " ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in checks.items())
+    )
     shown = out_json.resolve()
-    shown = shown.relative_to(root.resolve()) if shown.is_relative_to(root.resolve()) else out_json
+    shown = (
+        shown.relative_to(root.resolve())
+        if shown.is_relative_to(root.resolve())
+        else out_json
+    )
     print(f"results_json: {shown}")
     print(SEPARATOR_END)
     return 0 if status == "PASS" else 1
 
 
-def live_step(root: Path, settings: RagSettings, corpus, client: OllamaClient, view, referrals,  # noqa: ANN001
-              names, validator) -> dict:  # noqa: ANN001
-    embedder = OllamaEmbedder(client, settings.embedding.model, settings.embedding.batch_size,
-                              settings.embedding.num_ctx, settings.ollama.keep_alive, settings.ollama.embed_timeout_s)
+def live_step(
+    root: Path,
+    settings: RagSettings,
+    corpus,
+    client: OllamaClient,
+    view,
+    referrals,  # noqa: ANN001
+    names,
+    validator,
+) -> dict:  # noqa: ANN001
+    embedder = OllamaEmbedder(
+        client,
+        settings.embedding.model,
+        settings.embedding.batch_size,
+        settings.embedding.num_ctx,
+        settings.ollama.keep_alive,
+        settings.ollama.embed_timeout_s,
+    )
     with SqliteIndexStore(root / settings.index.path) as store:
+
         def progress(done: int, total: int) -> None:
             if done == total or done % (settings.embedding.batch_size * 10) == 0:
                 print(f"  embedded {done}/{total}", flush=True)
 
-        build = IndexBuilder(store, embedder, settings.embedding.model, settings.embedding.batch_size).refresh(
-            corpus.records, progress)
+        build = IndexBuilder(
+            store, embedder, settings.embedding.model, settings.embedding.batch_size
+        ).refresh(corpus.records, progress)
         vectors = store.load_vectors(settings.embedding.model)
     if vectors.dim != settings.embedding.dim:
-        raise OllamaError(f"embedding dim {vectors.dim} != configured {settings.embedding.dim}")
-    hybrid = build_retriever(corpus.records, vectors=vectors, embedder=embedder, scope=corpus.scope,
-                             config=settings.retrieval)
-    ike = IkeService(RetrieverKnowledgeSearch(hybrid, corpus.scope), top_k=TOP_K,
-                     min_lexical=settings.qa.evidence_min_lexical, min_vector=settings.qa.evidence_min_vector)
+        raise OllamaError(
+            f"embedding dim {vectors.dim} != configured {settings.embedding.dim}"
+        )
+    hybrid = build_retriever(
+        corpus.records,
+        vectors=vectors,
+        embedder=embedder,
+        scope=corpus.scope,
+        config=settings.retrieval,
+    )
+    ike = IkeService(
+        RetrieverKnowledgeSearch(hybrid, corpus.scope),
+        top_k=TOP_K,
+        min_lexical=settings.qa.evidence_min_lexical,
+        min_vector=settings.qa.evidence_min_vector,
+    )
     comparisons = ike.compare(view)
     graph = ike.build(view, referrals, comparisons)
-    chat = OllamaChatModel(client, settings.generation.model, dict(settings.generation.options),
-                           settings.generation.think, settings.ollama.keep_alive, settings.ollama.generate_timeout_s)
+    chat = OllamaChatModel(
+        client,
+        settings.generation.model,
+        dict(settings.generation.options),
+        settings.generation.think,
+        settings.ollama.keep_alive,
+        settings.ollama.generate_timeout_s,
+    )
     service = IkeSummaryService(validator, chat)
     summaries = {}
     for lang in ("fa", "en"):
         print(f"  summary {lang} ...", flush=True)
         summaries[lang] = service.generate(view, graph, names, lang).to_dict()
     # The fact lines the summaries were written from; Phase 10 judges the summaries against them.
-    return {"index": build.to_dict(), "knowledge": comparison_metrics(comparisons), "graph": graph_summary(graph),
-            "graph_relations": [r.to_dict() for r in graph.relations], "summaries": summaries,
-            "facts": service.facts(view, graph, names)}
+    return {
+        "index": build.to_dict(),
+        "knowledge": comparison_metrics(comparisons),
+        "graph": graph_summary(graph),
+        "graph_relations": [r.to_dict() for r in graph.relations],
+        "summaries": summaries,
+        "facts": service.facts(view, graph, names),
+    }
 
 
 if __name__ == "__main__":

@@ -6,10 +6,18 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from rag_core.executors.domain.matching import ExecutorMatcher, ReferralPlan, ReferralRequest, ReferralRole
+from rag_core.executors.domain.matching import (
+    ExecutorMatcher,
+    ReferralPlan,
+    ReferralRequest,
+    ReferralRole,
+)
 from rag_core.executors.domain.model import Executor
 from rag_core.executors.domain.ports import TeamDirectory
-from rag_core.executors.domain.validation import ExecutorRegistryValidator, ExecutorValidationReport
+from rag_core.executors.domain.validation import (
+    ExecutorRegistryValidator,
+    ExecutorValidationReport,
+)
 from rag_core.executors.infrastructure.memory import InMemoryExecutorRepository
 from rag_core.executors.infrastructure.registry_json import JsonExecutorRegistry
 from rag_core.shared_kernel.errors import NotFoundError
@@ -57,8 +65,14 @@ class SeedComparison:
         return len(set(self.resolved) & set(self.recommended))
 
     def to_dict(self) -> dict[str, object]:
-        return {"item_id": self.item_id, "named": list(self.named), "resolved": list(self.resolved),
-                "unresolved": list(self.unresolved), "recommended": list(self.recommended), "agrees": self.agrees}
+        return {
+            "item_id": self.item_id,
+            "named": list(self.named),
+            "resolved": list(self.resolved),
+            "unresolved": list(self.unresolved),
+            "recommended": list(self.recommended),
+            "agrees": self.agrees,
+        }
 
 
 @dataclass
@@ -75,13 +89,23 @@ class ExecutorLoad:
         return len(self.lead) + len(self.collaborator)
 
     def to_dict(self) -> dict[str, object]:
-        return {"executor_id": self.executor_id, "name": self.name, "home_node": self.home_node,
-                "capacity": self.capacity, "lead": self.lead, "collaborator": self.collaborator,
-                "referrals": self.referrals}
+        return {
+            "executor_id": self.executor_id,
+            "name": self.name,
+            "home_node": self.home_node,
+            "capacity": self.capacity,
+            "lead": self.lead,
+            "collaborator": self.collaborator,
+            "referrals": self.referrals,
+        }
 
 
 class ExecutorMatchingService:
-    def __init__(self, repository: InMemoryExecutorRepository, matcher: ExecutorMatcher | None = None) -> None:
+    def __init__(
+        self,
+        repository: InMemoryExecutorRepository,
+        matcher: ExecutorMatcher | None = None,
+    ) -> None:
         self.repo = repository
         self.matcher = matcher or ExecutorMatcher()
 
@@ -103,13 +127,25 @@ class ExecutorMatchingService:
 
     def compare_with_seed(self, plan: ReferralPlan) -> SeedComparison:
         resolved, unresolved = self.resolve_names(plan.request.named_executors)
-        return SeedComparison(plan.request.item_id, plan.request.named_executors, tuple(resolved),
-                              tuple(unresolved), tuple(plan.recommended_ids()))
+        return SeedComparison(
+            plan.request.item_id,
+            plan.request.named_executors,
+            tuple(resolved),
+            tuple(unresolved),
+            tuple(plan.recommended_ids()),
+        )
 
     def load(self, plans: list[ReferralPlan]) -> list[ExecutorLoad]:
         """Referrals per executor across plans (lead / collaborator), registry order."""
-        rows = {str(e.identifier): ExecutorLoad(str(e.identifier), e.display_name, str(e.home_node), e.capacity.describe())
-                for e in self.repo.list_all()}
+        rows = {
+            str(e.identifier): ExecutorLoad(
+                str(e.identifier),
+                e.display_name,
+                str(e.home_node),
+                e.capacity.describe(),
+            )
+            for e in self.repo.list_all()
+        }
         for plan in plans:
             lead = plan.lead
             if lead is not None:

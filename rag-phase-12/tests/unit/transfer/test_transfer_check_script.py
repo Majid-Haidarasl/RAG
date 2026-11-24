@@ -11,19 +11,37 @@ import yaml
 from tests.fixtures.judge.samples import reply
 from tests.fixtures.rag.fakes import FakeOllamaServer
 
-pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg, pytest.mark.processing, pytest.mark.slow]
+pytestmark = [
+    pytest.mark.transfer,
+    pytest.mark.transfer_pkg,
+    pytest.mark.processing,
+    pytest.mark.slow,
+]
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "scripts" / "run_transfer_check.py"
 
 
 def run(tmp_path: Path, *args: str) -> tuple[subprocess.CompletedProcess, dict]:
-    cmd = [sys.executable, str(SCRIPT), "--out", str(tmp_path / "out"), "--db", str(tmp_path / "db.sqlite"),
-           "--exports", str(tmp_path / "exports"), *args]
+    cmd = [
+        sys.executable,
+        str(SCRIPT),
+        "--out",
+        str(tmp_path / "out"),
+        "--db",
+        str(tmp_path / "db.sqlite"),
+        "--exports",
+        str(tmp_path / "exports"),
+        *args,
+    ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900, check=False)
-    lines = [line for line in proc.stdout.splitlines() if line.startswith("results_json: ")]
+    lines = [
+        line for line in proc.stdout.splitlines() if line.startswith("results_json: ")
+    ]
     assert lines, proc.stdout[-3000:] + proc.stderr[-3000:]
-    return proc, json.loads(Path(lines[0].split(": ", 1)[1]).read_text(encoding="utf-8"))
+    return proc, json.loads(
+        Path(lines[0].split(": ", 1)[1]).read_text(encoding="utf-8")
+    )
 
 
 def _config(tmp_path: Path, url: str) -> Path:
@@ -50,7 +68,10 @@ def test_offline_cycle_passes(tmp_path: Path) -> None:
     assert "======== END PHASE 11 SUMMARY ========" in out
     assert (tmp_path / "exports" / "1403-Q2" / "latest-packages.csv").is_file()
     board = next(p for p in data["packages"] if p["source_node"] == "N-CEO")
-    assert board["detail_level"] == "executive" and len({i["issue"]["issue_id"] for i in board["items"]}) <= 3
+    assert (
+        board["detail_level"] == "executive"
+        and len({i["issue"]["issue_id"] for i in board["items"]}) <= 3
+    )
 
 
 def test_second_run_stores_nothing_new(tmp_path: Path) -> None:
@@ -70,8 +91,13 @@ def test_failed_prior_step_fails_the_kit(tmp_path: Path) -> None:
 def _fake_reply(messages: list[dict]) -> str:
     system = messages[0]["content"] if messages else ""
     if system.startswith("You advise") or system.startswith("تو به مدیران"):
-        return json.dumps({"summary": "The package lists the open work.", "raise": ["AR-ISS-024/HW"],
-                           "reason": "It matters."})
+        return json.dumps(
+            {
+                "summary": "The package lists the open work.",
+                "raise": ["AR-ISS-024/HW"],
+                "reason": "It matters.",
+            }
+        )
     return reply()
 
 

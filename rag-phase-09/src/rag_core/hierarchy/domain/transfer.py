@@ -32,10 +32,20 @@ class TransferRequirement:
     sources: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        if self.direction is TransferDirection.UP and self.target.value != self.layer.value - 1:
-            raise InvariantError(f"{self.layer} hands over upward only to L{self.layer.value - 1}")
-        if self.direction is TransferDirection.DOWN and self.target.value != self.layer.value + 1:
-            raise InvariantError(f"{self.layer} hands down only to L{self.layer.value + 1}")
+        if (
+            self.direction is TransferDirection.UP
+            and self.target.value != self.layer.value - 1
+        ):
+            raise InvariantError(
+                f"{self.layer} hands over upward only to L{self.layer.value - 1}"
+            )
+        if (
+            self.direction is TransferDirection.DOWN
+            and self.target.value != self.layer.value + 1
+        ):
+            raise InvariantError(
+                f"{self.layer} hands down only to L{self.layer.value + 1}"
+            )
         if self.target == self.layer:
             raise InvariantError("a layer cannot transfer to itself")
 

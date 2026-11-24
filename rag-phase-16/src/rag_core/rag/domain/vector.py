@@ -54,13 +54,22 @@ class InMemoryVectorIndex:
     def __len__(self) -> int:
         return len(self._vectors)
 
-    def search(self, vector: list[float], k: int, allowed: Iterable[str] | None = None) -> list[tuple[str, float]]:
+    def search(
+        self, vector: list[float], k: int, allowed: Iterable[str] | None = None
+    ) -> list[tuple[str, float]]:
         if not self._vectors:
             return []
         q = l2_normalize(vector)
         if len(q) != self.dim:
             raise InvariantError(f"query dim {len(q)} != index dim {self.dim}")
-        keys = self._vectors.keys() if allowed is None else [a for a in allowed if a in self._vectors]
-        scored = [(key, float(sum(x * y for x, y in zip(q, self._vectors[key])))) for key in keys]
+        keys = (
+            self._vectors.keys()
+            if allowed is None
+            else [a for a in allowed if a in self._vectors]
+        )
+        scored = [
+            (key, float(sum(x * y for x, y in zip(q, self._vectors[key]))))
+            for key in keys
+        ]
         scored.sort(key=lambda kv: (-kv[1], kv[0]))
         return scored[:k]

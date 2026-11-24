@@ -5,7 +5,13 @@ from pathlib import Path
 import pytest
 
 from rag_core.judging.domain.model import JudgeParseError
-from rag_core.judging.domain.parser import JudgeOutputParser, json_objects, repair_json, round_half_up, strip_wrappers
+from rag_core.judging.domain.parser import (
+    JudgeOutputParser,
+    json_objects,
+    repair_json,
+    round_half_up,
+    strip_wrappers,
+)
 from rag_core.judging.domain.rubric import default_rubric
 from rag_core.judging.infrastructure.calibration_json import load_parser_cases
 
@@ -41,20 +47,32 @@ def test_fixture_file_covers_every_mode() -> None:
 
 
 def test_scores_come_back_in_rubric_order_with_total() -> None:
-    parsed = _parser().parse('{"clarity": 3, "grounding": 5, "citation": 4, "correctness": 5, "completeness": 3}')
-    assert list(parsed.scores) == ["grounding", "correctness", "citation", "completeness", "clarity"]
+    parsed = _parser().parse(
+        '{"clarity": 3, "grounding": 5, "citation": 4, "correctness": 5, "completeness": 3}'
+    )
+    assert list(parsed.scores) == [
+        "grounding",
+        "correctness",
+        "citation",
+        "completeness",
+        "clarity",
+    ]
     assert parsed.total == 20 and parsed.complete
 
 
 def test_reported_total_is_ignored_and_mismatch_reported() -> None:
-    parsed = _parser().parse('{"scores": {"grounding": 2, "correctness": 2, "citation": 2, "completeness": 2, '
-                             '"clarity": 2}, "total_score": 19}')
+    parsed = _parser().parse(
+        '{"scores": {"grounding": 2, "correctness": 2, "citation": 2, "completeness": 2, '
+        '"clarity": 2}, "total_score": 19}'
+    )
     assert parsed.total == 10 and parsed.reported_total == 19
     assert "total_mismatch:reported=19,computed=10" in parsed.warnings
 
 
 def test_issues_are_kept_short() -> None:
-    parsed = _parser().parse('{"scores": {"grounding": 5}, "issues": ["' + "x" * 500 + '", "", "second"]}')
+    parsed = _parser().parse(
+        '{"scores": {"grounding": 5}, "issues": ["' + "x" * 500 + '", "", "second"]}'
+    )
     assert len(parsed.issues) == 2 and len(parsed.issues[0]) == 200
     assert parsed.missing == ("correctness", "citation", "completeness", "clarity")
 
@@ -71,18 +89,24 @@ def test_duplicate_alias_is_reported_once() -> None:
 
 
 def test_key_value_with_persian_digits_and_markdown() -> None:
-    parsed = _parser().parse("**Grounding**: ۴\n- correctness = 5\nCitation quality: none\nclarity: 2 out of 3")
+    parsed = _parser().parse(
+        "**Grounding**: ۴\n- correctness = 5\nCitation quality: none\nclarity: 2 out of 3"
+    )
     assert parsed.mode == "key_value"
     assert parsed.scores == {"grounding": 4, "correctness": 5, "clarity": 2}
 
 
 def test_unclosed_think_block_is_dropped() -> None:
-    raw = "<think>scores could be {grounding: 1}</think>\n{\"scores\": {\"grounding\": 5, \"correctness\": 5, " \
-          "\"citation\": 4, \"completeness\": 3, \"clarity\": 3}}"
+    raw = (
+        '<think>scores could be {grounding: 1}</think>\n{"scores": {"grounding": 5, "correctness": 5, '
+        '"citation": 4, "completeness": 3, "clarity": 3}}'
+    )
     assert _parser().parse(raw).total == 20
 
 
-@pytest.mark.parametrize("raw", ["", "   ", "[1, 2, 3]", '{"verdict": "accept"}', "no scores here"])
+@pytest.mark.parametrize(
+    "raw", ["", "   ", "[1, 2, 3]", '{"verdict": "accept"}', "no scores here"]
+)
 def test_unreadable_replies_raise(raw: str) -> None:
     with pytest.raises(JudgeParseError):
         _parser().parse(raw)
@@ -94,8 +118,11 @@ def test_criteria_without_numbers_raise() -> None:
 
 
 def test_helpers() -> None:
-    assert strip_wrappers("```json\n{\"a\": ۵}\n```").strip() == '{"a": 5}'
-    assert json_objects('x {"a": {"b": 1}} y {"c": 2}') == ['{"a": {"b": 1}}', '{"c": 2}']
+    assert strip_wrappers('```json\n{"a": ۵}\n```').strip() == '{"a": 5}'
+    assert json_objects('x {"a": {"b": 1}} y {"c": 2}') == [
+        '{"a": {"b": 1}}',
+        '{"c": 2}',
+    ]
     assert json_objects('{"a": [1, {"b": "c') == ['{"a": [1, {"b": "c"}]}']
     assert repair_json("{a: 1, 'b': True,}") == '{"a": 1, "b": true}'
     assert [round_half_up(x) for x in (2.5, 3.49, -0.5, 0.5)] == [3, 3, 0, 1]

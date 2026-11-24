@@ -20,12 +20,20 @@ import re
 
 from rag_core.judging.domain.cases import JudgeCase
 from rag_core.judging.domain.rubric import OutputKind
-from rag_core.judging.domain.text import BRACKET_RE, bracket_refs, contains_id, sentences, words
+from rag_core.judging.domain.text import (
+    BRACKET_RE,
+    bracket_refs,
+    contains_id,
+    sentences,
+    words,
+)
 from rag_core.shared_kernel.numerals import normalize_digits
 
 FAKE_LABEL = "AR-ZZZ-999 §99"
 # One capturing group only, so ``split`` alternates free text and protected spans.
-_PROTECTED_RE = re.compile(r"(\[[^\[\]]{3,200}\]|\b(?:AR|PRJ|N|EX)-[A-Za-z0-9][A-Za-z0-9/\-]*|§\s*\d+)")
+_PROTECTED_RE = re.compile(
+    r"(\[[^\[\]]{3,200}\]|\b(?:AR|PRJ|N|EX)-[A-Za-z0-9][A-Za-z0-9/\-]*|§\s*\d+)"
+)
 _NUMBER_RE = re.compile(r"(?<![A-Za-z0-9.\-/])(\d+)((?:\.\d+)?)(?![A-Za-z0-9])")
 
 REFUSAL_TEXT = {
@@ -48,8 +56,12 @@ class NegativeKind(StrEnum):
     WRONG_LEAD = "wrong_lead"
 
 
-ANSWER_ORDER = (NegativeKind.WRONG_NUMBER, NegativeKind.FABRICATED_CITATION, NegativeKind.OFF_TOPIC,
-                NegativeKind.REFUSE_ANSWERABLE)
+ANSWER_ORDER = (
+    NegativeKind.WRONG_NUMBER,
+    NegativeKind.FABRICATED_CITATION,
+    NegativeKind.OFF_TOPIC,
+    NegativeKind.REFUSE_ANSWERABLE,
+)
 SUMMARY_ORDER = (NegativeKind.DROP_ITEMS, NegativeKind.WRONG_LEAD)
 
 
@@ -77,13 +89,22 @@ def wrong_number(case: JudgeCase) -> JudgeCase | None:
 def fabricated_citation(case: JudgeCase) -> JudgeCase | None:
     if not bracket_refs(case.output):
         return None
-    return case.mutated(NegativeKind.FABRICATED_CITATION.value, BRACKET_RE.sub(f"[{FAKE_LABEL}]", case.output))
+    return case.mutated(
+        NegativeKind.FABRICATED_CITATION.value,
+        BRACKET_RE.sub(f"[{FAKE_LABEL}]", case.output),
+    )
 
 
 def off_topic(case: JudgeCase, pool: list[JudgeCase]) -> JudgeCase | None:
-    own = {r.document_id for r in bracket_refs(case.output)} | {b.document_id for b in case.sources}
+    own = {r.document_id for r in bracket_refs(case.output)} | {
+        b.document_id for b in case.sources
+    }
     for other in pool:
-        if other.case_id == case.case_id or other.kind is not OutputKind.QA_ANSWER or other.refused:
+        if (
+            other.case_id == case.case_id
+            or other.kind is not OutputKind.QA_ANSWER
+            or other.refused
+        ):
             continue
         if other.language != case.language or not other.output.strip():
             continue
@@ -96,15 +117,22 @@ def off_topic(case: JudgeCase, pool: list[JudgeCase]) -> JudgeCase | None:
 def refuse_answerable(case: JudgeCase) -> JudgeCase | None:
     if case.kind is not OutputKind.QA_ANSWER:
         return None
-    return case.mutated(NegativeKind.REFUSE_ANSWERABLE.value, REFUSAL_TEXT[case.language],
-                        status="insufficient_context")
+    return case.mutated(
+        NegativeKind.REFUSE_ANSWERABLE.value,
+        REFUSAL_TEXT[case.language],
+        status="insufficient_context",
+    )
 
 
 def answer_unanswerable(case: JudgeCase) -> JudgeCase | None:
     if case.kind is not OutputKind.QA_REFUSAL:
         return None
-    return case.mutated(NegativeKind.ANSWER_UNANSWERABLE.value, FABRICATED_ANSWER[case.language],
-                        status="answered", escalation="")
+    return case.mutated(
+        NegativeKind.ANSWER_UNANSWERABLE.value,
+        FABRICATED_ANSWER[case.language],
+        status="answered",
+        escalation="",
+    )
 
 
 def drop_items(case: JudgeCase) -> JudgeCase | None:
@@ -147,12 +175,14 @@ def wrong_lead(case: JudgeCase) -> JudgeCase | None:
     return case.mutated(NegativeKind.WRONG_LEAD.value, text)
 
 
-def negative_for(case: JudgeCase, index: int, pool: list[JudgeCase]) -> JudgeCase | None:
+def negative_for(
+    case: JudgeCase, index: int, pool: list[JudgeCase]
+) -> JudgeCase | None:
     """One negative control per positive case; the preferred kind rotates with ``index``."""
     if case.kind is OutputKind.QA_REFUSAL:
         return answer_unanswerable(case)
     if case.kind is OutputKind.IKE_SUMMARY:
-        order = SUMMARY_ORDER[index % 2:] + SUMMARY_ORDER[:index % 2]
+        order = SUMMARY_ORDER[index % 2 :] + SUMMARY_ORDER[: index % 2]
     else:
         start = index % len(ANSWER_ORDER)
         order = ANSWER_ORDER[start:] + ANSWER_ORDER[:start]

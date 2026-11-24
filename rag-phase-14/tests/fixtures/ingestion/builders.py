@@ -82,7 +82,11 @@ def _minimal_text_pdf(stream: bytes) -> bytes:
         return f"{n} 0 obj\n{body}\nendobj\n".encode("latin-1")
 
     font = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
-    contents = f"<< /Length {len(stream)} >>\nstream\n".encode("latin-1") + stream + b"\nendstream"
+    contents = (
+        f"<< /Length {len(stream)} >>\nstream\n".encode("latin-1")
+        + stream
+        + b"\nendstream"
+    )
     page = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>"
     pages = "<< /Type /Pages /Kids [3 0 R] /Count 1 >>"
     catalog = "<< /Type /Catalog /Pages 2 0 R >>"

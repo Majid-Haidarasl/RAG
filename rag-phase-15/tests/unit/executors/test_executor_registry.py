@@ -9,13 +9,19 @@ from rag_core.executors.infrastructure.memory import InMemoryExecutorRepository
 from rag_core.executors.infrastructure.registry_json import executor_from_record
 from rag_core.shared_kernel.errors import NotFoundError
 from rag_core.shared_kernel.identifiers import ExecutorId
-from tests.fixtures.executors.registry import raw_records, shipped_executors, team_directory
+from tests.fixtures.executors.registry import (
+    raw_records,
+    shipped_executors,
+    team_directory,
+)
 
 pytestmark = [pytest.mark.executors, pytest.mark.matching]
 
 
 def _validate(records: list[dict]):  # noqa: ANN202
-    return ExecutorRegistryValidator(team_directory(), corpus_document_ids()).validate(records)
+    return ExecutorRegistryValidator(team_directory(), corpus_document_ids()).validate(
+        records
+    )
 
 
 def test_shipped_registry_is_valid_with_three_unpublished_capacities() -> None:
@@ -23,7 +29,11 @@ def test_shipped_registry_is_valid_with_three_unpublished_capacities() -> None:
     assert report.ok, report.errors
     assert report.checked == 15
     assert len(report.warnings) == 3
-    assert {w.executor_id for w in report.warnings} == {"EX-BAHAR-ESKANDARI", "EX-REZA-ABBASI", "EX-MAHSA-JALALI"}
+    assert {w.executor_id for w in report.warnings} == {
+        "EX-BAHAR-ESKANDARI",
+        "EX-REZA-ABBASI",
+        "EX-MAHSA-JALALI",
+    }
 
 
 def test_shipped_executors_are_people_on_execution_teams() -> None:
@@ -55,7 +65,10 @@ def test_record_mapping() -> None:
     assert str(person.home_node) == "N-ADM-LEG"
     assert not person.capacity.is_published
     assert [str(d) for d in person.knowledge_documents] == ["AR-LEG-009"]
-    assert person.role == "Legal and contracts specialist" and person.source_document == "AR-EXE-023"
+    assert (
+        person.role == "Legal and contracts specialist"
+        and person.source_document == "AR-EXE-023"
+    )
 
 
 def _mutated(**changes: object) -> list[dict]:

@@ -19,12 +19,29 @@ from rag_core.knowledge.domain.services import Citation
 from rag_core.shared_kernel.identifiers import DocumentId, NodeIdentifier
 from rag_core.shared_kernel.language import LanguageCode
 from rag_core.shared_kernel.layer import LayerIndex
-from rag_core.transfer.domain.model import PackageStatus, TransferDetailLevel, TransferPackage
+from rag_core.transfer.domain.model import (
+    PackageStatus,
+    TransferDetailLevel,
+    TransferPackage,
+)
 from rag_core.transfer.infrastructure.csv_format import package_from_csv, package_to_csv
 
 INDEX_FILE = "latest-packages.csv"
-INDEX_COLUMNS = ("cycle_id", "source_node", "target_node", "target_layer", "detail_level", "status", "revision",
-                 "items", "words_en", "words_fa", "content_hash", "created_at", "file")
+INDEX_COLUMNS = (
+    "cycle_id",
+    "source_node",
+    "target_node",
+    "target_layer",
+    "detail_level",
+    "status",
+    "revision",
+    "items",
+    "words_en",
+    "words_fa",
+    "content_hash",
+    "created_at",
+    "file",
+)
 
 
 def citation_from_text(text: str) -> Citation:
@@ -45,7 +62,9 @@ def package_from_payload(payload: dict[str, Any]) -> TransferPackage:
     )
 
 
-def export_latest(rows: list[dict[str, Any]], out_dir: Path, cycle_id: str) -> list[Path]:
+def export_latest(
+    rows: list[dict[str, Any]], out_dir: Path, cycle_id: str
+) -> list[Path]:
     """Write one CSV per latest package plus the index; stale package files of this cycle are removed."""
     folder = Path(out_dir) / cycle_id
     folder.mkdir(parents=True, exist_ok=True)
@@ -57,7 +76,9 @@ def export_latest(rows: list[dict[str, Any]], out_dir: Path, cycle_id: str) -> l
     index_rows: list[list[str]] = []
     for r in rows:
         path = folder / f"{r['source_node']}.csv"
-        path.write_text(package_to_csv(package_from_payload(r["payload"])), encoding="utf-8")
+        path.write_text(
+            package_to_csv(package_from_payload(r["payload"])), encoding="utf-8"
+        )
         written.append(path)
         index_rows.append([str(r.get(c, "")) for c in INDEX_COLUMNS[:-1]] + [path.name])
     buffer = StringIO()
@@ -70,7 +91,9 @@ def export_latest(rows: list[dict[str, Any]], out_dir: Path, cycle_id: str) -> l
     return written
 
 
-def round_trip_problems(rows: list[dict[str, Any]], out_dir: Path, cycle_id: str) -> list[str]:
+def round_trip_problems(
+    rows: list[dict[str, Any]], out_dir: Path, cycle_id: str
+) -> list[str]:
     """Read every exported package back and compare it with the stored payload."""
     problems: list[str] = []
     folder = Path(out_dir) / cycle_id

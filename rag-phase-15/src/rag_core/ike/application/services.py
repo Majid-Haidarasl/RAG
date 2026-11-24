@@ -8,7 +8,11 @@ import time
 from rag_core.ike.domain.builder import IkeGraphBuilder
 from rag_core.ike.domain.comparison import IssueKnowledgeComparison, compare_knowledge
 from rag_core.ike.domain.model import IkeGraph
-from rag_core.ike.domain.ports import FactValidator, KnowledgeSearchPort, SummaryChatPort
+from rag_core.ike.domain.ports import (
+    FactValidator,
+    KnowledgeSearchPort,
+    SummaryChatPort,
+)
 from rag_core.ike.domain.summary import (
     IssueDigest,
     SummaryCheck,
@@ -49,8 +53,13 @@ class IkeService:
         out: dict[str, IssueKnowledgeComparison] = {}
         for sub in issue.sub_items:
             result = self.search.search(sub.query, sub.owner_node, self.top_k)
-            out[sub.item_id] = compare_knowledge(sub.item_id, sub.related_documents, result,
-                                                 min_lexical=self.min_lexical, min_vector=self.min_vector)
+            out[sub.item_id] = compare_knowledge(
+                sub.item_id,
+                sub.related_documents,
+                result,
+                min_lexical=self.min_lexical,
+                min_vector=self.min_vector,
+            )
         return out
 
     def build(
@@ -78,13 +87,22 @@ class IkeSummary:
     completion_tokens: int = 0
 
     def to_dict(self) -> dict[str, object]:
-        return {"issue_id": self.issue_id, "language": self.language, "source": self.source, "text": self.text,
-                "check": self.check.to_dict(), "seconds": round(self.seconds, 3),
-                "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens}
+        return {
+            "issue_id": self.issue_id,
+            "language": self.language,
+            "source": self.source,
+            "text": self.text,
+            "check": self.check.to_dict(),
+            "seconds": round(self.seconds, 3),
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+        }
 
 
 class IkeSummaryService:
-    def __init__(self, validator: FactValidator, chat: SummaryChatPort | None = None) -> None:
+    def __init__(
+        self, validator: FactValidator, chat: SummaryChatPort | None = None
+    ) -> None:
         self.validator = validator
         self.chat = chat
 
@@ -92,20 +110,40 @@ class IkeSummaryService:
     def digest(issue: IssueView, graph: IkeGraph) -> IssueDigest:
         return digest(issue, graph)
 
-    def facts(self, issue: IssueView, graph: IkeGraph, names: dict[str, tuple[str, str]]) -> list[str]:
+    def facts(
+        self, issue: IssueView, graph: IkeGraph, names: dict[str, tuple[str, str]]
+    ) -> list[str]:
         return facts_lines(digest(issue, graph), names)
 
-    def template(self, issue: IssueView, graph: IkeGraph, names: dict[str, tuple[str, str]], language: str) -> IkeSummary:
+    def template(
+        self,
+        issue: IssueView,
+        graph: IkeGraph,
+        names: dict[str, tuple[str, str]],
+        language: str,
+    ) -> IkeSummary:
         if language not in LANGUAGES:
             raise InvariantError(f"unsupported summary language {language!r}")
         d = digest(issue, graph)
         facts = facts_lines(d, names)
         t0 = time.perf_counter()
         text = template_summary(d, names, language)
-        return IkeSummary(issue.issue_id, language, "template", text,
-                          check_summary(text, facts, d.item_ids, self.validator), time.perf_counter() - t0)
+        return IkeSummary(
+            issue.issue_id,
+            language,
+            "template",
+            text,
+            check_summary(text, facts, d.item_ids, self.validator),
+            time.perf_counter() - t0,
+        )
 
-    def generate(self, issue: IssueView, graph: IkeGraph, names: dict[str, tuple[str, str]], language: str) -> IkeSummary:
+    def generate(
+        self,
+        issue: IssueView,
+        graph: IkeGraph,
+        names: dict[str, tuple[str, str]],
+        language: str,
+    ) -> IkeSummary:
         if self.chat is None:
             raise InvariantError("no chat model configured for LLM summaries")
         if language not in LANGUAGES:
@@ -117,5 +155,13 @@ class IkeSummaryService:
         result = self.chat.generate(system, user)
         seconds = time.perf_counter() - t0
         text = result.text.strip()
-        return IkeSummary(issue.issue_id, language, "llm", text, check_summary(text, facts, d.item_ids, self.validator),
-                          seconds, result.prompt_tokens, result.completion_tokens)
+        return IkeSummary(
+            issue.issue_id,
+            language,
+            "llm",
+            text,
+            check_summary(text, facts, d.item_ids, self.validator),
+            seconds,
+            result.prompt_tokens,
+            result.completion_tokens,
+        )

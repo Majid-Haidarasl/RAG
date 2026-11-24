@@ -2,7 +2,11 @@
 
 import pytest
 
-from rag_core.executors.domain.model import ExpertiseTag, ReferralCapacity, executor_id_for
+from rag_core.executors.domain.model import (
+    ExpertiseTag,
+    ReferralCapacity,
+    executor_id_for,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from tests.fixtures.executors.registry import make_executor
 
@@ -13,7 +17,10 @@ def test_unpublished_capacity_is_neither_zero_nor_unlimited() -> None:
     cap = ReferralCapacity.unpublished()
     assert cap.hours_per_week is None and not cap.is_published
     assert "unit planning" in cap.describe()
-    assert ReferralCapacity(0).is_published and ReferralCapacity(0).describe() == "0 h/week"
+    assert (
+        ReferralCapacity(0).is_published
+        and ReferralCapacity(0).describe() == "0 h/week"
+    )
 
 
 @pytest.mark.parametrize("hours", [-1, 61])
@@ -34,7 +41,12 @@ def test_executor_id_follows_canonical_name() -> None:
 
 
 def test_executor_answers_to_name_and_alias() -> None:
-    person = make_executor("EX-ROOZBEH-MOHSENI", "Roozbeh Mohseni", "N-SW-WIN", aliases=("Rouzbeh Mohseni",))
+    person = make_executor(
+        "EX-ROOZBEH-MOHSENI",
+        "Roozbeh Mohseni",
+        "N-SW-WIN",
+        aliases=("Rouzbeh Mohseni",),
+    )
     assert person.answers_to("roozbeh   mohseni")
     assert person.answers_to("Rouzbeh Mohseni")
     assert not person.answers_to("Saeed Akbari")
@@ -53,17 +65,29 @@ def test_duplicate_knowledge_document_is_rejected() -> None:
 def test_capacity_change_needs_reason_and_approval() -> None:
     person = make_executor(hours=18)
     with pytest.raises(InvariantError, match="reason"):
-        person.change_capacity(ReferralCapacity(24), reason=" ", approved_by="N-SW-WEB owner")
+        person.change_capacity(
+            ReferralCapacity(24), reason=" ", approved_by="N-SW-WEB owner"
+        )
     with pytest.raises(InvariantError, match="approval"):
-        person.change_capacity(ReferralCapacity(24), reason="leadership duties reduced", approved_by="")
+        person.change_capacity(
+            ReferralCapacity(24), reason="leadership duties reduced", approved_by=""
+        )
     assert person.capacity.hours_per_week == 18 and person.profile_version == "1.0"
 
 
 def test_capacity_change_bumps_version_and_records_event() -> None:
     person = make_executor(hours=18)
-    person.change_capacity(ReferralCapacity(24), reason="leadership duties reduced", approved_by="N-SW-WEB owner")
+    person.change_capacity(
+        ReferralCapacity(24),
+        reason="leadership duties reduced",
+        approved_by="N-SW-WEB owner",
+    )
     assert person.capacity.hours_per_week == 24
     assert person.profile_version == "1.1"
     event = person.events[-1]
     assert event.name == "ExecutorProfileChanged"
-    assert event.payload["old"] == 18 and event.payload["new"] == 24 and event.payload["version"] == "1.1"
+    assert (
+        event.payload["old"] == 18
+        and event.payload["new"] == 24
+        and event.payload["version"] == "1.1"
+    )

@@ -71,16 +71,22 @@ def _date(value: Any) -> date | None | str:
 
 
 class IssueRegistryValidator:
-    def __init__(self, directory: OrgDirectory | None = None, documents: set[str] | None = None) -> None:
+    def __init__(
+        self, directory: OrgDirectory | None = None, documents: set[str] | None = None
+    ) -> None:
         self.directory = directory
         self.documents = documents
         self._out: list[IssueValidationIssue] = []
 
     def _err(self, code: str, subject: str, message: str) -> None:
-        self._out.append(IssueValidationIssue(IssueCheckLevel.ERROR, code, subject, message))
+        self._out.append(
+            IssueValidationIssue(IssueCheckLevel.ERROR, code, subject, message)
+        )
 
     def _warn(self, code: str, subject: str, message: str) -> None:
-        self._out.append(IssueValidationIssue(IssueCheckLevel.WARNING, code, subject, message))
+        self._out.append(
+            IssueValidationIssue(IssueCheckLevel.WARNING, code, subject, message)
+        )
 
     def validate(self, records: list[dict[str, Any]]) -> IssueValidationReport:
         self._out = []
@@ -88,7 +94,9 @@ class IssueRegistryValidator:
         for rec in records:
             iid = str(rec.get("id", ""))
             if not ISSUE_RE.match(iid):
-                self._err("I-ID", iid or "<blank>", "issue id must look like AR-ISS-024")
+                self._err(
+                    "I-ID", iid or "<blank>", "issue id must look like AR-ISS-024"
+                )
                 continue
             if iid in ids:
                 self._err("I-DUP", iid, "duplicate issue id")
@@ -108,7 +116,11 @@ class IssueRegistryValidator:
                 self._err("I-NODE", subject, f"{role} node is required")
             return
         if self.directory is not None and not self.directory.exists(str(node)):
-            self._err("I-NODE", subject, f"{role} node {node} is not in the hierarchy registry")
+            self._err(
+                "I-NODE",
+                subject,
+                f"{role} node {node} is not in the hierarchy registry",
+            )
 
     def _docs(self, subject: str, docs: list[Any]) -> None:
         seen: set[str] = set()
@@ -117,7 +129,9 @@ class IssueRegistryValidator:
             if not DOC_RE.match(d):
                 self._err("I-DOC", subject, f"bad document id {d!r}")
             elif self.documents is not None and d not in self.documents:
-                self._err("I-DOC", subject, f"document {d} is not in the corpus catalog")
+                self._err(
+                    "I-DOC", subject, f"document {d} is not in the corpus catalog"
+                )
             if d in seen:
                 self._warn("I-DOC-DUP", subject, f"document {d} listed twice")
             seen.add(d)
@@ -133,8 +147,16 @@ class IssueRegistryValidator:
         self._docs(iid, rec.get("related_documents", []))
         contract = rec.get("contract_ref")
         if contract and not CONTRACT_RE.match(str(contract)):
-            self._err("I-CONTRACT", iid, f"contract reference {contract!r} must look like AR-CNT-1402-118")
-        for key, enum in (("category", IssueCategory), ("severity", Severity), ("priority", Priority)):
+            self._err(
+                "I-CONTRACT",
+                iid,
+                f"contract reference {contract!r} must look like AR-CNT-1402-118",
+            )
+        for key, enum in (
+            ("category", IssueCategory),
+            ("severity", Severity),
+            ("priority", Priority),
+        ):
             if rec.get(key) is not None and rec.get(key) not in {e.value for e in enum}:
                 self._err("I-ENUM", iid, f"unknown {key} {rec.get(key)!r}")
         status = _status(rec.get("status", "open"))
@@ -150,7 +172,11 @@ class IssueRegistryValidator:
             self._err("I-RESOLUTION", iid, f"unknown resolution {resolution!r}")
         if status is IssueStatus.CLOSED and resolution is None:
             self._err("I-RESOLUTION", iid, "closed issue needs a resolution")
-        if status is not None and status is not IssueStatus.CLOSED and resolution is not None:
+        if (
+            status is not None
+            and status is not IssueStatus.CLOSED
+            and resolution is not None
+        ):
             self._err("I-RESOLUTION", iid, "only closed issues carry a resolution")
         dup = rec.get("duplicate_of")
         if resolution == "duplicate" and not dup:
@@ -165,11 +191,15 @@ class IssueRegistryValidator:
             if rel == iid:
                 self._err("I-CYCLE", iid, "issue relates to itself")
         progress = rec.get("progress_percent")
-        if progress is not None and not (isinstance(progress, int | float) and 0 <= progress <= 100):
+        if progress is not None and not (
+            isinstance(progress, int | float) and 0 <= progress <= 100
+        ):
             self._err("I-PROGRESS", iid, "progress_percent must be 0–100")
         self._subissues(rec, status)
 
-    def _subissues(self, rec: dict[str, Any], parent_status: IssueStatus | None) -> None:
+    def _subissues(
+        self, rec: dict[str, Any], parent_status: IssueStatus | None
+    ) -> None:
         iid = rec["id"]
         subs = rec.get("sub_issues", [])
         codes: dict[str, dict[str, Any]] = {}
@@ -177,7 +207,11 @@ class IssueRegistryValidator:
         for sub in subs:
             sid = str(sub.get("id", ""))
             if not SUB_RE.match(sid):
-                self._err("S-ID", sid or "<blank>", "sub-issue id must look like AR-ISS-024/HW")
+                self._err(
+                    "S-ID",
+                    sid or "<blank>",
+                    "sub-issue id must look like AR-ISS-024/HW",
+                )
                 continue
             if sid.split("/")[0] != iid:
                 self._err("S-PARENT", sid, f"parent link does not match {iid}")
@@ -203,26 +237,58 @@ class IssueRegistryValidator:
             st = _status(sub.get("status", "open"))
             if st is None:
                 self._err("S-STATUS", sid, f"unknown status {sub.get('status')!r}")
-            elif st is IssueStatus.BLOCKED and not str(sub.get("blocked_reason", "")).strip():
+            elif (
+                st is IssueStatus.BLOCKED
+                and not str(sub.get("blocked_reason", "")).strip()
+            ):
                 self._warn("S-BLOCKED", sid, "blocked sub-issue without blocked_reason")
-            if parent_status in DONE_STATES and st is not None and not st.is_done and rec.get("resolution") in (None, "fixed"):
-                self._err("S-OPEN-UNDER-DONE", sid, f"open sub-issue under {parent_status} parent")
+            if (
+                parent_status in DONE_STATES
+                and st is not None
+                and not st.is_done
+                and rec.get("resolution") in (None, "fixed")
+            ):
+                self._err(
+                    "S-OPEN-UNDER-DONE",
+                    sid,
+                    f"open sub-issue under {parent_status} parent",
+                )
         for code, sub in codes.items():
             for dep in sub.get("depends_on", []):
                 if dep not in codes:
-                    self._err("S-DEPENDS", sub["id"], f"depends on unknown sibling {dep}")
+                    self._err(
+                        "S-DEPENDS", sub["id"], f"depends on unknown sibling {dep}"
+                    )
                 elif dep == code:
                     self._err("S-CYCLE", sub["id"], "depends on itself")
                 else:
-                    st, dst = _status(sub.get("status")), _status(codes[dep].get("status"))
+                    st, dst = (
+                        _status(sub.get("status")),
+                        _status(codes[dep].get("status")),
+                    )
                     if st in DONE_STATES and dst is not None and not dst.is_done:
-                        self._err("S-DEPENDS", sub["id"], f"done while dependency {dep} is open")
-        cycle = _find_cycle({c: [d for d in s.get("depends_on", []) if d in codes] for c, s in codes.items()})
+                        self._err(
+                            "S-DEPENDS",
+                            sub["id"],
+                            f"done while dependency {dep} is open",
+                        )
+        cycle = _find_cycle(
+            {
+                c: [d for d in s.get("depends_on", []) if d in codes]
+                for c, s in codes.items()
+            }
+        )
         if cycle:
-            self._err("S-CYCLE", iid, f"sub-issue dependency cycle {' -> '.join(cycle)}")
+            self._err(
+                "S-CYCLE", iid, f"sub-issue dependency cycle {' -> '.join(cycle)}"
+            )
 
     def _duplicate_chains(self, records: list[dict[str, Any]]) -> None:
-        graph = {str(r.get("id")): [str(r["duplicate_of"])] for r in records if r.get("duplicate_of")}
+        graph = {
+            str(r.get("id")): [str(r["duplicate_of"])]
+            for r in records
+            if r.get("duplicate_of")
+        }
         cycle = _find_cycle(graph)
         if cycle:
             self._err("I-CYCLE", cycle[0], f"duplicate_of cycle {' -> '.join(cycle)}")
@@ -237,7 +303,7 @@ def _find_cycle(graph: dict[str, list[str]]) -> list[str]:
         stack.append(n)
         for m in graph.get(n, []):
             if state.get(m) == 1:
-                return stack[stack.index(m):] + [m]
+                return stack[stack.index(m) :] + [m]
             if m not in state:
                 found = visit(m)
                 if found:

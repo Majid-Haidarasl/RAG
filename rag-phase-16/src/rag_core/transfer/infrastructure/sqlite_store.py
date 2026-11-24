@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS transfer_suggestions (
 
 @dataclass(frozen=True)
 class SaveOutcome:
-    action: str      # inserted | unchanged | updated
+    action: str  # inserted | unchanged | updated
     revision: int
     content_hash: str
 
@@ -74,7 +74,10 @@ class SqliteTransferStore:
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
         with self.conn:
-            self.conn.execute("INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', ?)", (SCHEMA_VERSION,))
+            self.conn.execute(
+                "INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', ?)",
+                (SCHEMA_VERSION,),
+            )
 
     def close(self) -> None:
         self.conn.close()
@@ -87,26 +90,46 @@ class SqliteTransferStore:
 
     # -- packages -------------------------------------------------------------
     def save(self, package: Any) -> SaveOutcome:
-        record: PackageRecord = package.to_record() if hasattr(package, "to_record") else package
+        record: PackageRecord = (
+            package.to_record() if hasattr(package, "to_record") else package
+        )
         latest = self.conn.execute(
             "SELECT revision, content_hash FROM transfer_packages WHERE cycle_id=? AND source_node=? AND is_latest=1",
             (record.cycle_id, record.source_node),
         ).fetchone()
         if latest is not None and latest["content_hash"] == record.content_hash:
-            return SaveOutcome("unchanged", int(latest["revision"]), record.content_hash)
+            return SaveOutcome(
+                "unchanged", int(latest["revision"]), record.content_hash
+            )
         revision = 1 if latest is None else int(latest["revision"]) + 1
         with self.conn:
-            self.conn.execute("UPDATE transfer_packages SET is_latest=0 WHERE cycle_id=? AND source_node=?",
-                              (record.cycle_id, record.source_node))
+            self.conn.execute(
+                "UPDATE transfer_packages SET is_latest=0 WHERE cycle_id=? AND source_node=?",
+                (record.cycle_id, record.source_node),
+            )
             self.conn.execute(
                 "INSERT INTO transfer_packages (cycle_id, source_node, revision, is_latest, target_node, target_layer, "
                 "detail_level, status, words_en, words_fa, items, content_hash, created_at, payload) "
                 "VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (record.cycle_id, record.source_node, revision, record.target_node, record.target_layer,
-                 record.detail_level, record.status, record.words_en, record.words_fa, record.items,
-                 record.content_hash, _now(), json.dumps(record.payload, ensure_ascii=False, sort_keys=True)),
+                (
+                    record.cycle_id,
+                    record.source_node,
+                    revision,
+                    record.target_node,
+                    record.target_layer,
+                    record.detail_level,
+                    record.status,
+                    record.words_en,
+                    record.words_fa,
+                    record.items,
+                    record.content_hash,
+                    _now(),
+                    json.dumps(record.payload, ensure_ascii=False, sort_keys=True),
+                ),
             )
-        return SaveOutcome("inserted" if latest is None else "updated", revision, record.content_hash)
+        return SaveOutcome(
+            "inserted" if latest is None else "updated", revision, record.content_hash
+        )
 
     def latest(self, cycle_id: str, source_node: str) -> dict[str, Any] | None:
         row = self.conn.execute(
@@ -133,16 +156,28 @@ class SqliteTransferStore:
 
     def stats(self, cycle_id: str | None = None) -> dict[str, int]:
         where, args = ("WHERE cycle_id=?", (cycle_id,)) if cycle_id else ("", ())
-        rows = self.conn.execute(f"SELECT COUNT(*) AS n, COALESCE(SUM(is_latest), 0) AS latest, "
-                                 f"COALESCE(MAX(revision), 0) AS max_revision FROM transfer_packages {where}",
-                                 args).fetchone()
-        cycles = self.conn.execute("SELECT COUNT(DISTINCT cycle_id) AS c FROM transfer_packages").fetchone()
-        return {"rows": int(rows["n"]), "latest": int(rows["latest"]), "max_revision": int(rows["max_revision"]),
-                "cycles": int(cycles["c"])}
+        rows = self.conn.execute(
+            f"SELECT COUNT(*) AS n, COALESCE(SUM(is_latest), 0) AS latest, "
+            f"COALESCE(MAX(revision), 0) AS max_revision FROM transfer_packages {where}",
+            args,
+        ).fetchone()
+        cycles = self.conn.execute(
+            "SELECT COUNT(DISTINCT cycle_id) AS c FROM transfer_packages"
+        ).fetchone()
+        return {
+            "rows": int(rows["n"]),
+            "latest": int(rows["latest"]),
+            "max_revision": int(rows["max_revision"]),
+            "cycles": int(cycles["c"]),
+        }
 
     def cycles(self) -> list[str]:
-        return [r["cycle_id"] for r in self.conn.execute(
-            "SELECT DISTINCT cycle_id FROM transfer_packages ORDER BY cycle_id").fetchall()]
+        return [
+            r["cycle_id"]
+            for r in self.conn.execute(
+                "SELECT DISTINCT cycle_id FROM transfer_packages ORDER BY cycle_id"
+            ).fetchall()
+        ]
 
     @staticmethod
     def _row(row: sqlite3.Row) -> dict[str, Any]:
@@ -151,8 +186,14 @@ class SqliteTransferStore:
         return data
 
     # -- suggestions ------------------------------------------------------------
-    def save_suggestion(self, cycle_id: str, source_node: str, language: str, status: str,
-                        payload: dict[str, Any]) -> SaveOutcome:
+    def save_suggestion(
+        self,
+        cycle_id: str,
+        source_node: str,
+        language: str,
+        status: str,
+        payload: dict[str, Any],
+    ) -> SaveOutcome:
         digest = content_hash(payload)
         latest = self.conn.execute(
             "SELECT revision, content_hash FROM transfer_suggestions WHERE cycle_id=? AND source_node=? "
@@ -163,15 +204,28 @@ class SqliteTransferStore:
             return SaveOutcome("unchanged", int(latest["revision"]), digest)
         revision = 1 if latest is None else int(latest["revision"]) + 1
         with self.conn:
-            self.conn.execute("UPDATE transfer_suggestions SET is_latest=0 WHERE cycle_id=? AND source_node=? "
-                              "AND language=?", (cycle_id, source_node, language))
+            self.conn.execute(
+                "UPDATE transfer_suggestions SET is_latest=0 WHERE cycle_id=? AND source_node=? "
+                "AND language=?",
+                (cycle_id, source_node, language),
+            )
             self.conn.execute(
                 "INSERT INTO transfer_suggestions (cycle_id, source_node, language, revision, is_latest, status, "
                 "content_hash, created_at, payload) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)",
-                (cycle_id, source_node, language, revision, status, digest, _now(),
-                 json.dumps(payload, ensure_ascii=False, sort_keys=True)),
+                (
+                    cycle_id,
+                    source_node,
+                    language,
+                    revision,
+                    status,
+                    digest,
+                    _now(),
+                    json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                ),
             )
-        return SaveOutcome("inserted" if latest is None else "updated", revision, digest)
+        return SaveOutcome(
+            "inserted" if latest is None else "updated", revision, digest
+        )
 
     def latest_suggestions(self, cycle_id: str) -> list[dict[str, Any]]:
         rows = self.conn.execute(

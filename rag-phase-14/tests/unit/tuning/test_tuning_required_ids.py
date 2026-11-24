@@ -19,8 +19,9 @@ IDS = ("AR-RFP-1403-07", "AR-ISS-024", "AR-ISS-024/WEB")
 
 
 def test_required_ids_dedupe_and_strip() -> None:
-    assert required_ids([" AR-ISS-024", "AR-ISS-024/WEB", ""], ["AR-ISS-024/WEB", "PRP-02"]) == (
-        "AR-ISS-024", "AR-ISS-024/WEB", "PRP-02")
+    assert required_ids(
+        [" AR-ISS-024", "AR-ISS-024/WEB", ""], ["AR-ISS-024/WEB", "PRP-02"]
+    ) == ("AR-ISS-024", "AR-ISS-024/WEB", "PRP-02")
 
 
 def test_mentioned_is_case_and_digit_insensitive() -> None:
@@ -47,8 +48,25 @@ def test_retry_note_names_the_missing_ids() -> None:
     assert "AR-ISS-024/WEB, PRP-02" in en and "Do not add" in en
 
 
-def run(variant: str, mentioned_: int, expected: int = 3, accepted: bool = True, **kw: object) -> IdRun:
-    return IdRun("rfp_summary", "AR-RFP-1403-07", "en", variant, mentioned_, expected, True, (), accepted, **kw)
+def run(
+    variant: str,
+    mentioned_: int,
+    expected: int = 3,
+    accepted: bool = True,
+    **kw: object,
+) -> IdRun:
+    return IdRun(
+        "rfp_summary",
+        "AR-RFP-1403-07",
+        "en",
+        variant,
+        mentioned_,
+        expected,
+        True,
+        (),
+        accepted,
+        **kw,
+    )
 
 
 def test_all_ids_property() -> None:
@@ -58,17 +76,44 @@ def test_all_ids_property() -> None:
 
 def test_run_to_dict() -> None:
     d = run("listed_retry", 3, attempts=2, seconds=1.23456, rule_total=19).to_dict()
-    assert d["mentioned"] == "3/3" and d["all_ids"] and d["attempts"] == 2 and d["seconds"] == 1.235
+    assert (
+        d["mentioned"] == "3/3"
+        and d["all_ids"]
+        and d["attempts"] == 2
+        and d["seconds"] == 1.235
+    )
     assert d["rule_total"] == 19 and d["invented"] == []
 
 
 def test_summarize_id_runs() -> None:
-    rows = [run("baseline", 2, accepted=False), run("baseline", 1, accepted=False),
-            run("listed_retry", 3, attempts=2, seconds=2.0), run("listed_retry", 3, seconds=1.0),
-            IdRun("feedback", "PRP-02", "fa", "listed", 0, 2, False, ("AR-X-1",), False, error="timeout")]
+    rows = [
+        run("baseline", 2, accepted=False),
+        run("baseline", 1, accepted=False),
+        run("listed_retry", 3, attempts=2, seconds=2.0),
+        run("listed_retry", 3, seconds=1.0),
+        IdRun(
+            "feedback",
+            "PRP-02",
+            "fa",
+            "listed",
+            0,
+            2,
+            False,
+            ("AR-X-1",),
+            False,
+            error="timeout",
+        ),
+    ]
     s = summarize_id_runs(rows)
     assert s["baseline"]["mentioned"] == "3/6" and s["baseline"]["mention_rate"] == 0.5
     assert s["baseline"]["accept_rate"] == 0.0 and s["baseline"]["all_ids"] == 0
     assert s["listed_retry"]["all_ids"] == 2 and s["listed_retry"]["retries"] == 1
-    assert s["listed_retry"]["seconds_avg"] == 1.5 and s["listed_retry"]["accept_rate"] == 1.0
-    assert s["listed"]["errors"] == 1 and s["listed"]["invented_ids"] == 1 and s["listed"]["grounded"] == 0
+    assert (
+        s["listed_retry"]["seconds_avg"] == 1.5
+        and s["listed_retry"]["accept_rate"] == 1.0
+    )
+    assert (
+        s["listed"]["errors"] == 1
+        and s["listed"]["invented_ids"] == 1
+        and s["listed"]["grounded"] == 0
+    )

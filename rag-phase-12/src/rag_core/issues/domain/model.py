@@ -23,7 +23,12 @@ from rag_core.issues.domain.status import (
 )
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.events import DomainEvent
-from rag_core.shared_kernel.identifiers import DocumentId, IssueId, NodeIdentifier, ProjectId
+from rag_core.shared_kernel.identifiers import (
+    DocumentId,
+    IssueId,
+    NodeIdentifier,
+    ProjectId,
+)
 
 __all__ = [
     "BOARD_THRESHOLD_MTOMAN",
@@ -99,7 +104,9 @@ class ContractRef:
     def __post_init__(self) -> None:
         text = self.value.strip().upper()
         if not _CONTRACT_RE.match(text):
-            raise InvariantError(f"contract reference must look like AR-CNT-1402-118, got {self.value!r}")
+            raise InvariantError(
+                f"contract reference must look like AR-CNT-1402-118, got {self.value!r}"
+            )
         object.__setattr__(self, "value", text)
 
     def __str__(self) -> str:
@@ -116,7 +123,9 @@ class ProgressPercentage:
         amount = self.value if isinstance(self.value, Decimal) else Decimal(self.value)
         object.__setattr__(self, "value", amount)
         if amount < 0 or amount > 100:
-            raise InvariantError(f"ProgressPercentage must be in [0, 100], got {amount}")
+            raise InvariantError(
+                f"ProgressPercentage must be in [0, 100], got {amount}"
+            )
 
     def __int__(self) -> int:
         return int(self.value)
@@ -269,7 +278,10 @@ class Issue:
                 raise InvariantError("urgency, risk and dependents must be in [0, 10]")
         if self.opened_on and self.due_on and self.due_on < self.opened_on:
             raise InvariantError("due date cannot be before the opening date")
-        if self.duplicate_of == self.identifier or self.identifier in self.related_issues:
+        if (
+            self.duplicate_of == self.identifier
+            or self.identifier in self.related_issues
+        ):
             raise InvariantError("an issue cannot link to itself")
         if self.decision_amount_mtoman is not None and self.decision_amount_mtoman < 0:
             raise InvariantError("decision amount cannot be negative")
@@ -286,7 +298,9 @@ class Issue:
         directory: OrgDirectory | None = None,
         **kwargs: object,
     ) -> Issue:
-        issue = cls(identifier=identifier, title=title, owning_node=owning_node, **kwargs)  # type: ignore[arg-type]
+        issue = cls(
+            identifier=identifier, title=title, owning_node=owning_node, **kwargs
+        )  # type: ignore[arg-type]
         if directory is not None:
             issue.assert_nodes_exist(directory)
         issue.events.append(DomainEvent("IssueCreated", {"issue_id": str(identifier)}))
@@ -313,23 +327,36 @@ class Issue:
     def assert_nodes_exist(self, directory: OrgDirectory) -> None:
         missing = sorted(n for n in self.all_node_ids() if not directory.exists(n))
         if missing:
-            raise NotFoundError(f"unknown nodes for {self.identifier}: {', '.join(missing)}")
+            raise NotFoundError(
+                f"unknown nodes for {self.identifier}: {', '.join(missing)}"
+            )
 
     @property
     def text(self) -> str:
-        return " ".join(p for p in (self.title, self.title_fa, self.description, self.description_fa) if p)
+        return " ".join(
+            p
+            for p in (self.title, self.title_fa, self.description, self.description_fa)
+            if p
+        )
 
     @property
     def is_reserved_decision(self) -> bool:
-        return self.reserved_decision or approval_authority(self.decision_amount_mtoman) == "board"
+        return (
+            self.reserved_decision
+            or approval_authority(self.decision_amount_mtoman) == "board"
+        )
 
     # ------------------------------------------------------------ sub-issues
     def add_subissue(self, subissue: SubIssue) -> None:
         parent = subissue.identifier.parent_id
         if parent != self.identifier:
-            raise InvariantError(f"sub-issue {subissue.identifier} does not belong to {self.identifier}")
+            raise InvariantError(
+                f"sub-issue {subissue.identifier} does not belong to {self.identifier}"
+            )
         if self.status is IssueStatus.CLOSED:
-            raise InvariantError(f"{self.identifier} is closed; reopen it before adding sub-issues")
+            raise InvariantError(
+                f"{self.identifier} is closed; reopen it before adding sub-issues"
+            )
         if any(s.identifier == subissue.identifier for s in self.subissues):
             raise InvariantError(f"duplicate sub-issue {subissue.identifier}")
         if any(s.position == subissue.position for s in self.subissues):
@@ -337,18 +364,30 @@ class Issue:
         codes = {s.code for s in self.subissues} | {subissue.code}
         unknown = [d for d in subissue.depends_on if d not in codes]
         if unknown:
-            raise InvariantError(f"{subissue.identifier} depends on unknown sibling(s) {unknown}")
+            raise InvariantError(
+                f"{subissue.identifier} depends on unknown sibling(s) {unknown}"
+            )
         self.subissues.append(subissue)
         self.subissues.sort(key=lambda s: s.position)
         cycle = self.dependency_cycle()
         if cycle:
             self.subissues.remove(subissue)
-            raise InvariantError(f"sub-issue dependencies form a cycle: {' -> '.join(cycle)}")
-        self.events.append(DomainEvent("IssueDecomposed", {"subissue_id": str(subissue.identifier)}))
+            raise InvariantError(
+                f"sub-issue dependencies form a cycle: {' -> '.join(cycle)}"
+            )
+        self.events.append(
+            DomainEvent("IssueDecomposed", {"subissue_id": str(subissue.identifier)})
+        )
 
     def subissue(self, identifier: IssueId | str) -> SubIssue:
-        key = identifier if isinstance(identifier, IssueId) else IssueId(
-            identifier if "/" in str(identifier) else f"{self.identifier}/{identifier}"
+        key = (
+            identifier
+            if isinstance(identifier, IssueId)
+            else IssueId(
+                identifier
+                if "/" in str(identifier)
+                else f"{self.identifier}/{identifier}"
+            )
         )
         for sub in self.subissues:
             if sub.identifier == key:
@@ -366,7 +405,7 @@ class Issue:
             stack.append(code)
             for nxt in graph.get(code, []):
                 if state.get(nxt) == 1:
-                    return stack[stack.index(nxt):] + [nxt]
+                    return stack[stack.index(nxt) :] + [nxt]
                 if nxt not in state:
                     found = visit(nxt)
                     if found:
@@ -387,7 +426,10 @@ class Issue:
 
     @property
     def is_invalidated(self) -> bool:
-        return self.status is IssueStatus.CLOSED and self.resolution in INVALIDATING_RESOLUTIONS
+        return (
+            self.status is IssueStatus.CLOSED
+            and self.resolution in INVALIDATING_RESOLUTIONS
+        )
 
     # ------------------------------------------------------------ transitions
     def transition(
@@ -406,7 +448,9 @@ class Issue:
             pending = self.open_subissues()
             if pending:
                 names = ", ".join(str(s.identifier) for s in pending)
-                raise InvariantError(f"{self.identifier} cannot {target.value}: open sub-issues {names}")
+                raise InvariantError(
+                    f"{self.identifier} cannot {target.value}: open sub-issues {names}"
+                )
         if target is IssueStatus.CLOSED and resolution is Resolution.DUPLICATE:
             if duplicate_of is None:
                 raise InvariantError("closing as duplicate needs duplicate_of")
@@ -425,14 +469,25 @@ class Issue:
         self.events.append(
             DomainEvent(
                 "IssueStatusChanged",
-                {"issue_id": str(self.identifier), "from": previous.value, "to": target.value, "reason": reason},
+                {
+                    "issue_id": str(self.identifier),
+                    "from": previous.value,
+                    "to": target.value,
+                    "reason": reason,
+                },
             )
         )
 
     def _cascade_close(self, resolution: Resolution) -> None:
         for sub in self.subissues:
             if not sub.status.is_done:
-                sub.history.append((sub.status.value, IssueStatus.CLOSED.value, f"parent closed as {resolution}"))
+                sub.history.append(
+                    (
+                        sub.status.value,
+                        IssueStatus.CLOSED.value,
+                        f"parent closed as {resolution}",
+                    )
+                )
                 sub.status = IssueStatus.CLOSED
                 sub.resolution = resolution
 
@@ -454,24 +509,37 @@ class Issue:
         sub = self.subissue(code)
         if self.status is IssueStatus.CLOSED:
             state = "invalid" if self.is_invalidated else "closed"
-            raise InvariantError(f"parent {self.identifier} is {state}; sub-issue {sub.identifier} cannot change")
+            raise InvariantError(
+                f"parent {self.identifier} is {state}; sub-issue {sub.identifier} cannot change"
+            )
         check_transition(sub.status, target, resolution=resolution, reason=reason)
-        if target is IssueStatus.RESOLVED or (target is IssueStatus.CLOSED and resolution in (None, Resolution.FIXED)):
+        if target is IssueStatus.RESOLVED or (
+            target is IssueStatus.CLOSED and resolution in (None, Resolution.FIXED)
+        ):
             waiting = [d for d in sub.depends_on if not self.subissue(d).status.is_done]
             if waiting:
                 raise InvariantError(f"{sub.identifier} waits for {', '.join(waiting)}")
         previous = sub.status
         sub.status = target
-        sub.resolution = (resolution or Resolution.FIXED) if target is IssueStatus.CLOSED else None
+        sub.resolution = (
+            (resolution or Resolution.FIXED) if target is IssueStatus.CLOSED else None
+        )
         sub.history.append((previous.value, target.value, reason))
         self.events.append(
             DomainEvent(
                 "SubIssueStatusChanged",
-                {"subissue_id": str(sub.identifier), "from": previous.value, "to": target.value, "reason": reason},
+                {
+                    "subissue_id": str(sub.identifier),
+                    "from": previous.value,
+                    "to": target.value,
+                    "reason": reason,
+                },
             )
         )
         if target is IssueStatus.REOPENED and self.status is IssueStatus.RESOLVED:
-            self.transition(IssueStatus.REOPENED, reason=f"sub-issue {sub.code} reopened: {reason}")
+            self.transition(
+                IssueStatus.REOPENED, reason=f"sub-issue {sub.code} reopened: {reason}"
+            )
         return sub
 
     # ------------------------------------------------------------ position
@@ -479,8 +547,13 @@ class Issue:
         """Where the issue sits in the hierarchy and where it escalates (Phase 6 routing)."""
         self.assert_nodes_exist(directory)
         owner = str(self.owning_node)
-        involved = sorted({str(n) for n in self.nodes} | {str(n) for s in self.subissues for n in s.nodes})
-        return position_for(directory, owner, involved, reserved=self.is_reserved_decision)
+        involved = sorted(
+            {str(n) for n in self.nodes}
+            | {str(n) for s in self.subissues for n in s.nodes}
+        )
+        return position_for(
+            directory, owner, involved, reserved=self.is_reserved_decision
+        )
 
     def subissue_position(self, code: str, directory: OrgDirectory) -> RelativePosition:
         sub = self.subissue(code)
@@ -506,7 +579,9 @@ class Issue:
         return PriorityScore(value)
 
 
-def position_for(directory: OrgDirectory, owner: str, involved: list[str], *, reserved: bool) -> RelativePosition:
+def position_for(
+    directory: OrgDirectory, owner: str, involved: list[str], *, reserved: bool
+) -> RelativePosition:
     view = directory.node(owner)
     lca = directory.lowest_common_ancestor(involved)
     lca_view = directory.node(lca)
@@ -546,7 +621,9 @@ class ProjectRecord:
     title: str
     owning_node: NodeIdentifier
     related_issue_ids: tuple[IssueId, ...] = ()
-    completion_percent: ProgressPercentage = field(default_factory=lambda: ProgressPercentage.from_int(0))
+    completion_percent: ProgressPercentage = field(
+        default_factory=lambda: ProgressPercentage.from_int(0)
+    )
 
     def __post_init__(self) -> None:
         if not self.title.strip():

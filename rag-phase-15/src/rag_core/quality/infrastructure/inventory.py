@@ -24,7 +24,9 @@ def count_test_functions(source: str) -> tuple[int, int]:
     tree = ast.parse(source)
     n = par = 0
     for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test"):
+        if isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef)
+        ) and node.name.startswith("test"):
             n += 1
             for dec in node.decorator_list:
                 target = dec.func if isinstance(dec, ast.Call) else dec
@@ -41,5 +43,10 @@ def inventory(tests_root: Path) -> list[FolderInventory]:
     for path in sorted(root.rglob("test_*.py")):
         rel = path.relative_to(root)
         folder = rel.parts[0] if len(rel.parts) > 1 else "."
-        by.setdefault(folder, []).append(count_test_functions(path.read_text(encoding="utf-8")))
-    return [FolderInventory(k, len(v), sum(a for a, _ in v), sum(b for _, b in v)) for k, v in sorted(by.items())]
+        by.setdefault(folder, []).append(
+            count_test_functions(path.read_text(encoding="utf-8"))
+        )
+    return [
+        FolderInventory(k, len(v), sum(a for a, _ in v), sum(b for _, b in v))
+        for k, v in sorted(by.items())
+    ]

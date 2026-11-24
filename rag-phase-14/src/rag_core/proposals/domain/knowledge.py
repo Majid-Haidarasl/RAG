@@ -28,9 +28,16 @@ class LinkRow:
     problem: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return {"link": self.link_id, "rfp_id": self.rfp_id, "node": self.node, "executor": self.executor,
-                "requirements": list(self.requirements), "evidence": list(self.evidence), "valid": self.valid,
-                "problem": self.problem}
+        return {
+            "link": self.link_id,
+            "rfp_id": self.rfp_id,
+            "node": self.node,
+            "executor": self.executor,
+            "requirements": list(self.requirements),
+            "evidence": list(self.evidence),
+            "valid": self.valid,
+            "problem": self.problem,
+        }
 
 
 @dataclass(frozen=True)
@@ -44,8 +51,15 @@ class OutcomeRow:
     evidence: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
-        return {"rfp_id": self.rfp_id, "item": self.item, "issues": list(self.issues), "owner_node": self.owner_node,
-                "selected": self.selected, "weighted": self.weighted, "evidence": list(self.evidence)}
+        return {
+            "rfp_id": self.rfp_id,
+            "item": self.item,
+            "issues": list(self.issues),
+            "owner_node": self.owner_node,
+            "selected": self.selected,
+            "weighted": self.weighted,
+            "evidence": list(self.evidence),
+        }
 
 
 @dataclass
@@ -67,16 +81,32 @@ class KnowledgeBundle:
 
     @property
     def ok(self) -> bool:
-        return bool(self.links) and self.valid == len(self.links) and self.outcome is not None \
-            and bool(self.outcome.item) and bool(self.outcome.selected)
+        return (
+            bool(self.links)
+            and self.valid == len(self.links)
+            and self.outcome is not None
+            and bool(self.outcome.item)
+            and bool(self.outcome.selected)
+        )
 
     def to_dict(self) -> dict[str, Any]:
-        return {"links": [r.to_dict() for r in self.links], "outcome": self.outcome.to_dict() if self.outcome else None,
-                "valid": self.valid, "nodes": self.nodes, "executors": self.executors, "ok": self.ok}
+        return {
+            "links": [r.to_dict() for r in self.links],
+            "outcome": self.outcome.to_dict() if self.outcome else None,
+            "valid": self.valid,
+            "nodes": self.nodes,
+            "executors": self.executors,
+            "ok": self.ok,
+        }
 
 
-def link_knowledge(bp: Blueprint, registry: ProposalRegistry, evaluation: Evaluation, nodes: set[str] | frozenset[str],
-                   executors: Mapping[str, str]) -> KnowledgeBundle:
+def link_knowledge(
+    bp: Blueprint,
+    registry: ProposalRegistry,
+    evaluation: Evaluation,
+    nodes: set[str] | frozenset[str],
+    executors: Mapping[str, str],
+) -> KnowledgeBundle:
     out = KnowledgeBundle()
     req_ids = {r.requirement_id for r in bp.requirements}
     for link in bp.links:
@@ -89,11 +119,28 @@ def link_knowledge(bp: Blueprint, registry: ProposalRegistry, evaluation: Evalua
             problem = "executor_node_mismatch"
         elif any(r not in req_ids for r in link.requirements):
             problem = "unknown_requirement"
-        out.links.append(LinkRow(link.link_id, bp.rfp_id, link.node, link.executor, link.requirements,
-                                 link.evidence, not problem, problem))
+        out.links.append(
+            LinkRow(
+                link.link_id,
+                bp.rfp_id,
+                link.node,
+                link.executor,
+                link.requirements,
+                link.evidence,
+                not problem,
+                problem,
+            )
+        )
     w = evaluation.winner
     selected = registry.decision.selected if registry.decision else ""
     evidence = registry.decision.evidence if registry.decision else ()
-    out.outcome = OutcomeRow(bp.rfp_id, bp.item, bp.issues, bp.owner_node, selected,
-                             str(w.weighted) if w is not None and w.weighted is not None else "", tuple(evidence))
+    out.outcome = OutcomeRow(
+        bp.rfp_id,
+        bp.item,
+        bp.issues,
+        bp.owner_node,
+        selected,
+        str(w.weighted) if w is not None and w.weighted is not None else "",
+        tuple(evidence),
+    )
     return out

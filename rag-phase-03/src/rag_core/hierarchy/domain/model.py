@@ -90,9 +90,7 @@ class Node:
         self._assert_name_is_not_capability(self.name_fa)
         allowed = _TYPE_LAYERS[self.node_type]
         if self.layer.value not in allowed:
-            raise InvariantError(
-                f"{self.node_type} cannot sit on {self.layer}"
-            )
+            raise InvariantError(f"{self.node_type} cannot sit on {self.layer}")
         if self.parent_id is None and self.node_type != NodeType.BOARD:
             raise InvariantError("only the board node may have no parent")
         if self.parent_id is not None and self.parent_id == self.identifier:
@@ -193,4 +191,6 @@ class Organization:
             if cursor.identifier.value in seen:
                 raise InvariantError("existing cycle detected in the tree")
             seen.add(cursor.identifier.value)
-            cursor = self._nodes.get(cursor.parent_id.value) if cursor.parent_id else None
+            cursor = (
+                self._nodes.get(cursor.parent_id.value) if cursor.parent_id else None
+            )

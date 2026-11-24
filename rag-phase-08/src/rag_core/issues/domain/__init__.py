@@ -13,7 +13,13 @@ from rag_core.issues.domain.model import (
     approval_authority,
     rank_issues,
 )
-from rag_core.issues.domain.ports import IssueDecomposer, OrgDirectory, OrgNodeView, OrgRoute, TextEmbedder
+from rag_core.issues.domain.ports import (
+    IssueDecomposer,
+    OrgDirectory,
+    OrgNodeView,
+    OrgRoute,
+    TextEmbedder,
+)
 from rag_core.issues.domain.status import IssueStatus, Resolution, StatusCategory
 
 __all__ = [

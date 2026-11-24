@@ -23,7 +23,15 @@ from typing import Any
 from rag_core.shared_kernel.errors import InvariantError
 
 OPEN_STATUSES = frozenset({"open", "triaged", "in_progress", "blocked", "reopened"})
-STATUS_RANK = {"blocked": 0, "reopened": 1, "in_progress": 2, "open": 3, "triaged": 3, "resolved": 5, "closed": 6}
+STATUS_RANK = {
+    "blocked": 0,
+    "reopened": 1,
+    "in_progress": 2,
+    "open": 3,
+    "triaged": 3,
+    "resolved": 5,
+    "closed": 6,
+}
 PRIORITY_RANK = {"P1": 0, "P2": 1, "P3": 2, "P4": 3}
 
 
@@ -56,20 +64,33 @@ class IssueContext:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "issue_id": self.issue_id, "title_en": self.title_en, "title_fa": self.title_fa, "status": self.status,
-            "priority": self.priority, "progress": self.progress, "contract_ref": self.contract_ref,
-            "decision_amount_mtoman": self.decision_amount_mtoman, "due_on": self.due_on, "risk": self.risk,
+            "issue_id": self.issue_id,
+            "title_en": self.title_en,
+            "title_fa": self.title_fa,
+            "status": self.status,
+            "priority": self.priority,
+            "progress": self.progress,
+            "contract_ref": self.contract_ref,
+            "decision_amount_mtoman": self.decision_amount_mtoman,
+            "due_on": self.due_on,
+            "risk": self.risk,
             "customer": self.customer,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> IssueContext:
         return cls(
-            issue_id=str(data["issue_id"]), title_en=str(data["title_en"]), title_fa=str(data.get("title_fa", "")),
-            status=str(data.get("status", "")), priority=str(data.get("priority", "")),
-            progress=data.get("progress"), contract_ref=str(data.get("contract_ref", "")),
-            decision_amount_mtoman=data.get("decision_amount_mtoman"), due_on=str(data.get("due_on", "")),
-            risk=int(data.get("risk", 0)), customer=str(data.get("customer", "")),
+            issue_id=str(data["issue_id"]),
+            title_en=str(data["title_en"]),
+            title_fa=str(data.get("title_fa", "")),
+            status=str(data.get("status", "")),
+            priority=str(data.get("priority", "")),
+            progress=data.get("progress"),
+            contract_ref=str(data.get("contract_ref", "")),
+            decision_amount_mtoman=data.get("decision_amount_mtoman"),
+            due_on=str(data.get("due_on", "")),
+            risk=int(data.get("risk", 0)),
+            customer=str(data.get("customer", "")),
         )
 
 
@@ -87,9 +108,9 @@ class TransferItem:
     lead_fa: str = ""
     collaborators: tuple[str, ...] = ()
     collaborators_fa: tuple[str, ...] = ()
-    depends_on: tuple[str, ...] = ()   # full item ids, e.g. ("AR-ISS-024/HW",)
+    depends_on: tuple[str, ...] = ()  # full item ids, e.g. ("AR-ISS-024/HW",)
     documents: tuple[str, ...] = ()
-    gaps: tuple[str, ...] = ()         # knowledge-lack documents (Phase 9 IKE)
+    gaps: tuple[str, ...] = ()  # knowledge-lack documents (Phase 9 IKE)
     acceptance_output: str = ""
     reserved_decision: bool = False
     priority: str = ""
@@ -101,7 +122,9 @@ class TransferItem:
         if not self.status.strip():
             raise InvariantError(f"{self.item_id}: transfer item needs a status")
         if not self.owner_node.strip() or not self.origin_node.strip():
-            raise InvariantError(f"{self.item_id}: transfer item needs owner and origin nodes")
+            raise InvariantError(
+                f"{self.item_id}: transfer item needs owner and origin nodes"
+            )
         if not isinstance(self.role, ItemRole):
             object.__setattr__(self, "role", ItemRole(self.role))
 
@@ -140,42 +163,69 @@ class TransferItem:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "item_id": self.item_id, "title_en": self.title_en, "title_fa": self.title_fa, "status": self.status,
-            "owner_node": self.owner_node, "origin_node": self.origin_node, "role": self.role.value,
-            "issue": self.issue.to_dict() if self.issue else None, "lead": self.lead, "lead_fa": self.lead_fa,
-            "collaborators": list(self.collaborators), "collaborators_fa": list(self.collaborators_fa),
-            "depends_on": list(self.depends_on), "documents": list(self.documents), "gaps": list(self.gaps),
-            "acceptance_output": self.acceptance_output, "reserved_decision": self.reserved_decision,
-            "priority": self.priority, "risk": self.risk,
+            "item_id": self.item_id,
+            "title_en": self.title_en,
+            "title_fa": self.title_fa,
+            "status": self.status,
+            "owner_node": self.owner_node,
+            "origin_node": self.origin_node,
+            "role": self.role.value,
+            "issue": self.issue.to_dict() if self.issue else None,
+            "lead": self.lead,
+            "lead_fa": self.lead_fa,
+            "collaborators": list(self.collaborators),
+            "collaborators_fa": list(self.collaborators_fa),
+            "depends_on": list(self.depends_on),
+            "documents": list(self.documents),
+            "gaps": list(self.gaps),
+            "acceptance_output": self.acceptance_output,
+            "reserved_decision": self.reserved_decision,
+            "priority": self.priority,
+            "risk": self.risk,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> TransferItem:
         issue = data.get("issue")
         return cls(
-            item_id=str(data["item_id"]), title_en=str(data["title_en"]), status=str(data["status"]),
-            owner_node=str(data["owner_node"]), origin_node=str(data["origin_node"]),
-            title_fa=str(data.get("title_fa", "")), role=ItemRole(data.get("role", "owner")),
-            issue=IssueContext.from_dict(issue) if issue else None, lead=str(data.get("lead", "")),
-            lead_fa=str(data.get("lead_fa", "")), collaborators=tuple(data.get("collaborators", ())),
-            collaborators_fa=tuple(data.get("collaborators_fa", ())), depends_on=tuple(data.get("depends_on", ())),
-            documents=tuple(data.get("documents", ())), gaps=tuple(data.get("gaps", ())),
+            item_id=str(data["item_id"]),
+            title_en=str(data["title_en"]),
+            status=str(data["status"]),
+            owner_node=str(data["owner_node"]),
+            origin_node=str(data["origin_node"]),
+            title_fa=str(data.get("title_fa", "")),
+            role=ItemRole(data.get("role", "owner")),
+            issue=IssueContext.from_dict(issue) if issue else None,
+            lead=str(data.get("lead", "")),
+            lead_fa=str(data.get("lead_fa", "")),
+            collaborators=tuple(data.get("collaborators", ())),
+            collaborators_fa=tuple(data.get("collaborators_fa", ())),
+            depends_on=tuple(data.get("depends_on", ())),
+            documents=tuple(data.get("documents", ())),
+            gaps=tuple(data.get("gaps", ())),
             acceptance_output=str(data.get("acceptance_output", "")),
-            reserved_decision=bool(data.get("reserved_decision", False)), priority=str(data.get("priority", "")),
+            reserved_decision=bool(data.get("reserved_decision", False)),
+            priority=str(data.get("priority", "")),
             risk=int(data.get("risk", 0)),
         )
 
 
-def rank_items(items: list[TransferItem] | tuple[TransferItem, ...]) -> list[TransferItem]:
+def rank_items(
+    items: list[TransferItem] | tuple[TransferItem, ...],
+) -> list[TransferItem]:
     return sorted(items, key=lambda i: i.rank_key())
 
 
-def merge_items(items: list[TransferItem] | tuple[TransferItem, ...]) -> list[TransferItem]:
+def merge_items(
+    items: list[TransferItem] | tuple[TransferItem, ...],
+) -> list[TransferItem]:
     """One copy per item id; the owner's copy wins over a supporter's, otherwise the first one."""
     chosen: dict[str, TransferItem] = {}
     for item in items:
         current = chosen.get(item.item_id)
-        if current is None or (current.role is ItemRole.SUPPORT and item.role is ItemRole.OWNER):
+        if current is None or (
+            current.role is ItemRole.SUPPORT and item.role is ItemRole.OWNER
+        ):
             chosen[item.item_id] = item
     return rank_items(list(chosen.values()))
 
@@ -189,7 +239,9 @@ class IssueGroup:
 
     def __post_init__(self) -> None:
         if not self.items:
-            raise InvariantError(f"{self.issue.issue_id}: an issue group needs at least one item")
+            raise InvariantError(
+                f"{self.issue.issue_id}: an issue group needs at least one item"
+            )
 
     @property
     def group_id(self) -> str:
@@ -227,10 +279,19 @@ class IssueGroup:
 def _context_of(item: TransferItem) -> IssueContext:
     if item.issue is not None:
         return item.issue
-    return IssueContext(item.parent_id, item.title_en, item.title_fa, item.status, item.priority, risk=item.risk)
+    return IssueContext(
+        item.parent_id,
+        item.title_en,
+        item.title_fa,
+        item.status,
+        item.priority,
+        risk=item.risk,
+    )
 
 
-def group_items(items: list[TransferItem] | tuple[TransferItem, ...]) -> list[IssueGroup]:
+def group_items(
+    items: list[TransferItem] | tuple[TransferItem, ...],
+) -> list[IssueGroup]:
     buckets: dict[str, list[TransferItem]] = {}
     contexts: dict[str, IssueContext] = {}
     for item in items:
@@ -241,7 +302,9 @@ def group_items(items: list[TransferItem] | tuple[TransferItem, ...]) -> list[Is
     return sorted(groups, key=lambda g: g.rank_key())
 
 
-def single_groups(items: list[TransferItem] | tuple[TransferItem, ...]) -> list[IssueGroup]:
+def single_groups(
+    items: list[TransferItem] | tuple[TransferItem, ...],
+) -> list[IssueGroup]:
     """One group per item (the ``items`` aggregation mode keeps every item on its own line)."""
     return [IssueGroup(_context_of(i), (i,)) for i in rank_items(items)]
 
@@ -254,13 +317,21 @@ class ExecutorRef:
     hours_per_week: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {"executor_id": self.executor_id, "name_en": self.name_en, "name_fa": self.name_fa,
-                "hours_per_week": self.hours_per_week}
+        return {
+            "executor_id": self.executor_id,
+            "name_en": self.name_en,
+            "name_fa": self.name_fa,
+            "hours_per_week": self.hours_per_week,
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ExecutorRef:
-        return cls(str(data["executor_id"]), str(data["name_en"]), str(data.get("name_fa", "")),
-                   data.get("hours_per_week"))
+        return cls(
+            str(data["executor_id"]),
+            str(data["name_en"]),
+            str(data.get("name_fa", "")),
+            data.get("hours_per_week"),
+        )
 
 
 @dataclass(frozen=True)
@@ -270,11 +341,13 @@ class CapacitySummary:
     executors: int = 0
     published: int = 0
     hours_per_week: int = 0
-    unit_planning: tuple[str, ...] = ()          # names (English) without published hours
+    unit_planning: tuple[str, ...] = ()  # names (English) without published hours
     people: tuple[ExecutorRef, ...] = field(default_factory=tuple)
 
     @classmethod
-    def of(cls, executors: list[ExecutorRef] | tuple[ExecutorRef, ...]) -> CapacitySummary:
+    def of(
+        cls, executors: list[ExecutorRef] | tuple[ExecutorRef, ...]
+    ) -> CapacitySummary:
         people = tuple(sorted(executors, key=lambda e: e.name_en))
         published = [e for e in people if e.hours_per_week is not None]
         return cls(
@@ -290,19 +363,32 @@ class CapacitySummary:
             executors=self.executors + other.executors,
             published=self.published + other.published,
             hours_per_week=self.hours_per_week + other.hours_per_week,
-            unit_planning=tuple(sorted(set(self.unit_planning) | set(other.unit_planning))),
-            people=tuple(sorted({*self.people, *other.people}, key=lambda e: e.name_en)),
+            unit_planning=tuple(
+                sorted(set(self.unit_planning) | set(other.unit_planning))
+            ),
+            people=tuple(
+                sorted({*self.people, *other.people}, key=lambda e: e.name_en)
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {"executors": self.executors, "published": self.published, "hours_per_week": self.hours_per_week,
-                "unit_planning": list(self.unit_planning), "people": [p.to_dict() for p in self.people]}
+        return {
+            "executors": self.executors,
+            "published": self.published,
+            "hours_per_week": self.hours_per_week,
+            "unit_planning": list(self.unit_planning),
+            "people": [p.to_dict() for p in self.people],
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> CapacitySummary:
-        return cls(int(data.get("executors", 0)), int(data.get("published", 0)), int(data.get("hours_per_week", 0)),
-                   tuple(data.get("unit_planning", ())),
-                   tuple(ExecutorRef.from_dict(p) for p in data.get("people", ())))
+        return cls(
+            int(data.get("executors", 0)),
+            int(data.get("published", 0)),
+            int(data.get("hours_per_week", 0)),
+            tuple(data.get("unit_planning", ())),
+            tuple(ExecutorRef.from_dict(p) for p in data.get("people", ())),
+        )
 
 
 @dataclass(frozen=True)
@@ -331,4 +417,6 @@ class NodeKnowledge:
             raise InvariantError("node knowledge needs a node id")
         for item in self.items:
             if item.origin_node != self.node_id:
-                raise InvariantError(f"{item.item_id}: origin {item.origin_node} is not {self.node_id}")
+                raise InvariantError(
+                    f"{item.item_id}: origin {item.origin_node} is not {self.node_id}"
+                )

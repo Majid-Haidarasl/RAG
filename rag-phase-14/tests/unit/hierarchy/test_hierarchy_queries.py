@@ -16,11 +16,20 @@ def org():
 
 
 def test_path_from_root(org) -> None:
-    assert [str(n) for n in org.path(N("N-HW-REP"))] == ["N-BRD", "N-CEO", "N-HW", "N-HW-REP"]
+    assert [str(n) for n in org.path(N("N-HW-REP"))] == [
+        "N-BRD",
+        "N-CEO",
+        "N-HW",
+        "N-HW-REP",
+    ]
 
 
 def test_ancestors_nearest_first(org) -> None:
-    assert [str(a.identifier) for a in org.ancestors(N("N-ADM-HR"))] == ["N-ADM", "N-CEO", "N-BRD"]
+    assert [str(a.identifier) for a in org.ancestors(N("N-ADM-HR"))] == [
+        "N-ADM",
+        "N-CEO",
+        "N-BRD",
+    ]
     assert org.ancestors(N("N-BRD")) == []
 
 
@@ -33,7 +42,11 @@ def test_depth_differs_from_layer_for_the_library(org) -> None:
 def test_descendants_and_children(org) -> None:
     assert len(org.descendants(N("N-CEO"))) == 19
     assert {str(c.identifier) for c in org.children_of(N("N-ADM"))} == {
-        "N-ADM-HR", "N-ADM-FIN", "N-ADM-LEG", "N-ADM-SRV", "N-ADM-SEC",
+        "N-ADM-HR",
+        "N-ADM-FIN",
+        "N-ADM-LEG",
+        "N-ADM-SRV",
+        "N-ADM-SEC",
     }
     assert org.descendants(N("N-SW-WEB")) == []
 

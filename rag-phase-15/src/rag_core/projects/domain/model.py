@@ -75,21 +75,37 @@ class Project:
     def __post_init__(self) -> None:
         object.__setattr__(self, "project_id", str(ProjectId(self.project_id)))
         if not self.name_en.strip() or not self.name_fa.strip():
-            raise InvariantError(f"{self.project_id}: project needs an English and a Persian name")
+            raise InvariantError(
+                f"{self.project_id}: project needs an English and a Persian name"
+            )
         if not 0 <= int(self.progress_percent) <= 100:
-            raise InvariantError(f"{self.project_id}: progress must be in [0, 100], got {self.progress_percent}")
-        for label, value in (("remaining", self.remaining_mtoman), ("contract value", self.contract_value_mtoman)):
+            raise InvariantError(
+                f"{self.project_id}: progress must be in [0, 100], got {self.progress_percent}"
+            )
+        for label, value in (
+            ("remaining", self.remaining_mtoman),
+            ("contract value", self.contract_value_mtoman),
+        ):
             if value is not None and value < 0:
                 raise InvariantError(f"{self.project_id}: {label} cannot be negative")
-        if (self.contract_value_mtoman is not None and self.remaining_mtoman is not None
-                and self.remaining_mtoman > self.contract_value_mtoman):
-            raise InvariantError(f"{self.project_id}: remaining value is larger than the contract value")
+        if (
+            self.contract_value_mtoman is not None
+            and self.remaining_mtoman is not None
+            and self.remaining_mtoman > self.contract_value_mtoman
+        ):
+            raise InvariantError(
+                f"{self.project_id}: remaining value is larger than the contract value"
+            )
         if self.primary_issue and self.primary_issue not in self.issues:
-            raise InvariantError(f"{self.project_id}: primary issue {self.primary_issue} is not in its issue list")
+            raise InvariantError(
+                f"{self.project_id}: primary issue {self.primary_issue} is not in its issue list"
+            )
         if not isinstance(self.status, ProjectStatus):
             object.__setattr__(self, "status", ProjectStatus(self.status))
         if self.status is ProjectStatus.COMPLETED and self.progress_percent < 100:
-            raise InvariantError(f"{self.project_id}: a completed project must be at 100% progress")
+            raise InvariantError(
+                f"{self.project_id}: a completed project must be at 100% progress"
+            )
 
     @property
     def all_nodes(self) -> tuple[str, ...]:
@@ -135,7 +151,9 @@ class TrackRecord:
         if not isinstance(self.state, ClaimState):
             object.__setattr__(self, "state", ClaimState(self.state))
         if not self.title_en.strip() or not self.title_fa.strip():
-            raise InvariantError(f"{self.record_id}: record needs an English and a Persian title")
+            raise InvariantError(
+                f"{self.record_id}: record needs an English and a Persian title"
+            )
 
     @property
     def is_lesson(self) -> bool:
@@ -182,9 +200,15 @@ class ProjectRegistry:
     def record(self, record_id: str) -> TrackRecord | None:
         return next((r for r in self.records if r.record_id == record_id), None)
 
-    def records_of(self, kind: RecordKind | str, project: str | None = None) -> tuple[TrackRecord, ...]:
+    def records_of(
+        self, kind: RecordKind | str, project: str | None = None
+    ) -> tuple[TrackRecord, ...]:
         wanted = RecordKind(kind)
-        return tuple(r for r in self.records if r.kind is wanted and (project is None or r.project == project))
+        return tuple(
+            r
+            for r in self.records
+            if r.kind is wanted and (project is None or r.project == project)
+        )
 
     def counts_by_kind(self) -> dict[str, int]:
         out = {k: 0 for k in RECORD_KINDS}

@@ -35,10 +35,26 @@ class Section(StrEnum):
 
 
 SECTION_ORDER: tuple[str, ...] = tuple(s.value for s in Section)
-MANDATORY_SECTIONS: frozenset[str] = frozenset({"need", "scope", "deliverables", "exclusions", "response_format",
-                                                "evaluation", "acceptance"})
-RESPONSE_SECTIONS: tuple[str, ...] = ("problem_understanding", "architecture", "work_plan", "team_roles",
-                                      "employer_dependencies", "test_plan", "pricing")
+MANDATORY_SECTIONS: frozenset[str] = frozenset(
+    {
+        "need",
+        "scope",
+        "deliverables",
+        "exclusions",
+        "response_format",
+        "evaluation",
+        "acceptance",
+    }
+)
+RESPONSE_SECTIONS: tuple[str, ...] = (
+    "problem_understanding",
+    "architecture",
+    "work_plan",
+    "team_roles",
+    "employer_dependencies",
+    "test_plan",
+    "pricing",
+)
 
 
 def _text(value: object, name: str) -> str:
@@ -63,7 +79,9 @@ class Requirement:
         if not isinstance(self.section, Section):
             object.__setattr__(self, "section", Section(self.section))
         if self.answered_in and self.answered_in not in RESPONSE_SECTIONS:
-            raise InvariantError(f"{self.requirement_id}: unknown response section {self.answered_in!r}")
+            raise InvariantError(
+                f"{self.requirement_id}: unknown response section {self.answered_in!r}"
+            )
         object.__setattr__(self, "evidence", tuple(self.evidence))
 
     def statement(self, language: str) -> str:
@@ -82,9 +100,15 @@ class Criterion:
 
     def __post_init__(self) -> None:
         _text(self.criterion_id, "criterion id")
-        amount = self.weight if isinstance(self.weight, Decimal) else Decimal(str(self.weight))
+        amount = (
+            self.weight
+            if isinstance(self.weight, Decimal)
+            else Decimal(str(self.weight))
+        )
         if amount <= 0 or amount > 1:
-            raise InvariantError(f"{self.criterion_id}: weight must be in (0, 1], got {amount}")
+            raise InvariantError(
+                f"{self.criterion_id}: weight must be in (0, 1], got {amount}"
+            )
         object.__setattr__(self, "weight", amount)
         object.__setattr__(self, "evidence", tuple(self.evidence))
 
@@ -141,17 +165,29 @@ class Blueprint:
         _text(self.rfp_id, f"{self.blueprint_id}: rfp id")
         _text(self.title_en, f"{self.blueprint_id}: English title")
         _text(self.title_fa, f"{self.blueprint_id}: Persian title")
-        for name in ("issues", "requirements", "criteria", "response_sections", "links"):
+        for name in (
+            "issues",
+            "requirements",
+            "criteria",
+            "response_sections",
+            "links",
+        ):
             object.__setattr__(self, name, tuple(getattr(self, name)))
         if not self.issues:
             raise InvariantError(f"{self.blueprint_id}: at least one issue is required")
         if self.item and self.item.split("/", 1)[0] not in self.issues:
-            raise InvariantError(f"{self.blueprint_id}: item {self.item} is not under its issues")
+            raise InvariantError(
+                f"{self.blueprint_id}: item {self.item} is not under its issues"
+            )
         if not self.criteria:
-            raise InvariantError(f"{self.blueprint_id}: an RFP without evaluation criteria fails validation")
+            raise InvariantError(
+                f"{self.blueprint_id}: an RFP without evaluation criteria fails validation"
+            )
         unknown = [s for s in self.response_sections if s not in RESPONSE_SECTIONS]
         if unknown:
-            raise InvariantError(f"{self.blueprint_id}: unknown response sections {', '.join(unknown)}")
+            raise InvariantError(
+                f"{self.blueprint_id}: unknown response sections {', '.join(unknown)}"
+            )
 
     @property
     def weight_total(self) -> Decimal:
@@ -163,10 +199,14 @@ class Blueprint:
 
     def missing_mandatory(self) -> tuple[str, ...]:
         present = {r.section.value for r in self.requirements if r.mandatory}
-        return tuple(s for s in SECTION_ORDER if s in MANDATORY_SECTIONS and s not in present)
+        return tuple(
+            s for s in SECTION_ORDER if s in MANDATORY_SECTIONS and s not in present
+        )
 
     def requirement(self, requirement_id: str) -> Requirement | None:
-        return next((r for r in self.requirements if r.requirement_id == requirement_id), None)
+        return next(
+            (r for r in self.requirements if r.requirement_id == requirement_id), None
+        )
 
     def criterion(self, criterion_id: str) -> Criterion | None:
         return next((c for c in self.criteria if c.criterion_id == criterion_id), None)
@@ -176,7 +216,11 @@ class Blueprint:
 
     def linked_ids(self) -> tuple[str, ...]:
         """The RFP id, the item and the issues the RFP serves (what an RFP text must name)."""
-        return tuple(dict.fromkeys([self.rfp_id, *([self.item] if self.item else []), *self.issues]))
+        return tuple(
+            dict.fromkeys(
+                [self.rfp_id, *([self.item] if self.item else []), *self.issues]
+            )
+        )
 
     def title(self, language: str) -> str:
         return self.title_fa if language == "fa" else self.title_en

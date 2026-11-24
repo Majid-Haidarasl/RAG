@@ -45,5 +45,7 @@ def issue_view(issue: Issue) -> IssueView:
         contract_ref=str(issue.contract_ref) if issue.contract_ref else "",
         related_documents=tuple(str(d) for d in issue.related_documents),
         reserved_decision=issue.is_reserved_decision,
-        sub_items=tuple(sub_item_view(s) for s in sorted(issue.subissues, key=lambda s: s.position)),
+        sub_items=tuple(
+            sub_item_view(s) for s in sorted(issue.subissues, key=lambda s: s.position)
+        ),
     )

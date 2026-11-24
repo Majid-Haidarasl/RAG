@@ -76,9 +76,15 @@ class RankingRow:
         return None
 
     def to_dict(self) -> dict[str, object]:
-        return {"id": self.item_id, "top_docs": list(unique(self.ranked)[:5]), "expected": list(self.expected),
-                "rank": self.first_rank, "context_facts": f"{self.context_facts[0]}/{self.context_facts[1]}",
-                "seconds": round(self.seconds, 4), "scope_violations": self.scope_violations}
+        return {
+            "id": self.item_id,
+            "top_docs": list(unique(self.ranked)[:5]),
+            "expected": list(self.expected),
+            "rank": self.first_rank,
+            "context_facts": f"{self.context_facts[0]}/{self.context_facts[1]}",
+            "seconds": round(self.seconds, 4),
+            "scope_violations": self.scope_violations,
+        }
 
 
 @dataclass
@@ -98,19 +104,36 @@ class RankingSummary:
 
     @property
     def context_facts(self) -> float | None:
-        return rounded(self.context_facts_hit / self.context_facts_total) if self.context_facts_total else None
+        return (
+            rounded(self.context_facts_hit / self.context_facts_total)
+            if self.context_facts_total
+            else None
+        )
 
     def metric(self, name: str) -> float | None:
-        return {"hit_at_1": self.hit_at_1, "hit_at_3": self.hit_at_3, "hit_at_5": self.hit_at_5, "mrr": self.mrr,
-                "context_facts": self.context_facts}.get(name)
+        return {
+            "hit_at_1": self.hit_at_1,
+            "hit_at_3": self.hit_at_3,
+            "hit_at_5": self.hit_at_5,
+            "mrr": self.mrr,
+            "context_facts": self.context_facts,
+        }.get(name)
 
     def to_dict(self) -> dict[str, object]:
-        return {"n": self.n, "hit_at_1": self.hit_at_1, "hit_at_3": self.hit_at_3, "hit_at_5": self.hit_at_5,
-                "mrr": self.mrr, "context_facts": self.context_facts,
-                "context_facts_count": f"{self.context_facts_hit}/{self.context_facts_total}",
-                "full_context": self.full_context, "scope_violations": self.scope_violations,
-                "seconds_avg": self.seconds_avg, "misses": list(self.misses),
-                "rows": [r.to_dict() for r in self.rows]}
+        return {
+            "n": self.n,
+            "hit_at_1": self.hit_at_1,
+            "hit_at_3": self.hit_at_3,
+            "hit_at_5": self.hit_at_5,
+            "mrr": self.mrr,
+            "context_facts": self.context_facts,
+            "context_facts_count": f"{self.context_facts_hit}/{self.context_facts_total}",
+            "full_context": self.full_context,
+            "scope_violations": self.scope_violations,
+            "seconds_avg": self.seconds_avg,
+            "misses": list(self.misses),
+            "rows": [r.to_dict() for r in self.rows],
+        }
 
 
 def summarize_ranking(rows: Iterable[RankingRow]) -> RankingSummary:
@@ -124,10 +147,19 @@ def summarize_ranking(rows: Iterable[RankingRow]) -> RankingSummary:
     out.mrr = mean(reciprocal_rank(r.ranked, r.expected) or 0.0 for r in rows)
     out.context_facts_hit = sum(r.context_facts[0] for r in rows)
     out.context_facts_total = sum(r.context_facts[1] for r in rows)
-    out.full_context = sum(1 for r in rows if r.context_facts[1] and r.context_facts[0] == r.context_facts[1])
+    out.full_context = sum(
+        1
+        for r in rows
+        if r.context_facts[1] and r.context_facts[0] == r.context_facts[1]
+    )
     out.scope_violations = sum(r.scope_violations for r in rows)
     out.seconds_avg = mean(r.seconds for r in rows)
-    out.misses = [r.item_id for r in rows if r.context_facts[0] < r.context_facts[1] or not hit_at(r.ranked, r.expected, 5)]
+    out.misses = [
+        r.item_id
+        for r in rows
+        if r.context_facts[0] < r.context_facts[1]
+        or not hit_at(r.ranked, r.expected, 5)
+    ]
     return out
 
 
@@ -149,9 +181,17 @@ class Agreement:
         return rounded(self.false_accepts / negatives) if negatives else None
 
     def to_dict(self) -> dict[str, object]:
-        return {"n": self.n, "agree": self.agree, "accuracy": self.accuracy, "kappa": self.kappa,
-                "true_accepts": self.true_accepts, "false_accepts": self.false_accepts,
-                "true_rejects": self.true_rejects, "false_rejects": self.false_rejects, "leniency": self.leniency}
+        return {
+            "n": self.n,
+            "agree": self.agree,
+            "accuracy": self.accuracy,
+            "kappa": self.kappa,
+            "true_accepts": self.true_accepts,
+            "false_accepts": self.false_accepts,
+            "true_rejects": self.true_rejects,
+            "false_rejects": self.false_rejects,
+            "leniency": self.leniency,
+        }
 
 
 def binary_agreement(pairs: Iterable[tuple[bool, bool]]) -> Agreement:

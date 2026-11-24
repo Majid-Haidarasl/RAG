@@ -37,7 +37,9 @@ def test_technical_package_keeps_closed_items() -> None:
 
 def test_managerial_package_drops_closed_and_merges() -> None:
     hw = built(team_hw(), "N-HW", 2)
-    adv = NodeKnowledge("N-HW-ADV", 3, "Advice team", items=(hw_item(origin="N-HW-ADV"),))
+    adv = NodeKnowledge(
+        "N-HW-ADV", 3, "Advice team", items=(hw_item(origin="N-HW-ADV"),)
+    )
     adv_pkg = built(adv, "N-HW", 2)
     d = draft_for(deputy(), "N-CEO", 1, [adv_pkg, hw], expected_children=2)
     assert [i.item_id for i in d.items] == ["AR-ISS-024/HW"]
@@ -47,7 +49,10 @@ def test_managerial_package_drops_closed_and_merges() -> None:
 
 
 def test_executive_limit_lists_omitted_issues() -> None:
-    extra = [item(f"AR-ISS-04{k}", "N-SW", title_en=f"Issue {k}", title_fa="مسئله") for k in range(4)]
+    extra = [
+        item(f"AR-ISS-04{k}", "N-SW", title_en=f"Issue {k}", title_fa="مسئله")
+        for k in range(4)
+    ]
     sw_dep = NodeKnowledge("N-SW", 2, "Software deputy", items=tuple(extra))
     sw = built(sw_dep, "N-CEO", 1, [built(team_win(), "N-SW", 2)])
     d = draft_for(ceo(), "N-BRD", 0, [sw])
@@ -72,16 +77,29 @@ def test_capacity_per_person_only_at_technical_level() -> None:
 
 
 def test_citations_need_an_active_version() -> None:
-    d = TransferPackageBuilder({}).build(CYCLE, team_hw(), "N-HW", RuleBook().for_layer(2))
+    d = TransferPackageBuilder({}).build(
+        CYCLE, team_hw(), "N-HW", RuleBook().for_layer(2)
+    )
     assert d.citations == ("AR-HW-012@1.2",)
     full = draft_for(team_hw(), "N-HW", 2)
     assert full.citations == ("AR-HW-012@1.2", "AR-HW-013@1.0", "AR-ISS-024@1.0")
-    assert [str(c.document_id) for c in full.package.citations] == ["AR-HW-012", "AR-HW-013", "AR-ISS-024"]
+    assert [str(c.document_id) for c in full.package.citations] == [
+        "AR-HW-012",
+        "AR-HW-013",
+        "AR-ISS-024",
+    ]
 
 
 def test_word_limit_trims_units() -> None:
-    many = tuple(item(f"AR-ISS-05{k}", "N-SW-MOB", title_en="Long title " + "word " * 40, title_fa="عنوان")
-                 for k in range(6))
+    many = tuple(
+        item(
+            f"AR-ISS-05{k}",
+            "N-SW-MOB",
+            title_en="Long title " + "word " * 40,
+            title_fa="عنوان",
+        )
+        for k in range(6)
+    )
     node = NodeKnowledge("N-SW-MOB", 3, "Mobile team", items=many)
     rule = replace(RuleBook().for_layer(2), max_words=200)
     d = TransferPackageBuilder(VERSIONS).build(CYCLE, node, "N-SW", rule)

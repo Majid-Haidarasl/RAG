@@ -23,14 +23,14 @@ CLOSED_STATUSES = frozenset({"resolved", "closed"})
 
 
 class GapKind(StrEnum):
-    RESEARCH = "research"                  # an open research question (AR-TRN-026 section 9)
-    KNOWLEDGE = "knowledge"                # IKE knowledge lack on an active sub-issue
-    EXECUTOR = "executor"                  # active sub-issue without a lead or executor
-    DEPENDENCY = "dependency"              # blocked by an unresolved sibling sub-issue
-    CHALLENGE = "challenge"                # a challenge not linked to any issue (no owner path)
-    MEASUREMENT = "measurement"            # scorecard dimension without measured evidence
-    STALE = "stale"                        # unsolved-issue record whose issues are all closed
-    EVIDENCE = "evidence"                  # a record without evidence
+    RESEARCH = "research"  # an open research question (AR-TRN-026 section 9)
+    KNOWLEDGE = "knowledge"  # IKE knowledge lack on an active sub-issue
+    EXECUTOR = "executor"  # active sub-issue without a lead or executor
+    DEPENDENCY = "dependency"  # blocked by an unresolved sibling sub-issue
+    CHALLENGE = "challenge"  # a challenge not linked to any issue (no owner path)
+    MEASUREMENT = "measurement"  # scorecard dimension without measured evidence
+    STALE = "stale"  # unsolved-issue record whose issues are all closed
+    EVIDENCE = "evidence"  # a record without evidence
 
 
 class Severity(StrEnum):
@@ -68,10 +68,19 @@ class Gap:
         return self.title_fa if language == "fa" else self.title_en
 
     def to_dict(self) -> dict[str, object]:
-        return {"gap_id": self.gap_id, "rule": self.rule, "kind": self.kind.value, "severity": self.severity.value,
-                "subject": self.subject, "issue_id": self.issue_id, "title_en": self.title_en,
-                "title_fa": self.title_fa, "nodes": list(self.nodes), "documents": list(self.documents),
-                "detail": self.detail}
+        return {
+            "gap_id": self.gap_id,
+            "rule": self.rule,
+            "kind": self.kind.value,
+            "severity": self.severity.value,
+            "subject": self.subject,
+            "issue_id": self.issue_id,
+            "title_en": self.title_en,
+            "title_fa": self.title_fa,
+            "nodes": list(self.nodes),
+            "documents": list(self.documents),
+            "detail": self.detail,
+        }
 
 
 # ---- read models (filled by the infrastructure ACLs) -------------------------------------
@@ -100,7 +109,7 @@ class SubIssueView:
     executors: tuple[str, ...] = ()
     lead: str = ""
     lacks: tuple[str, ...] = ()
-    depends_on: tuple[str, ...] = ()     # sibling ids, e.g. ("AR-ISS-024/HW",)
+    depends_on: tuple[str, ...] = ()  # sibling ids, e.g. ("AR-ISS-024/HW",)
     documents: tuple[str, ...] = ()
 
     @property

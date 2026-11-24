@@ -74,5 +74,4 @@ class FactValidator(Protocol):
         source_texts: list[str],
         *,
         source_document_ids: list[DocumentId] | None = None,
-    ) -> FactValidationReport:
-        ...
+    ) -> FactValidationReport: ...

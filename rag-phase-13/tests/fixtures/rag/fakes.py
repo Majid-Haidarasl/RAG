@@ -18,14 +18,25 @@ DIM = 64
 
 # Cross-language "concepts" so FA and EN texts land near each other.
 CONCEPTS = {
-    "مرخصی": "leave", "leave": "leave", "ساعتی": "hourly", "hourly": "hourly",
-    "اولویت": "priority", "priority": "priority", "پاسخ": "response", "response": "response",
-    "تعمیر": "repair", "repair": "repair", "آذرپخش": "azarpakhsh", "azarpakhsh": "azarpakhsh",
+    "مرخصی": "leave",
+    "leave": "leave",
+    "ساعتی": "hourly",
+    "hourly": "hourly",
+    "اولویت": "priority",
+    "priority": "priority",
+    "پاسخ": "response",
+    "response": "response",
+    "تعمیر": "repair",
+    "repair": "repair",
+    "آذرپخش": "azarpakhsh",
+    "azarpakhsh": "azarpakhsh",
 }
 
 
 def _bucket(token: str) -> int:
-    return int(hashlib.blake2b(token.encode("utf-8"), digest_size=4).hexdigest(), 16) % DIM
+    return (
+        int(hashlib.blake2b(token.encode("utf-8"), digest_size=4).hexdigest(), 16) % DIM
+    )
 
 
 class FakeEmbedder:
@@ -60,7 +71,9 @@ class FakeChat:
     def generate(self, system: str, user: str) -> LlmResult:
         self.calls.append((system, user))
         text = self.reply(system, user) if callable(self.reply) else self.reply
-        return LlmResult(text=text, prompt_tokens=len(user) // 4, completion_tokens=len(text) // 4)
+        return LlmResult(
+            text=text, prompt_tokens=len(user) // 4, completion_tokens=len(text) // 4
+        )
 
 
 @dataclass
@@ -85,49 +98,137 @@ class FakeScope:
         return out
 
     def route(self, asking: str, evidence_owners: list[str]) -> EscalationRoute:
-        outside = [o for o in evidence_owners if o not in self.visible[asking] and o != asking]
+        outside = [
+            o for o in evidence_owners if o not in self.visible[asking] and o != asking
+        ]
         if not outside:
             return EscalationRoute("answer", asking, "in scope")
         common = self._chain(asking)
         for owner in outside:
             chain = set(self._chain(owner))
             common = [c for c in common if c in chain]
-        return EscalationRoute("escalate", common[0], f"evidence owned outside scope by {', '.join(outside)}")
+        return EscalationRoute(
+            "escalate",
+            common[0],
+            f"evidence owned outside scope by {', '.join(outside)}",
+        )
 
 
-def rec(doc: str, order: int, text: str, *, lang: str = "fa", version: str = "1.0", owner: str = "N-A",
-        layer: int | None = 3, cls: str = "policy", status: str = "active", version_status: str = "active",
-        content_hash: str = "", duplicate_of: str = "", paragraph: int | None = None,
-        heading: str = "") -> ChunkRecord:
+def rec(
+    doc: str,
+    order: int,
+    text: str,
+    *,
+    lang: str = "fa",
+    version: str = "1.0",
+    owner: str = "N-A",
+    layer: int | None = 3,
+    cls: str = "policy",
+    status: str = "active",
+    version_status: str = "active",
+    content_hash: str = "",
+    duplicate_of: str = "",
+    paragraph: int | None = None,
+    heading: str = "",
+) -> ChunkRecord:
     return ChunkRecord(
-        key=record_key(doc, version, lang, order), document_id=doc, language=lang, version=version,
-        order=order, text=text, heading_path=heading, owner_node=owner, layer=layer, knowledge_class=cls,
-        status=status, version_status=version_status,
-        content_hash=content_hash or hashlib.sha256(f"{lang}{text}".encode()).hexdigest(),
-        duplicate_of=duplicate_of, paragraph=paragraph,
+        key=record_key(doc, version, lang, order),
+        document_id=doc,
+        language=lang,
+        version=version,
+        order=order,
+        text=text,
+        heading_path=heading,
+        owner_node=owner,
+        layer=layer,
+        knowledge_class=cls,
+        status=status,
+        version_status=version_status,
+        content_hash=content_hash
+        or hashlib.sha256(f"{lang}{text}".encode()).hexdigest(),
+        duplicate_of=duplicate_of,
+        paragraph=paragraph,
     )
 
 
 def sample_records() -> list[ChunkRecord]:
     """A tiny ArmanRayan-like corpus: HR (N-HR), support SLA (N-SUP), issue file (N-LIB)."""
     return [
-        rec("AR-HR-005", 1, "مرخصی ساعتی حداکثر ۴ ساعت در روز و ۱۶ ساعت در ماه است.", owner="N-HR", cls="hr_policy",
-            paragraph=12, heading="۵. مرخصی ساعتی"),
-        rec("AR-HR-005", 2, "مرخصی بدون حقوق تا ۳۰ روز با تأیید معاون است.", owner="N-HR", cls="hr_policy"),
-        rec("AR-HR-005", 1, "Hourly leave is limited to 4 hours per day and 16 hours per month.", lang="en",
-            owner="N-HR", cls="hr_policy"),
-        rec("AR-SW-022", 3, "اولویت ۱ قطع کامل سرویس است: پاسخ ظرف ۳۰ دقیقه و بازیابی موقت ظرف ۴ ساعت.",
-            owner="N-SUP", cls="sla"),
-        rec("AR-SW-022", 3, "Priority 1 is complete outage: response within 30 minutes and restoration within 4 hours.",
-            lang="en", owner="N-SUP", cls="sla"),
-        rec("AR-ISS-024", 5, "تأخیر تحویل آذرپخش ناشی از ناسازگاری کنترلر RAID و حافظه RAM با کلاینت ویندوز است.",
-            owner="N-LIB", layer=4, cls="issue_file"),
-        rec("AR-ISS-024", 5, "The Azarpakhsh delay comes from RAID controller and RAM mismatch with the Windows client.",
-            lang="en", owner="N-LIB", layer=4, cls="issue_file"),
-        rec("AR-HW-012", 7, "Level 1 repair is completed within four working hours of accepted intake.",
-            lang="en", owner="N-REP", cls="hw_procedure"),
-        rec("AR-HW-012", 7, "Old rule: level 1 repair within three working days.", lang="en", version="0.9",
-            owner="N-REP", cls="hw_procedure", status="retired", version_status="superseded"),
+        rec(
+            "AR-HR-005",
+            1,
+            "مرخصی ساعتی حداکثر ۴ ساعت در روز و ۱۶ ساعت در ماه است.",
+            owner="N-HR",
+            cls="hr_policy",
+            paragraph=12,
+            heading="۵. مرخصی ساعتی",
+        ),
+        rec(
+            "AR-HR-005",
+            2,
+            "مرخصی بدون حقوق تا ۳۰ روز با تأیید معاون است.",
+            owner="N-HR",
+            cls="hr_policy",
+        ),
+        rec(
+            "AR-HR-005",
+            1,
+            "Hourly leave is limited to 4 hours per day and 16 hours per month.",
+            lang="en",
+            owner="N-HR",
+            cls="hr_policy",
+        ),
+        rec(
+            "AR-SW-022",
+            3,
+            "اولویت ۱ قطع کامل سرویس است: پاسخ ظرف ۳۰ دقیقه و بازیابی موقت ظرف ۴ ساعت.",
+            owner="N-SUP",
+            cls="sla",
+        ),
+        rec(
+            "AR-SW-022",
+            3,
+            "Priority 1 is complete outage: response within 30 minutes and restoration within 4 hours.",
+            lang="en",
+            owner="N-SUP",
+            cls="sla",
+        ),
+        rec(
+            "AR-ISS-024",
+            5,
+            "تأخیر تحویل آذرپخش ناشی از ناسازگاری کنترلر RAID و حافظه RAM با کلاینت ویندوز است.",
+            owner="N-LIB",
+            layer=4,
+            cls="issue_file",
+        ),
+        rec(
+            "AR-ISS-024",
+            5,
+            "The Azarpakhsh delay comes from RAID controller and RAM mismatch with the Windows client.",
+            lang="en",
+            owner="N-LIB",
+            layer=4,
+            cls="issue_file",
+        ),
+        rec(
+            "AR-HW-012",
+            7,
+            "Level 1 repair is completed within four working hours of accepted intake.",
+            lang="en",
+            owner="N-REP",
+            cls="hw_procedure",
+        ),
+        rec(
+            "AR-HW-012",
+            7,
+            "Old rule: level 1 repair within three working days.",
+            lang="en",
+            version="0.9",
+            owner="N-REP",
+            cls="hw_procedure",
+            status="retired",
+            version_status="superseded",
+        ),
     ]
 
 
@@ -141,20 +242,40 @@ def sample_scope() -> FakeScope:
             "N-REP": {"AR-HW-012", "AR-ISS-024"},
             "N-LIB": {"AR-ISS-024"},
         },
-        owners={"AR-HR-005": "N-HR", "AR-SW-022": "N-SUP", "AR-ISS-024": "N-LIB", "AR-HW-012": "N-REP"},
-        parents={"N-HR": "N-ADM", "N-ADM": "N-CEO", "N-SUP": "N-SW", "N-SW": "N-CEO", "N-REP": "N-HW",
-                 "N-HW": "N-CEO", "N-LIB": "N-CEO"},
+        owners={
+            "AR-HR-005": "N-HR",
+            "AR-SW-022": "N-SUP",
+            "AR-ISS-024": "N-LIB",
+            "AR-HW-012": "N-REP",
+        },
+        parents={
+            "N-HR": "N-ADM",
+            "N-ADM": "N-CEO",
+            "N-SUP": "N-SW",
+            "N-SW": "N-CEO",
+            "N-REP": "N-HW",
+            "N-HW": "N-CEO",
+            "N-LIB": "N-CEO",
+        },
     )
 
 
 class FakeOllamaServer:
     """Minimal local stand-in for the Ollama HTTP API (127.0.0.1, random port)."""
 
-    def __init__(self, models: tuple[str, ...] = ("bge-m3:latest", "qwen3:8b"), *, reject_think: bool = False,
-                 chat_reply: Callable[[list[dict]], str] | None = None, dim: int = DIM) -> None:
+    def __init__(
+        self,
+        models: tuple[str, ...] = ("bge-m3:latest", "qwen3:8b"),
+        *,
+        reject_think: bool = False,
+        chat_reply: Callable[[list[dict]], str] | None = None,
+        dim: int = DIM,
+    ) -> None:
         self.models = models
         self.reject_think = reject_think
-        self.chat_reply = chat_reply or (lambda messages: "<think>hidden</think>INSUFFICIENT_CONTEXT none")
+        self.chat_reply = chat_reply or (
+            lambda messages: "<think>hidden</think>INSUFFICIENT_CONTEXT none"
+        )
         self.embedder = FakeEmbedder(dim)
         self.requests: list[tuple[str, dict]] = []
         server = self
@@ -185,14 +306,28 @@ class FakeOllamaServer:
                 body = json.loads(self.rfile.read(length) or b"{}")
                 server.requests.append((self.path, body))
                 if self.path == "/api/embed":
-                    texts = body["input"] if isinstance(body["input"], list) else [body["input"]]
+                    texts = (
+                        body["input"]
+                        if isinstance(body["input"], list)
+                        else [body["input"]]
+                    )
                     self._send(200, {"embeddings": server.embedder.embed(texts)})
                 elif self.path == "/api/chat":
                     if server.reject_think and "think" in body:
                         self._send(400, {"error": "think value not supported"})
                         return
-                    self._send(200, {"message": {"role": "assistant", "content": server.chat_reply(body["messages"])},
-                                     "prompt_eval_count": 120, "eval_count": 30, "done": True})
+                    self._send(
+                        200,
+                        {
+                            "message": {
+                                "role": "assistant",
+                                "content": server.chat_reply(body["messages"]),
+                            },
+                            "prompt_eval_count": 120,
+                            "eval_count": 30,
+                            "done": True,
+                        },
+                    )
                 else:
                     self._send(404, {"error": "not found"})
 

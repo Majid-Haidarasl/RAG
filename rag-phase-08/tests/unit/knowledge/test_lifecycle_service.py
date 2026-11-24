@@ -38,7 +38,9 @@ def test_first_ingest_registers_then_unchanged_is_noop(tmp_path: Path) -> None:
     assert (again.action, again.version) == ("unchanged", "1.0")
 
 
-def test_changed_file_creates_new_version_and_retires_old_chunks(tmp_path: Path) -> None:
+def test_changed_file_creates_new_version_and_retires_old_chunks(
+    tmp_path: Path,
+) -> None:
     path = _fa_doc(tmp_path)
     svc = KnowledgeLifecycleService()
     svc.ingest(ingest_file(path, repo_root=REPO))

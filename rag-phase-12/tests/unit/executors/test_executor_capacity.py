@@ -10,17 +10,22 @@ pytestmark = [pytest.mark.executors, pytest.mark.matching]
 
 
 def _ledger() -> CapacityLedger:
-    return CapacityLedger.of([
-        make_executor("EX-SAEED-AKBARI", "Saeed Akbari", "N-HW-REP", hours=32),
-        make_executor("EX-MAHSA-JALALI", "Mahsa Jalali", "N-ADM-LEG", hours=None),
-    ])
+    return CapacityLedger.of(
+        [
+            make_executor("EX-SAEED-AKBARI", "Saeed Akbari", "N-HW-REP", hours=32),
+            make_executor("EX-MAHSA-JALALI", "Mahsa Jalali", "N-ADM-LEG", hours=None),
+        ]
+    )
 
 
 def test_booking_within_ceiling() -> None:
     ledger = _ledger()
     ledger.book("EX-SAEED-AKBARI", "AR-ISS-024/HW", 20)
     ledger.book("EX-SAEED-AKBARI", "AR-ISS-031", 12)
-    assert ledger.booked("EX-SAEED-AKBARI") == 32 and ledger.remaining("EX-SAEED-AKBARI") == 0
+    assert (
+        ledger.booked("EX-SAEED-AKBARI") == 32
+        and ledger.remaining("EX-SAEED-AKBARI") == 0
+    )
 
 
 def test_overbooking_is_refused_and_sent_to_the_vp() -> None:

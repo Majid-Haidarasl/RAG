@@ -6,7 +6,13 @@ from pathlib import Path
 import pytest
 
 from rag_core.transfer.infrastructure.sqlite_store import SqliteTransferStore
-from tests.fixtures.transfer.samples import built, empty_team, hw_item, team_hw, team_win
+from tests.fixtures.transfer.samples import (
+    built,
+    empty_team,
+    hw_item,
+    team_hw,
+    team_win,
+)
 
 pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg]
 
@@ -26,7 +32,12 @@ def test_same_content_is_unchanged(tmp_path: Path) -> None:
         store.save(built(team_hw(), "N-HW", 2))
         again = store.save(built(team_hw(), "N-HW", 2))
         assert (again.action, again.revision) == ("unchanged", 1)
-        assert store.stats("1403-Q2") == {"rows": 1, "latest": 1, "max_revision": 1, "cycles": 1}
+        assert store.stats("1403-Q2") == {
+            "rows": 1,
+            "latest": 1,
+            "max_revision": 1,
+            "cycles": 1,
+        }
 
 
 def test_changed_content_adds_revision_and_keeps_history(tmp_path: Path) -> None:
@@ -45,7 +56,11 @@ def test_latest_all_orders_by_layer_then_node(tmp_path: Path) -> None:
         store.save(built(team_win(), "N-SW", 2))
         store.save(built(team_hw(), "N-HW", 2))
         store.save(built(empty_team(), "N-HW", 2))
-        assert [r["source_node"] for r in store.latest_all("1403-Q2")] == ["N-HW-REP", "N-HW-SAL", "N-SW-WIN"]
+        assert [r["source_node"] for r in store.latest_all("1403-Q2")] == [
+            "N-HW-REP",
+            "N-HW-SAL",
+            "N-SW-WIN",
+        ]
         assert store.latest_all("1403-Q3") == []
 
 
@@ -66,9 +81,19 @@ def test_missing_latest_is_none(tmp_path: Path) -> None:
 
 def test_suggestions_are_versioned(tmp_path: Path) -> None:
     with SqliteTransferStore(tmp_path / "t.sqlite") as store:
-        a = store.save_suggestion("1403-Q2", "N-CEO", "fa", "accepted", {"summary": "الف"})
-        b = store.save_suggestion("1403-Q2", "N-CEO", "fa", "accepted", {"summary": "الف"})
-        c = store.save_suggestion("1403-Q2", "N-CEO", "fa", "rejected", {"summary": "ب"})
+        a = store.save_suggestion(
+            "1403-Q2", "N-CEO", "fa", "accepted", {"summary": "الف"}
+        )
+        b = store.save_suggestion(
+            "1403-Q2", "N-CEO", "fa", "accepted", {"summary": "الف"}
+        )
+        c = store.save_suggestion(
+            "1403-Q2", "N-CEO", "fa", "rejected", {"summary": "ب"}
+        )
         assert [a.action, b.action, c.action] == ["inserted", "unchanged", "updated"]
         rows = store.latest_suggestions("1403-Q2")
-        assert len(rows) == 1 and rows[0]["revision"] == 2 and rows[0]["payload"]["summary"] == "ب"
+        assert (
+            len(rows) == 1
+            and rows[0]["revision"] == 2
+            and rows[0]["payload"]["summary"] == "ب"
+        )

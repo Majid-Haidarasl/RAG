@@ -54,7 +54,13 @@ RULE_NAMES: dict[str, str] = {
     "EV": "unevidenced_record",
 }
 DEFAULT_SEVERITY: dict[str, str] = {
-    "RG": "medium", "KL": "medium", "EX": "high", "DEP": "high", "CH": "medium", "SC": "medium", "ST": "low",
+    "RG": "medium",
+    "KL": "medium",
+    "EX": "high",
+    "DEP": "high",
+    "CH": "medium",
+    "SC": "medium",
+    "ST": "low",
     "EV": "high",
 }
 RULE_ORDER = tuple(RULE_NAMES)
@@ -65,11 +71,19 @@ def _gid(code: str, subject: str) -> str:
 
 
 def _raise(sev: Severity) -> Severity:
-    return Severity.HIGH if sev is Severity.MEDIUM else (Severity.MEDIUM if sev is Severity.LOW else sev)
+    return (
+        Severity.HIGH
+        if sev is Severity.MEDIUM
+        else (Severity.MEDIUM if sev is Severity.LOW else sev)
+    )
 
 
 def _lower(sev: Severity) -> Severity:
-    return Severity.LOW if sev is Severity.MEDIUM else (Severity.MEDIUM if sev is Severity.HIGH else sev)
+    return (
+        Severity.LOW
+        if sev is Severity.MEDIUM
+        else (Severity.MEDIUM if sev is Severity.HIGH else sev)
+    )
 
 
 def research_open(inputs: GapInputs, sev: Severity) -> list[Gap]:
@@ -79,9 +93,20 @@ def research_open(inputs: GapInputs, sev: Severity) -> list[Gap]:
             continue
         linked = [inputs.issue(i) for i in r.issues]
         linked_open = any(i is not None and i.active for i in linked)
-        out.append(Gap(_gid("RG", r.record_id), "RG", GapKind.RESEARCH, _raise(sev) if linked_open else sev,
-                       r.record_id, r.title_en, r.title_fa, nodes=r.nodes, documents=r.evidence,
-                       detail=f"state={r.state}; people={len(r.people)}"))
+        out.append(
+            Gap(
+                _gid("RG", r.record_id),
+                "RG",
+                GapKind.RESEARCH,
+                _raise(sev) if linked_open else sev,
+                r.record_id,
+                r.title_en,
+                r.title_fa,
+                nodes=r.nodes,
+                documents=r.evidence,
+                detail=f"state={r.state}; people={len(r.people)}",
+            )
+        )
     return out
 
 
@@ -91,11 +116,21 @@ def knowledge_lack(inputs: GapInputs, sev: Severity) -> list[Gap]:
         if not s.active or not s.lacks:
             continue
         severity = _raise(sev) if s.status == "blocked" else sev
-        out.append(Gap(_gid("KL", s.item_id), "KL", GapKind.KNOWLEDGE, severity, s.item_id,
-                       f"Knowledge lack on {s.item_id}: {', '.join(s.lacks)}",
-                       f"کمبود دانش در {s.item_id}: {', '.join(s.lacks)}",
-                       issue_id=s.issue_id, nodes=(s.owner_node,) if s.owner_node else (), documents=s.lacks,
-                       detail=f"lacks={len(s.lacks)}; status={s.status}"))
+        out.append(
+            Gap(
+                _gid("KL", s.item_id),
+                "KL",
+                GapKind.KNOWLEDGE,
+                severity,
+                s.item_id,
+                f"Knowledge lack on {s.item_id}: {', '.join(s.lacks)}",
+                f"کمبود دانش در {s.item_id}: {', '.join(s.lacks)}",
+                issue_id=s.issue_id,
+                nodes=(s.owner_node,) if s.owner_node else (),
+                documents=s.lacks,
+                detail=f"lacks={len(s.lacks)}; status={s.status}",
+            )
+        )
     return out
 
 
@@ -104,9 +139,19 @@ def missing_executor(inputs: GapInputs, sev: Severity) -> list[Gap]:
     for s in inputs.subissues:
         if not s.active or s.lead or s.executors:
             continue
-        out.append(Gap(_gid("EX", s.item_id), "EX", GapKind.EXECUTOR, sev, s.item_id,
-                       f"No lead or executor for {s.item_id}", f"بدون مجری یا مسئول برای {s.item_id}",
-                       issue_id=s.issue_id, nodes=(s.owner_node,) if s.owner_node else ()))
+        out.append(
+            Gap(
+                _gid("EX", s.item_id),
+                "EX",
+                GapKind.EXECUTOR,
+                sev,
+                s.item_id,
+                f"No lead or executor for {s.item_id}",
+                f"بدون مجری یا مسئول برای {s.item_id}",
+                issue_id=s.issue_id,
+                nodes=(s.owner_node,) if s.owner_node else (),
+            )
+        )
     return out
 
 
@@ -122,10 +167,20 @@ def blocked_dependency(inputs: GapInputs, sev: Severity) -> list[Gap]:
                 waiting.append(dep_id)
         if not waiting:
             continue
-        out.append(Gap(_gid("DEP", s.item_id), "DEP", GapKind.DEPENDENCY, sev, s.item_id,
-                       f"{s.item_id} waits for {', '.join(waiting)}", f"{s.item_id} منتظر {', '.join(waiting)} است",
-                       issue_id=s.issue_id, nodes=(s.owner_node,) if s.owner_node else (),
-                       detail="waits_for=" + ",".join(waiting)))
+        out.append(
+            Gap(
+                _gid("DEP", s.item_id),
+                "DEP",
+                GapKind.DEPENDENCY,
+                sev,
+                s.item_id,
+                f"{s.item_id} waits for {', '.join(waiting)}",
+                f"{s.item_id} منتظر {', '.join(waiting)} است",
+                issue_id=s.issue_id,
+                nodes=(s.owner_node,) if s.owner_node else (),
+                detail="waits_for=" + ",".join(waiting),
+            )
+        )
     return out
 
 
@@ -136,8 +191,20 @@ def unlinked_challenge(inputs: GapInputs, sev: Severity) -> list[Gap]:
             continue
         if any(inputs.issue(i) is not None for i in r.issues):
             continue
-        out.append(Gap(_gid("CH", r.record_id), "CH", GapKind.CHALLENGE, sev, r.record_id, r.title_en, r.title_fa,
-                       nodes=r.nodes, documents=r.evidence, detail="no registered issue tracks this challenge"))
+        out.append(
+            Gap(
+                _gid("CH", r.record_id),
+                "CH",
+                GapKind.CHALLENGE,
+                sev,
+                r.record_id,
+                r.title_en,
+                r.title_fa,
+                nodes=r.nodes,
+                documents=r.evidence,
+                detail="no registered issue tracks this challenge",
+            )
+        )
     return out
 
 
@@ -147,9 +214,20 @@ def scorecard_open(inputs: GapInputs, sev: Severity) -> list[Gap]:
         if d.state == "recorded":
             continue
         severity = sev if d.state == "open" else _lower(sev)
-        out.append(Gap(_gid("SC", d.dimension_id), "SC", GapKind.MEASUREMENT, severity, d.dimension_id,
-                       d.name_en, d.name_fa, documents=d.evidence,
-                       detail=f"state={d.state}" + (f"; research={d.research}" if d.research else "")))
+        out.append(
+            Gap(
+                _gid("SC", d.dimension_id),
+                "SC",
+                GapKind.MEASUREMENT,
+                severity,
+                d.dimension_id,
+                d.name_en,
+                d.name_fa,
+                documents=d.evidence,
+                detail=f"state={d.state}"
+                + (f"; research={d.research}" if d.research else ""),
+            )
+        )
     return out
 
 
@@ -160,15 +238,39 @@ def stale_unsolved(inputs: GapInputs, sev: Severity) -> list[Gap]:
             continue
         linked = [inputs.issue(i) for i in r.issues]
         if all(i is not None and not i.active for i in linked):
-            out.append(Gap(_gid("ST", r.record_id), "ST", GapKind.STALE, sev, r.record_id, r.title_en, r.title_fa,
-                           nodes=r.nodes, documents=r.evidence, detail="all linked issues are closed"))
+            out.append(
+                Gap(
+                    _gid("ST", r.record_id),
+                    "ST",
+                    GapKind.STALE,
+                    sev,
+                    r.record_id,
+                    r.title_en,
+                    r.title_fa,
+                    nodes=r.nodes,
+                    documents=r.evidence,
+                    detail="all linked issues are closed",
+                )
+            )
     return out
 
 
 def unevidenced_record(inputs: GapInputs, sev: Severity) -> list[Gap]:
-    return [Gap(_gid("EV", r.record_id), "EV", GapKind.EVIDENCE, sev, r.record_id, r.title_en, r.title_fa,
-                nodes=r.nodes, detail="no evidence document")
-            for r in inputs.records if not r.evidence]
+    return [
+        Gap(
+            _gid("EV", r.record_id),
+            "EV",
+            GapKind.EVIDENCE,
+            sev,
+            r.record_id,
+            r.title_en,
+            r.title_fa,
+            nodes=r.nodes,
+            detail="no evidence document",
+        )
+        for r in inputs.records
+        if not r.evidence
+    ]
 
 
 RULES: dict[str, Callable[[GapInputs, Severity], list[Gap]]] = {
@@ -189,7 +291,10 @@ class GapRuleBook:
         unknown = sorted(set(settings) - set(RULES))
         if unknown:
             raise InvariantError(f"unknown gap rules: {', '.join(unknown)}")
-        self.settings = {code: settings.get(code, RuleSetting(True, DEFAULT_SEVERITY[code])) for code in RULE_ORDER}
+        self.settings = {
+            code: settings.get(code, RuleSetting(True, DEFAULT_SEVERITY[code]))
+            for code in RULE_ORDER
+        }
 
     @property
     def enabled(self) -> tuple[str, ...]:
@@ -209,4 +314,7 @@ class GapRuleBook:
 def sort_gaps(gaps: list[Gap]) -> list[Gap]:
     """Most severe first, then rule order, then subject (stable and deterministic)."""
     order = {code: i for i, code in enumerate(RULE_ORDER)}
-    return sorted(gaps, key=lambda g: (SEVERITY_ORDER[g.severity], order.get(g.rule, 99), g.subject))
+    return sorted(
+        gaps,
+        key=lambda g: (SEVERITY_ORDER[g.severity], order.get(g.rule, 99), g.subject),
+    )

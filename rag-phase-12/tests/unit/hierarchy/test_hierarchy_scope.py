@@ -2,8 +2,17 @@
 
 import pytest
 
-from rag_core.hierarchy.application.workflows import HierarchyWorkflowService, catalog_index, scope_sizes
-from rag_core.hierarchy.domain.scope import RoutingAction, ScopeResolver, leaf_boundary, route_question
+from rag_core.hierarchy.application.workflows import (
+    HierarchyWorkflowService,
+    catalog_index,
+    scope_sizes,
+)
+from rag_core.hierarchy.domain.scope import (
+    RoutingAction,
+    ScopeResolver,
+    leaf_boundary,
+    route_question,
+)
 from rag_core.hierarchy.domain.validation import normalize_confidentiality
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.errors import InvariantError
@@ -13,7 +22,10 @@ from tests.fixtures.hierarchy.registry import shipped_registry
 pytestmark = [pytest.mark.hierarchy, pytest.mark.registry]
 
 N = NodeIdentifier
-CONF = {k: Confidentiality(normalize_confidentiality(v[1])) for k, v in catalog_index().items()}
+CONF = {
+    k: Confidentiality(normalize_confidentiality(v[1]))
+    for k, v in catalog_index().items()
+}
 
 
 @pytest.fixture()
@@ -23,16 +35,26 @@ def loaded():
 
 def _visible(loaded, node: str) -> set[str]:
     resolver = ScopeResolver(loaded.organization)
-    return {d.value for d in resolver.visible_documents(N(node), loaded.ownership, CONF)}
+    return {
+        d.value for d in resolver.visible_documents(N(node), loaded.ownership, CONF)
+    }
 
 
 def test_scope_nodes_of_a_team(loaded) -> None:
     scope = ScopeResolver(loaded.organization).resolve(N("N-SW-WEB"))
-    assert {str(n) for n in scope.visible_nodes} == {"N-SW-WEB", "N-SW", "N-CEO", "N-BRD", "N-LIB"}
+    assert {str(n) for n in scope.visible_nodes} == {
+        "N-SW-WEB",
+        "N-SW",
+        "N-CEO",
+        "N-BRD",
+        "N-LIB",
+    }
     assert N("N-SW-MOB") not in scope.visible_nodes
 
 
-def test_web_team_sees_own_parent_and_library_but_not_siblings_or_restricted(loaded) -> None:
+def test_web_team_sees_own_parent_and_library_but_not_siblings_or_restricted(
+    loaded,
+) -> None:
     seen = _visible(loaded, "N-SW-WEB")
     assert {"AR-SW-017", "AR-SW-016", "AR-ISS-024", "AR-TRN-026", "AR-ORG-002"} <= seen
     assert "AR-SW-018" not in seen  # sibling mobile team
@@ -108,6 +130,11 @@ def test_leaf_boundary_of_web_team(loaded) -> None:
     ],
 )
 def test_route_question(loaded, asking, owners, reserved, action, target) -> None:
-    decision = route_question(loaded.organization, N(asking), [N(o) for o in owners], reserved_decision=reserved)
+    decision = route_question(
+        loaded.organization,
+        N(asking),
+        [N(o) for o in owners],
+        reserved_decision=reserved,
+    )
     assert decision.action is action
     assert str(decision.target) == target

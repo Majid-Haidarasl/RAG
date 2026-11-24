@@ -21,7 +21,11 @@ from pathlib import Path
 
 from dataclasses import dataclass, field
 
-from rag_core.ingestion.domain.errors import POPPLER_INSTALL, GarbledTextError, ParseFailedError
+from rag_core.ingestion.domain.errors import (
+    POPPLER_INSTALL,
+    GarbledTextError,
+    ParseFailedError,
+)
 from rag_core.ingestion.domain.model import BlockKind, ContentBlock
 from rag_core.ingestion.domain.text_quality import TextQuality, assess_text_quality
 from rag_core.ingestion.infrastructure import pdf_poppler
@@ -43,7 +47,9 @@ def _page_is_scanned(page: object, text: str) -> bool:
     return len(chars) < 8 and len(text.strip()) < 8
 
 
-def _tables_as_blocks(page: object, page_number: int, start_index: int) -> list[ContentBlock]:
+def _tables_as_blocks(
+    page: object, page_number: int, start_index: int
+) -> list[ContentBlock]:
     blocks: list[ContentBlock] = []
     try:
         tables = page.extract_tables() or []
@@ -52,7 +58,9 @@ def _tables_as_blocks(page: object, page_number: int, start_index: int) -> list[
     for table_index, table in enumerate(tables):
         rows: list[tuple[str, ...]] = []
         for row in table or []:
-            cells = tuple((cell or "").strip() if cell is not None else "" for cell in row)
+            cells = tuple(
+                (cell or "").strip() if cell is not None else "" for cell in row
+            )
             rows.append(cells)
         text = "\n".join(" | ".join(row) for row in rows).strip()
         if not text:
@@ -100,7 +108,9 @@ def _paragraph_blocks(pages: list[tuple[int, list[str]]]) -> list[ContentBlock]:
     return blocks
 
 
-def _append_tables(blocks: list[ContentBlock], number: int, tables: list[ContentBlock], page_text: str) -> None:
+def _append_tables(
+    blocks: list[ContentBlock], number: int, tables: list[ContentBlock], page_text: str
+) -> None:
     for table_block in tables:
         if not table_block.text or table_block.text in page_text:
             continue
@@ -118,7 +128,9 @@ def _append_tables(blocks: list[ContentBlock], number: int, tables: list[Content
         )
 
 
-def parse_pdf_detailed(path: Path, *, pdftotext: str | None | bool = True) -> PdfParseResult:
+def parse_pdf_detailed(
+    path: Path, *, pdftotext: str | None | bool = True
+) -> PdfParseResult:
     """Parse a PDF. ``pdftotext=False`` forces the pdfplumber fallback (tests)."""
     try:
         import pdfplumber
@@ -145,7 +157,9 @@ def parse_pdf_detailed(path: Path, *, pdftotext: str | None | bool = True) -> Pd
         except Exception as exc:  # noqa: BLE001
             warnings.append(f"pdftotext failed ({exc}); fell back to pdfplumber")
     else:
-        warnings.append(f"pdftotext not found; using pdfplumber fallback. Install it with: {POPPLER_INSTALL}")
+        warnings.append(
+            f"pdftotext not found; using pdfplumber fallback. Install it with: {POPPLER_INSTALL}"
+        )
 
     scanned: list[int] = []
     page_texts: list[tuple[int, list[str]]] = []
@@ -161,7 +175,9 @@ def parse_pdf_detailed(path: Path, *, pdftotext: str | None | bool = True) -> Pd
                     try:
                         raw = page.extract_text() or ""
                     except Exception as exc:  # noqa: BLE001
-                        raise ParseFailedError(str(path), f"page {number}: {exc}") from exc
+                        raise ParseFailedError(
+                            str(path), f"page {number}: {exc}"
+                        ) from exc
                     text = raw.strip()
                     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
                 if _page_is_scanned(page, text):
@@ -186,16 +202,24 @@ def parse_pdf_detailed(path: Path, *, pdftotext: str | None | bool = True) -> Pd
                     paragraph_index=len(blocks),
                 )
             )
-        _append_tables(blocks, number, tables_by_page.get(number, []), "\n\n".join(paragraphs))
+        _append_tables(
+            blocks, number, tables_by_page.get(number, []), "\n\n".join(paragraphs)
+        )
 
     full_text = "\n\n".join(b.text for b in blocks)
     quality = assess_text_quality(full_text)
     if quality.is_garbled:
-        hint = "" if engine == "pdftotext" else f"Install poppler for correct Persian text: {POPPLER_INSTALL}"
+        hint = (
+            ""
+            if engine == "pdftotext"
+            else f"Install poppler for correct Persian text: {POPPLER_INSTALL}"
+        )
         raise GarbledTextError(str(path), quality.reasons, engine, hint)
     if quality.verdict == "fragmented":
         warnings.append("fragmented PDF text: " + "; ".join(quality.reasons))
-    return PdfParseResult(blocks, tuple(scanned), page_count, engine, quality, tuple(warnings), info)
+    return PdfParseResult(
+        blocks, tuple(scanned), page_count, engine, quality, tuple(warnings), info
+    )
 
 
 def parse_pdf(path: Path) -> tuple[list[ContentBlock], tuple[int, ...], int]:

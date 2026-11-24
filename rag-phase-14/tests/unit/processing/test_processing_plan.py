@@ -64,12 +64,20 @@ def test_step_of_unknown_node_raises() -> None:
         build_plan(tree()).step_of("N-NOPE")
 
 
-@pytest.mark.parametrize("nodes", [
-    [TreeNode("N-BRD", 0, None), TreeNode("N-BRD", 1, None)],
-    [TreeNode("N-BRD", 0, None), TreeNode("N-CEO", 0, None)],
-    [TreeNode("N-BRD", 0, None), TreeNode("N-CEO", 1, "N-GONE")],
-    [TreeNode("N-BRD", 0, None), TreeNode("N-A", 1, "N-B"), TreeNode("N-B", 1, "N-A")],
-], ids=["duplicate", "two_roots", "unknown_parent", "cycle"])
+@pytest.mark.parametrize(
+    "nodes",
+    [
+        [TreeNode("N-BRD", 0, None), TreeNode("N-BRD", 1, None)],
+        [TreeNode("N-BRD", 0, None), TreeNode("N-CEO", 0, None)],
+        [TreeNode("N-BRD", 0, None), TreeNode("N-CEO", 1, "N-GONE")],
+        [
+            TreeNode("N-BRD", 0, None),
+            TreeNode("N-A", 1, "N-B"),
+            TreeNode("N-B", 1, "N-A"),
+        ],
+    ],
+    ids=["duplicate", "two_roots", "unknown_parent", "cycle"],
+)
 def test_invalid_trees_are_rejected(nodes: list[TreeNode]) -> None:
     with pytest.raises(InvariantError):
         build_plan(nodes)

@@ -23,7 +23,9 @@ class RelationConfidence:
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.value <= 1.0:
-            raise InvariantError(f"RelationConfidence must be in [0, 1], got {self.value}")
+            raise InvariantError(
+                f"RelationConfidence must be in [0, 1], got {self.value}"
+            )
 
 
 @dataclass(frozen=True)
@@ -51,8 +53,18 @@ class IkeGraph:
 
     def add(self, relation: IkeRelation) -> None:
         key = (relation.source_id, relation.target_id, relation.relation_type)
-        if any((r.source_id, r.target_id, r.relation_type) == key for r in self.relations):
+        if any(
+            (r.source_id, r.target_id, r.relation_type) == key for r in self.relations
+        ):
             raise InvariantError("duplicate IKE relation")
         self.relations.append(relation)
-        name = "KnowledgeLackFlagged" if relation.relation_type is RelationType.KNOWLEDGE_LACK else "RelationCreated"
-        self.events.append(DomainEvent(name, {"source": relation.source_id, "target": relation.target_id}))
+        name = (
+            "KnowledgeLackFlagged"
+            if relation.relation_type is RelationType.KNOWLEDGE_LACK
+            else "RelationCreated"
+        )
+        self.events.append(
+            DomainEvent(
+                name, {"source": relation.source_id, "target": relation.target_id}
+            )
+        )

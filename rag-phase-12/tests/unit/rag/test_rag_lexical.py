@@ -11,7 +11,9 @@ pytestmark = [pytest.mark.rag, pytest.mark.retrieval]
 
 def test_tokens_normalize_persian_variants() -> None:
     # Arabic yeh/kaf, ZWNJ, Persian digits all fold onto one form.
-    assert lexical_tokens("مرخصي ساعتي ۱۶ ساعت") == lexical_tokens("مرخصی ساعتی 16 ساعت")
+    assert lexical_tokens("مرخصي ساعتي ۱۶ ساعت") == lexical_tokens(
+        "مرخصی ساعتی 16 ساعت"
+    )
     assert lexical_tokens("پیش‌پرداخت") == lexical_tokens("پیشپرداخت") == ["پیشپرداخت"]
 
 
@@ -31,7 +33,13 @@ def test_digits_kept_single_letters_dropped() -> None:
 
 
 def test_ranking_prefers_matching_document() -> None:
-    idx = Bm25Index([("a", "مرخصی ساعتی ۴ ساعت در روز"), ("b", "پاسخ اولویت ۱ ظرف ۳۰ دقیقه"), ("c", "گزارش مالی فصلی")])
+    idx = Bm25Index(
+        [
+            ("a", "مرخصی ساعتی ۴ ساعت در روز"),
+            ("b", "پاسخ اولویت ۱ ظرف ۳۰ دقیقه"),
+            ("c", "گزارش مالی فصلی"),
+        ]
+    )
     hits = idx.search("سقف مرخصی ساعتی", 3)
     assert hits[0][0] == "a"
     assert all(score > 0 for _, score in hits)

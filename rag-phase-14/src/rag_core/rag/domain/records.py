@@ -38,7 +38,10 @@ class SourceRef:
         return f"{self.document_id} §{self.order}"
 
     def describe(self) -> str:
-        parts = [f"{self.document_id} v{self.version} ({self.language})", f"§{self.order}"]
+        parts = [
+            f"{self.document_id} v{self.version} ({self.language})",
+            f"§{self.order}",
+        ]
         if self.page is not None:
             parts.append(f"p.{self.page}")
         if self.paragraph is not None:
@@ -86,13 +89,21 @@ class ChunkRecord:
 
     @property
     def is_active(self) -> bool:
-        return self.status == ChunkStatus.ACTIVE.value and self.version_status == "active"
+        return (
+            self.status == ChunkStatus.ACTIVE.value and self.version_status == "active"
+        )
 
     @property
     def source(self) -> SourceRef:
         return SourceRef(
-            self.document_id, self.version, self.language, self.order,
-            self.heading_path, self.page, self.paragraph, self.table,
+            self.document_id,
+            self.version,
+            self.language,
+            self.order,
+            self.heading_path,
+            self.page,
+            self.paragraph,
+            self.table,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -124,8 +135,11 @@ class SearchFilters:
         active_only: bool = True,
     ) -> SearchFilters:
         return cls(
-            frozenset(languages), frozenset(d.upper() for d in document_ids),
-            frozenset(layers), frozenset(knowledge_classes), active_only,
+            frozenset(languages),
+            frozenset(d.upper() for d in document_ids),
+            frozenset(layers),
+            frozenset(knowledge_classes),
+            active_only,
         )
 
     def admits(self, record: ChunkRecord) -> bool:
@@ -137,7 +151,10 @@ class SearchFilters:
             return False
         if self.layers and record.layer not in self.layers:
             return False
-        if self.knowledge_classes and record.knowledge_class not in self.knowledge_classes:
+        if (
+            self.knowledge_classes
+            and record.knowledge_class not in self.knowledge_classes
+        ):
             return False
         return True
 

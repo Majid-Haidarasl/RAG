@@ -8,5 +8,4 @@ from rag_core.prioritization.domain.model import IssueSignal
 
 
 class SignalSource(Protocol):
-    def signals(self) -> list[IssueSignal]:
-        ...
+    def signals(self) -> list[IssueSignal]: ...

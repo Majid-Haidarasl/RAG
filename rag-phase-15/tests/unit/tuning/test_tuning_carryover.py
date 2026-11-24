@@ -16,8 +16,19 @@ from rag_core.tuning.application.precheck import (
     precheck_summary,
     required_summary_ids,
 )
-from rag_core.tuning.application.services import Generated, IdVariantRunner, choose, id_candidates
-from rag_core.tuning.domain.required_ids import LISTED_VARIANTS, RETRY_VARIANTS, IdVariant, guard_note, guard_rank
+from rag_core.tuning.application.services import (
+    Generated,
+    IdVariantRunner,
+    choose,
+    id_candidates,
+)
+from rag_core.tuning.domain.required_ids import (
+    LISTED_VARIANTS,
+    RETRY_VARIANTS,
+    IdVariant,
+    guard_note,
+    guard_rank,
+)
 from rag_core.tuning.domain.variants import SelectionRule
 from rag_core.tuning.infrastructure.config import JUDGE_VARIANTS, load_eval_settings
 from rag_core.tuning.infrastructure.ids_acl import IdJob
@@ -26,7 +37,13 @@ from tests.fixtures.tuning.samples import CALIBRATION, CONFIG, shipped_items
 
 pytestmark = [pytest.mark.tuning, pytest.mark.carryover]
 
-JOB = IdJob("rfp_summary", "AR-RFP-1403-07", "en", ("f",), ("AR-RFP-1403-07", "AR-ISS-024", "AR-ISS-024/WEB"))
+JOB = IdJob(
+    "rfp_summary",
+    "AR-RFP-1403-07",
+    "en",
+    ("f",),
+    ("AR-RFP-1403-07", "AR-ISS-024", "AR-ISS-024/WEB"),
+)
 FULL = "AR-RFP-1403-07, AR-ISS-024 and AR-ISS-024/WEB."
 
 
@@ -56,6 +73,7 @@ def inventing(text: str = FULL + " AR-ISS-999.") -> Generated:
 
 # ---- invented-id guard -------------------------------------------------------------------------
 
+
 def test_variant_groups() -> None:
     assert RETRY_VARIANTS == {IdVariant.LISTED_RETRY, IdVariant.LISTED_GUARDED}
     assert LISTED_VARIANTS == {IdVariant.LISTED, *RETRY_VARIANTS}
@@ -63,21 +81,31 @@ def test_variant_groups() -> None:
 
 
 def test_guard_note_english() -> None:
-    note = guard_note(["AR-ISS-024/WEB"], ["AR-ISS-999"], ["AR-ISS-024", "AR-ISS-024/WEB"], "en")
+    note = guard_note(
+        ["AR-ISS-024/WEB"], ["AR-ISS-999"], ["AR-ISS-024", "AR-ISS-024/WEB"], "en"
+    )
     assert "remove them: AR-ISS-999" in note and "required ids: AR-ISS-024/WEB" in note
     assert "Only these ids are allowed: AR-ISS-024, AR-ISS-024/WEB" in note
 
 
 def test_guard_note_persian_and_empty_parts() -> None:
     fa = guard_note([], ["AR-ISS-999"], ["AR-ISS-024"], "fa")
-    assert "AR-ISS-999" in fa and "فقط این شناسه‌ها مجازند: AR-ISS-024" in fa and "الزامی" not in fa
+    assert (
+        "AR-ISS-999" in fa
+        and "فقط این شناسه‌ها مجازند: AR-ISS-024" in fa
+        and "الزامی" not in fa
+    )
     only = guard_note([], [], [], "en")
     assert only.startswith("Only these ids are allowed: -.")
 
 
 def test_guard_rank_order() -> None:
-    ranks = [guard_rank("timeout", (), ()), guard_rank("", ("X",), ()), guard_rank("", (), ("Y", "Z")),
-             guard_rank("", (), ())]
+    ranks = [
+        guard_rank("timeout", (), ()),
+        guard_rank("", ("X",), ()),
+        guard_rank("", (), ("Y", "Z")),
+        guard_rank("", (), ()),
+    ]
     assert sorted(ranks) == [(0, 0, 0), (0, 0, 2), (0, 1, 0), (1, 0, 0)]
 
 
@@ -104,7 +132,10 @@ def test_guarded_retries_missing_ids() -> None:
     model = Script(clean("AR-RFP-1403-07 and AR-ISS-024."), clean())
     row = IdVariantRunner(model, accept_all).run(JOB, "listed_guarded")
     assert row.attempts == 2 and row.mentioned == 3 and row.accepted
-    assert "AR-ISS-024/WEB" in model.notes[1] and "Only these ids are allowed" in model.notes[1]
+    assert (
+        "AR-ISS-024/WEB" in model.notes[1]
+        and "Only these ids are allowed" in model.notes[1]
+    )
 
 
 def test_guarded_keeps_first_text_on_a_tie() -> None:
@@ -127,9 +158,14 @@ def test_guarded_first_error_is_not_retried() -> None:
 
 def test_invented_ids_metric_picks_the_guarded_variant() -> None:
     model = Script(inventing(), inventing(), inventing(), clean())
-    rows = IdVariantRunner(model, accept_all).run_all([JOB], ["baseline", "listed_retry", "listed_guarded"])
+    rows = IdVariantRunner(model, accept_all).run_all(
+        [JOB], ["baseline", "listed_retry", "listed_guarded"]
+    )
     cands = {c.variant_id: c for c in id_candidates(rows)}
-    assert cands["listed_retry"].value("invented_ids") == 1 and cands["listed_guarded"].value("invented_ids") == 0
+    assert (
+        cands["listed_retry"].value("invented_ids") == 1
+        and cands["listed_guarded"].value("invented_ids") == 0
+    )
     rule = SelectionRule("accept_rate", True, (("invented_ids", False),), 0.0)
     picked = choose("ai_ids", "listed_guarded", list(cands.values()), rule, "baseline")
     assert picked.measured.winner == "listed_guarded" and picked.agrees
@@ -137,14 +173,34 @@ def test_invented_ids_metric_picks_the_guarded_variant() -> None:
 
 # ---- fact pre-check ----------------------------------------------------------------------------
 
-def answer(output: str, facts: tuple = (("30",), ("4",)), kind: OutputKind = OutputKind.QA_ANSWER,
-           language: str = "en", gold: str = "") -> JudgeCase:
-    return JudgeCase("A1", kind, language, "q", output, expectation=Expectation(facts=facts), gold=gold)
+
+def answer(
+    output: str,
+    facts: tuple = (("30",), ("4",)),
+    kind: OutputKind = OutputKind.QA_ANSWER,
+    language: str = "en",
+    gold: str = "",
+) -> JudgeCase:
+    return JudgeCase(
+        "A1",
+        kind,
+        language,
+        "q",
+        output,
+        expectation=Expectation(facts=facts),
+        gold=gold,
+    )
 
 
 def summary(output: str, **exp: object) -> JudgeCase:
-    return JudgeCase("S1", OutputKind.IKE_SUMMARY, "en", "summary", output,
-                     expectation=Expectation(status="summary", **exp))
+    return JudgeCase(
+        "S1",
+        OutputKind.IKE_SUMMARY,
+        "en",
+        "summary",
+        output,
+        expectation=Expectation(status="summary", **exp),
+    )
 
 
 def test_precheck_flags_a_dropped_fact() -> None:
@@ -153,34 +209,67 @@ def test_precheck_flags_a_dropped_fact() -> None:
 
 
 def test_precheck_passes_complete_answers_in_both_scripts() -> None:
-    assert fact_precheck(answer("Response within 30 minutes and restoration within 4 hours.")).passed
-    fa = answer("پاسخ ظرف ۳۰ دقیقه و رفع موقت ظرف ۴ ساعت است.", facts=(("30", "۳۰"), ("4", "۴")), language="fa")
+    assert fact_precheck(
+        answer("Response within 30 minutes and restoration within 4 hours.")
+    ).passed
+    fa = answer(
+        "پاسخ ظرف ۳۰ دقیقه و رفع موقت ظرف ۴ ساعت است.",
+        facts=(("30", "۳۰"), ("4", "۴")),
+        language="fa",
+    )
     assert fact_precheck(fa).passed
 
 
 def test_precheck_not_applied_to_refusals_or_unknown_facts() -> None:
     refusal = fact_precheck(answer("Not in my documents.", kind=OutputKind.QA_REFUSAL))
     no_facts = fact_precheck(answer("Anything.", facts=()))
-    assert not refusal.applied and refusal.passed and not no_facts.applied and no_facts.passed
+    assert (
+        not refusal.applied
+        and refusal.passed
+        and not no_facts.applied
+        and no_facts.passed
+    )
 
 
 def test_precheck_summary_ids() -> None:
-    case = summary("AR-ISS-024/WEB led by Sara; AR-ISS-024/WIN.", items=("AR-ISS-024/WEB",),
-                   item_leads=(("AR-ISS-024/WIN", ("Sara",)),), gaps=("AR-ISS-031",))
-    assert required_summary_ids(case) == ("AR-ISS-024/WEB", "AR-ISS-024/WIN", "AR-ISS-031")
+    case = summary(
+        "AR-ISS-024/WEB led by Sara; AR-ISS-024/WIN.",
+        items=("AR-ISS-024/WEB",),
+        item_leads=(("AR-ISS-024/WIN", ("Sara",)),),
+        gaps=("AR-ISS-031",),
+    )
+    assert required_summary_ids(case) == (
+        "AR-ISS-024/WEB",
+        "AR-ISS-024/WIN",
+        "AR-ISS-031",
+    )
     assert fact_precheck(case).reasons == ("missing_id:AR-ISS-031",)
     assert not fact_precheck(summary("No ids known.")).applied
 
 
 def test_precheck_summary_counts() -> None:
-    findings = [PrecheckFinding("ok", True), PrecheckFinding("bad", True, ("facts:0/1",)),
-                PrecheckFinding("wrong", True, ("facts:1/2",)), PrecheckFinding("ref", False)]
-    out = precheck_summary(findings, {"ok": "accept", "bad": "reject", "wrong": "accept", "ref": "reject"},
-                           {"bad": "drop_fact"})
+    findings = [
+        PrecheckFinding("ok", True),
+        PrecheckFinding("bad", True, ("facts:0/1",)),
+        PrecheckFinding("wrong", True, ("facts:1/2",)),
+        PrecheckFinding("ref", False),
+    ]
+    out = precheck_summary(
+        findings,
+        {"ok": "accept", "bad": "reject", "wrong": "accept", "ref": "reject"},
+        {"bad": "drop_fact"},
+    )
     assert (out["cases"], out["applied"], out["flagged"]) == (4, 3, 2)
     assert (out["gold_rejects_flagged"], out["gold_rejects"]) == (1, 2)
-    assert out["false_flags"] == ["wrong"] and out["by_mutation"] == {"drop_fact": "1/1"}
-    assert findings[1].to_dict() == {"case_id": "bad", "applied": True, "passed": False, "reasons": ["facts:0/1"]}
+    assert out["false_flags"] == ["wrong"] and out["by_mutation"] == {
+        "drop_fact": "1/1"
+    }
+    assert findings[1].to_dict() == {
+        "case_id": "bad",
+        "applied": True,
+        "passed": False,
+        "reasons": ["facts:0/1"],
+    }
 
 
 class Inner:
@@ -193,14 +282,20 @@ class Inner:
 
     def judge(self, case: JudgeCase) -> JudgeResult:
         self.calls += 1
-        return JudgeResult.for_case(case, self.name, {}, PolicyOutcome(Decision.ACCEPT, 20, 20))
+        return JudgeResult.for_case(
+            case, self.name, {}, PolicyOutcome(Decision.ACCEPT, 20, 20)
+        )
 
 
 def test_prechecked_judge_rejects_without_a_model_call() -> None:
     inner = Inner()
     judge = PrecheckedJudge(inner, name="strict_precheck")
     result = judge.judge(answer("Response within 30 minutes.", gold="reject"))
-    assert result.decision is Decision.REJECT and result.total == 0 and result.parse_mode == "precheck"
+    assert (
+        result.decision is Decision.REJECT
+        and result.total == 0
+        and result.parse_mode == "precheck"
+    )
     assert result.judge == "strict_precheck" and inner.calls == 0
     assert (judge.prechecked, judge.model_calls) == (1, 0)
 
@@ -229,15 +324,25 @@ def test_precheck_on_the_shipped_calibration() -> None:
     findings = [fact_precheck(c) for c in cases]
     out = precheck_summary(findings, {c.case_id: c.gold for c in cases}, mutation)
     assert out["cases"] == 42 and out["false_flags"] == []
-    assert out["by_mutation"]["drop_fact"] == "3/3" and out["by_mutation"]["refuse_answerable"] == "2/2"
+    assert (
+        out["by_mutation"]["drop_fact"] == "3/3"
+        and out["by_mutation"]["refuse_answerable"] == "2/2"
+    )
     assert {"CAL-N01", "CAL-N04"} <= set(out["flagged_ids"])
 
 
 # ---- new defaults ------------------------------------------------------------------------------
 
+
 def test_phase15_defaults_and_reasons() -> None:
     s = load_eval_settings(CONFIG)
     assert "strict_precheck" in JUDGE_VARIANTS and s.live.max_judge_calls >= 3 * 42
     reasons = {kind: s.selection[kind].reason for kind in ("retrieval", "qa_prompt")}
-    assert "62/62" in reasons["retrieval"] and "switched in Phase 15" in reasons["retrieval"]
-    assert "62 of 62" in reasons["qa_prompt"] and "switched in Phase 15" in reasons["qa_prompt"]
+    assert (
+        "62/62" in reasons["retrieval"]
+        and "switched in Phase 15" in reasons["retrieval"]
+    )
+    assert (
+        "62 of 62" in reasons["qa_prompt"]
+        and "switched in Phase 15" in reasons["qa_prompt"]
+    )

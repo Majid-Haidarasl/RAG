@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from rag_core.models.domain.model import PHASE2_BASELINE, ModelRegistryEntry, PromptTemplate
+from rag_core.models.domain.model import (
+    PHASE2_BASELINE,
+    ModelRegistryEntry,
+    PromptTemplate,
+)
 from rag_core.shared_kernel.errors import NotFoundError
 
 

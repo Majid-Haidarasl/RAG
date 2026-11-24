@@ -14,7 +14,13 @@ from rag_core.transfer.domain.items import (
     rank_items,
     single_groups,
 )
-from tests.fixtures.transfer.samples import closed_item, hw_item, item, mobile_item, win_item
+from tests.fixtures.transfer.samples import (
+    closed_item,
+    hw_item,
+    item,
+    mobile_item,
+    win_item,
+)
 
 pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg]
 
@@ -39,8 +45,13 @@ def test_item_requires_id_status_and_nodes() -> None:
 def test_rank_puts_open_blocked_and_reserved_first() -> None:
     reserved = item("AR-ISS-024/LEG", "N-ADM-LEG", reserved_decision=True, risk=9)
     ranked = rank_items([closed_item(), mobile_item(), hw_item(), win_item(), reserved])
-    assert [i.item_id for i in ranked] == ["AR-ISS-024/LEG", "AR-ISS-024/WIN", "AR-ISS-024/HW", "AR-ISS-031",
-                                           "AR-ISS-034"]
+    assert [i.item_id for i in ranked] == [
+        "AR-ISS-024/LEG",
+        "AR-ISS-024/WIN",
+        "AR-ISS-024/HW",
+        "AR-ISS-031",
+        "AR-ISS-034",
+    ]
 
 
 def test_merge_keeps_owner_copy() -> None:
@@ -74,13 +85,26 @@ def test_item_round_trip_dict() -> None:
 
 
 def test_capacity_of_and_plus() -> None:
-    a = CapacitySummary.of([ExecutorRef("E1", "Saeed Akbari", "سعید اکبری", 14),
-                            ExecutorRef("E2", "Farzaneh Javadi", "فرزانه جوادی", None)])
-    assert (a.executors, a.published, a.hours_per_week, a.unit_planning) == (2, 1, 14, ("Farzaneh Javadi",))
+    a = CapacitySummary.of(
+        [
+            ExecutorRef("E1", "Saeed Akbari", "سعید اکبری", 14),
+            ExecutorRef("E2", "Farzaneh Javadi", "فرزانه جوادی", None),
+        ]
+    )
+    assert (a.executors, a.published, a.hours_per_week, a.unit_planning) == (
+        2,
+        1,
+        14,
+        ("Farzaneh Javadi",),
+    )
     b = CapacitySummary.of([ExecutorRef("E3", "Roozbeh Mohseni", "روزبه محسنی", 10)])
     total = a.plus(b)
     assert (total.executors, total.published, total.hours_per_week) == (3, 2, 24)
-    assert [p.name_en for p in total.people] == ["Farzaneh Javadi", "Roozbeh Mohseni", "Saeed Akbari"]
+    assert [p.name_en for p in total.people] == [
+        "Farzaneh Javadi",
+        "Roozbeh Mohseni",
+        "Saeed Akbari",
+    ]
     assert CapacitySummary.from_dict(total.to_dict()) == total
 
 

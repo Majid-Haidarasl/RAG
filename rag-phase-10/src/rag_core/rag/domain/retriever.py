@@ -28,7 +28,12 @@ from rag_core.knowledge.domain.dedup import DedupConfig
 from rag_core.knowledge.domain.fingerprint import jaccard, shingles
 from rag_core.rag.domain.fusion import DEFAULT_RRF_K, reciprocal_rank_fusion
 from rag_core.rag.domain.lexical import Bm25Index
-from rag_core.rag.domain.ports import ChunkStorePort, EmbeddingPort, ScopePort, VectorIndexPort
+from rag_core.rag.domain.ports import (
+    ChunkStorePort,
+    EmbeddingPort,
+    ScopePort,
+    VectorIndexPort,
+)
 from rag_core.rag.domain.records import ChunkRecord, SearchFilters
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 
@@ -69,9 +74,13 @@ class Hit:
             "document_id": self.record.document_id,
             "language": self.record.language,
             "fused": round(self.fused_score, 5),
-            "lexical": None if self.lexical_score is None else round(self.lexical_score, 4),
+            "lexical": None
+            if self.lexical_score is None
+            else round(self.lexical_score, 4),
             "lexical_rank": self.lexical_rank,
-            "vector": None if self.vector_score is None else round(self.vector_score, 4),
+            "vector": None
+            if self.vector_score is None
+            else round(self.vector_score, 4),
             "vector_rank": self.vector_rank,
         }
 
@@ -92,7 +101,9 @@ class RetrievalResult:
     node: str
     filters: SearchFilters
     hits: list[Hit] = field(default_factory=list)
-    duplicates_dropped: list[tuple[str, str]] = field(default_factory=list)  # (dropped, kept)
+    duplicates_dropped: list[tuple[str, str]] = field(
+        default_factory=list
+    )  # (dropped, kept)
     candidates: int = 0
     out_of_scope: list[OutOfScopeEvidence] = field(default_factory=list)
     timings_s: dict[str, float] = field(default_factory=dict)
@@ -139,7 +150,9 @@ class HybridRetriever:
         return "hybrid" if self.vectors is not None else "lexical"
 
     # -- candidate selection -------------------------------------------------
-    def _partition(self, node: str | None, filters: SearchFilters) -> tuple[list[str], list[str]]:
+    def _partition(
+        self, node: str | None, filters: SearchFilters
+    ) -> tuple[list[str], list[str]]:
         admitted = [r for r in self.store.all() if filters.admits(r)]
         if node is None or self.scope is None:
             return [r.key for r in admitted], []
@@ -164,7 +177,10 @@ class HybridRetriever:
         fused = reciprocal_rank_fusion(
             rankings,
             k=self.config.rrf_k,
-            weights={"lexical": self.config.lexical_weight, "vector": self.config.vector_weight},
+            weights={
+                "lexical": self.config.lexical_weight,
+                "vector": self.config.vector_weight,
+            },
         )
         lex_pos = {k: (i + 1, s) for i, (k, s) in enumerate(lex)}
         vec_pos = {k: (i + 1, s) for i, (k, s) in enumerate(vec)}
@@ -174,9 +190,13 @@ class HybridRetriever:
             vr = vec_pos.get(key)
             hits.append(
                 Hit(
-                    self.store.get(key), i + 1, score,
-                    lexical_score=lr[1] if lr else None, lexical_rank=lr[0] if lr else None,
-                    vector_score=vr[1] if vr else None, vector_rank=vr[0] if vr else None,
+                    self.store.get(key),
+                    i + 1,
+                    score,
+                    lexical_score=lr[1] if lr else None,
+                    lexical_rank=lr[0] if lr else None,
+                    vector_score=vr[1] if vr else None,
+                    vector_rank=vr[0] if vr else None,
                 )
             )
         return hits
@@ -194,10 +214,16 @@ class HybridRetriever:
                 o = other.record
                 if o.language != rec.language:
                     continue  # FA/EN pair is never a duplicate (Phase 5 rule)
-                if (o.duplicate_of or o.key) == group or (o.content_hash and o.content_hash == rec.content_hash):
+                if (o.duplicate_of or o.key) == group or (
+                    o.content_hash and o.content_hash == rec.content_hash
+                ):
                     twin = o.key
                     break
-                if sh and osh and jaccard(sh, osh) >= self.config.near_duplicate_threshold:
+                if (
+                    sh
+                    and osh
+                    and jaccard(sh, osh) >= self.config.near_duplicate_threshold
+                ):
                     twin = o.key
                     break
             if twin is not None:
@@ -234,14 +260,29 @@ class HybridRetriever:
         ranked = self._rank(query, qvec, inside, self.config.candidate_k)
         kept, dropped = self._collapse(ranked)
         result.hits = [
-            Hit(h.record, i + 1, h.fused_score, h.lexical_score, h.lexical_rank, h.vector_score, h.vector_rank)
+            Hit(
+                h.record,
+                i + 1,
+                h.fused_score,
+                h.lexical_score,
+                h.lexical_rank,
+                h.vector_score,
+                h.vector_rank,
+            )
             for i, h in enumerate(kept[:top_k])
         ]
         result.duplicates_dropped = dropped
         if probe_outside and outside:
-            probe = self._rank(query, qvec, outside, self.config.candidate_k)[: self.config.probe_k]
+            probe = self._rank(query, qvec, outside, self.config.candidate_k)[
+                : self.config.probe_k
+            ]
             result.out_of_scope = [
-                OutOfScopeEvidence(h.record.document_id, h.record.owner_node, h.lexical_score, h.vector_score)
+                OutOfScopeEvidence(
+                    h.record.document_id,
+                    h.record.owner_node,
+                    h.lexical_score,
+                    h.vector_score,
+                )
                 for h in probe
             ]
         result.timings_s["search"] = time.perf_counter() - t

@@ -29,7 +29,10 @@ def test_empty_file_gives_defaults(tmp_path: Path) -> None:
     path = tmp_path / "rag.yaml"
     path.write_text("", encoding="utf-8")
     settings = load_settings(path)
-    assert settings.config_version == "0.8.0" and settings.embedding.model == "bge-m3:latest"
+    assert (
+        settings.config_version == "0.8.0"
+        and settings.embedding.model == "bge-m3:latest"
+    )
 
 
 def test_unknown_generation_key(tmp_path: Path) -> None:

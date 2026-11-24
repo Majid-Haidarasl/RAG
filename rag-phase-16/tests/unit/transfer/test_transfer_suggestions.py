@@ -12,14 +12,27 @@ from rag_core.transfer.domain.suggestions import (
     parse_suggestion,
     suggestion_prompt,
 )
-from tests.fixtures.transfer.samples import built, ceo, deputy, draft_for, team_hw, team_mob, team_win
+from tests.fixtures.transfer.samples import (
+    built,
+    ceo,
+    deputy,
+    draft_for,
+    team_hw,
+    team_mob,
+    team_win,
+)
 
 pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg]
 
 
 def board_draft():  # noqa: ANN201
     extra = [team_win(), team_mob()]
-    sw = built(deputy("N-SW", "Software deputy"), "N-CEO", 1, [built(n, "N-SW", 2) for n in extra])
+    sw = built(
+        deputy("N-SW", "Software deputy"),
+        "N-CEO",
+        1,
+        [built(n, "N-SW", 2) for n in extra],
+    )
     d = draft_for(ceo(), "N-BRD", 0, [sw])
     d.omitted = ("AR-ISS-035",)
     return d
@@ -41,14 +54,28 @@ def test_persian_prompt() -> None:
 
 
 def test_candidates_include_omitted_items() -> None:
-    assert candidate_ids(board_draft()) == ("AR-ISS-024/WIN", "AR-ISS-031", "AR-ISS-035")
+    assert candidate_ids(board_draft()) == (
+        "AR-ISS-024/WIN",
+        "AR-ISS-031",
+        "AR-ISS-035",
+    )
 
 
 def test_parse_plain_and_fenced_json() -> None:
-    raw = json.dumps({"summary": "AR-ISS-024/WIN is blocked.", "raise": ["ar-iss-024/win"], "reason": "Blocked."})
+    raw = json.dumps(
+        {
+            "summary": "AR-ISS-024/WIN is blocked.",
+            "raise": ["ar-iss-024/win"],
+            "reason": "Blocked.",
+        }
+    )
     p = parse_suggestion(raw)
-    assert (p.summary, p.raise_ids, p.reason, p.mode) == ("AR-ISS-024/WIN is blocked.", ("AR-ISS-024/WIN",),
-                                                          "Blocked.", "json")
+    assert (p.summary, p.raise_ids, p.reason, p.mode) == (
+        "AR-ISS-024/WIN is blocked.",
+        ("AR-ISS-024/WIN",),
+        "Blocked.",
+        "json",
+    )
     fenced = parse_suggestion("```json\n" + raw + "\n```")
     assert fenced.mode == "json"
     extracted = parse_suggestion("Here you go: " + raw + " thanks")
@@ -56,14 +83,28 @@ def test_parse_plain_and_fenced_json() -> None:
 
 
 def test_parse_persian_digits_and_string_raise() -> None:
-    p = parse_suggestion(json.dumps({"summary": "خلاصه", "raise": "AR-ISS-۰۳۱ و AR-ISS-024/WIN"}, ensure_ascii=False))
+    p = parse_suggestion(
+        json.dumps(
+            {"summary": "خلاصه", "raise": "AR-ISS-۰۳۱ و AR-ISS-024/WIN"},
+            ensure_ascii=False,
+        )
+    )
     assert p.raise_ids == ("AR-ISS-031", "AR-ISS-024/WIN")
     assert p.reason == ""
 
 
-@pytest.mark.parametrize("raw", ["", "no json here", "[1, 2]", '{"summary": ""}', '{"summary": "x", "raise": 5}',
-                                 '{"summary": "x", "raise": [1, }'],
-                         ids=["empty", "no_json", "list", "empty_summary", "bad_raise", "broken"])
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "",
+        "no json here",
+        "[1, 2]",
+        '{"summary": ""}',
+        '{"summary": "x", "raise": 5}',
+        '{"summary": "x", "raise": [1, }',
+    ],
+    ids=["empty", "no_json", "list", "empty_summary", "bad_raise", "broken"],
+)
 def test_parse_errors(raw: str) -> None:
     with pytest.raises(SuggestionParseError):
         parse_suggestion(raw)
@@ -71,8 +112,15 @@ def test_parse_errors(raw: str) -> None:
 
 def test_check_accepts_grounded_suggestion_with_addition() -> None:
     d = board_draft()
-    p = parse_suggestion(json.dumps({"summary": "AR-ISS-024/WIN is blocked; the decision amount is 850 million toman.",
-                                     "raise": ["AR-ISS-024/WIN", "AR-ISS-035"], "reason": "It blocks delivery."}))
+    p = parse_suggestion(
+        json.dumps(
+            {
+                "summary": "AR-ISS-024/WIN is blocked; the decision amount is 850 million toman.",
+                "raise": ["AR-ISS-024/WIN", "AR-ISS-035"],
+                "reason": "It blocks delivery.",
+            }
+        )
+    )
     check = check_suggestion(p, d, CitedFactValidator())
     assert check.ok
     assert check.additions == ("AR-ISS-035",)
@@ -81,7 +129,14 @@ def test_check_accepts_grounded_suggestion_with_addition() -> None:
 
 def test_check_rejects_invented_ids_and_numbers() -> None:
     d = board_draft()
-    p = parse_suggestion(json.dumps({"summary": "Pay 999 million toman for AR-ISS-077.", "raise": ["AR-ISS-077"]}))
+    p = parse_suggestion(
+        json.dumps(
+            {
+                "summary": "Pay 999 million toman for AR-ISS-077.",
+                "raise": ["AR-ISS-077"],
+            }
+        )
+    )
     check = check_suggestion(p, d, CitedFactValidator())
     assert not check.ok
     assert check.invented_ids == ("AR-ISS-077",)

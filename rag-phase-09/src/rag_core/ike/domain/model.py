@@ -63,11 +63,25 @@ def endpoint_kind(identifier: str) -> EndpointKind:
 
 
 _K = EndpointKind
-RELATION_RULES: dict[RelationType, tuple[frozenset[EndpointKind], frozenset[EndpointKind]]] = {
-    RelationType.RELATES_TO: (frozenset({_K.ISSUE, _K.SUBISSUE}), frozenset({_K.KNOWLEDGE, _K.ISSUE})),
-    RelationType.CAN_HANDLE: (frozenset({_K.EXECUTOR}), frozenset({_K.ISSUE, _K.SUBISSUE})),
-    RelationType.EVIDENCE_FOR: (frozenset({_K.KNOWLEDGE, _K.ISSUE}), frozenset({_K.EXECUTOR, _K.ISSUE, _K.SUBISSUE})),
-    RelationType.KNOWLEDGE_LACK: (frozenset({_K.ISSUE, _K.SUBISSUE}), frozenset({_K.KNOWLEDGE, _K.ISSUE, _K.TOPIC})),
+RELATION_RULES: dict[
+    RelationType, tuple[frozenset[EndpointKind], frozenset[EndpointKind]]
+] = {
+    RelationType.RELATES_TO: (
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+        frozenset({_K.KNOWLEDGE, _K.ISSUE}),
+    ),
+    RelationType.CAN_HANDLE: (
+        frozenset({_K.EXECUTOR}),
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.EVIDENCE_FOR: (
+        frozenset({_K.KNOWLEDGE, _K.ISSUE}),
+        frozenset({_K.EXECUTOR, _K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.KNOWLEDGE_LACK: (
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+        frozenset({_K.KNOWLEDGE, _K.ISSUE, _K.TOPIC}),
+    ),
     RelationType.DEPENDS_ON: (frozenset({_K.SUBISSUE}), frozenset({_K.SUBISSUE})),
     RelationType.PART_OF: (frozenset({_K.SUBISSUE}), frozenset({_K.ISSUE})),
 }
@@ -79,7 +93,9 @@ class RelationConfidence:
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.value <= 1.0:
-            raise InvariantError(f"RelationConfidence must be in [0, 1], got {self.value}")
+            raise InvariantError(
+                f"RelationConfidence must be in [0, 1], got {self.value}"
+            )
 
 
 @dataclass(frozen=True)
@@ -101,8 +117,13 @@ class IkeRelation:
         return (self.source_id, self.target_id, self.relation_type)
 
     def to_dict(self) -> dict[str, object]:
-        return {"source": self.source_id, "target": self.target_id, "type": self.relation_type.value,
-                "confidence": round(self.confidence.value, 4), "note": self.source_note}
+        return {
+            "source": self.source_id,
+            "target": self.target_id,
+            "type": self.relation_type.value,
+            "confidence": round(self.confidence.value, 4),
+            "note": self.source_note,
+        }
 
 
 def relation_problems(relation: IkeRelation) -> list[str]:
@@ -110,12 +131,17 @@ def relation_problems(relation: IkeRelation) -> list[str]:
     problems: list[str] = []
     sources, targets = RELATION_RULES[relation.relation_type]
     sk, tk = endpoint_kind(relation.source_id), endpoint_kind(relation.target_id)
-    label = f"{relation.relation_type.value} {relation.source_id} -> {relation.target_id}"
+    label = (
+        f"{relation.relation_type.value} {relation.source_id} -> {relation.target_id}"
+    )
     if sk not in sources:
         problems.append(f"{label}: source kind {sk.value} not allowed")
     if tk not in targets:
         problems.append(f"{label}: target kind {tk.value} not allowed")
-    if relation.relation_type is RelationType.DEPENDS_ON and sk is tk is EndpointKind.SUBISSUE:
+    if (
+        relation.relation_type is RelationType.DEPENDS_ON
+        and sk is tk is EndpointKind.SUBISSUE
+    ):
         if relation.source_id.split("/", 1)[0] != relation.target_id.split("/", 1)[0]:
             problems.append(f"{label}: dependencies must stay inside one issue")
     if relation.relation_type is RelationType.PART_OF and sk is EndpointKind.SUBISSUE:
@@ -140,8 +166,16 @@ class IkeGraph:
         if self.has(*relation.key):
             raise InvariantError("duplicate IKE relation")
         self.relations.append(relation)
-        name = "KnowledgeLackFlagged" if relation.relation_type is RelationType.KNOWLEDGE_LACK else "RelationCreated"
-        self.events.append(DomainEvent(name, {"source": relation.source_id, "target": relation.target_id}))
+        name = (
+            "KnowledgeLackFlagged"
+            if relation.relation_type is RelationType.KNOWLEDGE_LACK
+            else "RelationCreated"
+        )
+        self.events.append(
+            DomainEvent(
+                name, {"source": relation.source_id, "target": relation.target_id}
+            )
+        )
 
     def add_checked(self, relation: IkeRelation) -> None:
         problems = relation_problems(relation)
@@ -157,13 +191,25 @@ class IkeGraph:
         return True
 
     # ------------------------------------------------------------ queries
-    def outgoing(self, source_id: str, relation_type: RelationType | None = None) -> list[IkeRelation]:
-        return [r for r in self.relations if r.source_id == source_id
-                and (relation_type is None or r.relation_type is relation_type)]
+    def outgoing(
+        self, source_id: str, relation_type: RelationType | None = None
+    ) -> list[IkeRelation]:
+        return [
+            r
+            for r in self.relations
+            if r.source_id == source_id
+            and (relation_type is None or r.relation_type is relation_type)
+        ]
 
-    def incoming(self, target_id: str, relation_type: RelationType | None = None) -> list[IkeRelation]:
-        return [r for r in self.relations if r.target_id == target_id
-                and (relation_type is None or r.relation_type is relation_type)]
+    def incoming(
+        self, target_id: str, relation_type: RelationType | None = None
+    ) -> list[IkeRelation]:
+        return [
+            r
+            for r in self.relations
+            if r.target_id == target_id
+            and (relation_type is None or r.relation_type is relation_type)
+        ]
 
     def of_type(self, relation_type: RelationType) -> list[IkeRelation]:
         return [r for r in self.relations if r.relation_type is relation_type]
@@ -173,7 +219,9 @@ class IkeGraph:
         return {t.value: c.get(t.value, 0) for t in RelationType}
 
     def endpoints(self) -> dict[str, int]:
-        ids = {r.source_id for r in self.relations} | {r.target_id for r in self.relations}
+        ids = {r.source_id for r in self.relations} | {
+            r.target_id for r in self.relations
+        }
         c = Counter(endpoint_kind(i).value for i in ids)
         return {k.value: c.get(k.value, 0) for k in EndpointKind}
 
@@ -207,7 +255,9 @@ class IkeGraph:
         seen: set[tuple[str, str, RelationType]] = set()
         for r in self.relations:
             if r.key in seen:
-                problems.append(f"duplicate relation {r.relation_type.value} {r.source_id} -> {r.target_id}")
+                problems.append(
+                    f"duplicate relation {r.relation_type.value} {r.source_id} -> {r.target_id}"
+                )
             seen.add(r.key)
             problems.extend(relation_problems(r))
         cycle = self.dependency_cycle()
@@ -216,5 +266,9 @@ class IkeGraph:
         return problems
 
     def to_dict(self) -> dict[str, object]:
-        return {"node": str(self.node_id), "counts": self.counts(), "endpoints": self.endpoints(),
-                "relations": [r.to_dict() for r in self.relations]}
+        return {
+            "node": str(self.node_id),
+            "counts": self.counts(),
+            "endpoints": self.endpoints(),
+            "relations": [r.to_dict() for r in self.relations],
+        }

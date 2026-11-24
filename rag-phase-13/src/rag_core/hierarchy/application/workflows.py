@@ -6,9 +6,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from rag_core.hierarchy.domain.model import Node, Organization
-from rag_core.hierarchy.domain.ownership import DocumentOwnership, OwnershipRole, Reassignment
+from rag_core.hierarchy.domain.ownership import (
+    DocumentOwnership,
+    OwnershipRole,
+    Reassignment,
+)
 from rag_core.hierarchy.domain.scope import ScopeResolver
-from rag_core.hierarchy.domain.validation import RegistryValidator, ValidationReport, normalize_confidentiality
+from rag_core.hierarchy.domain.validation import (
+    RegistryValidator,
+    ValidationReport,
+    normalize_confidentiality,
+)
 from rag_core.hierarchy.infrastructure.registry_csv import CsvRegistryLoader
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.identifiers import DocumentId, NodeIdentifier
@@ -28,7 +36,9 @@ class LoadedRegistry:
     report: ValidationReport
 
 
-def load_and_validate(registry_dir: Path, catalog: dict[str, tuple[str, str]] | None = None) -> LoadedRegistry:
+def load_and_validate(
+    registry_dir: Path, catalog: dict[str, tuple[str, str]] | None = None
+) -> LoadedRegistry:
     """Validate raw rows first; only a clean registry is turned into the aggregate."""
     catalog = catalog_index() if catalog is None else catalog
     loader = CsvRegistryLoader(registry_dir)
@@ -36,7 +46,9 @@ def load_and_validate(registry_dir: Path, catalog: dict[str, tuple[str, str]] | 
     report = RegistryValidator(catalog).validate(rows.layers, rows.nodes, rows.doc_map)
     if not report.ok:
         return LoadedRegistry(None, None, report)
-    return LoadedRegistry(loader.build_organization(rows), loader.build_ownership(rows), report)
+    return LoadedRegistry(
+        loader.build_organization(rows), loader.build_ownership(rows), report
+    )
 
 
 @dataclass
@@ -52,7 +64,10 @@ class HierarchyWorkflowService:
         return self.organization.move_node(node_id, new_parent)
 
     def retire_node(
-        self, node_id: NodeIdentifier, successor: NodeIdentifier | None = None, reason: str = ""
+        self,
+        node_id: NodeIdentifier,
+        successor: NodeIdentifier | None = None,
+        reason: str = "",
     ) -> list[Reassignment]:
         """Retire a node and hand its owned / co-owned knowledge to the successor."""
         target = self.organization.retire_node(node_id, successor, reason=reason)
@@ -81,29 +96,42 @@ class CoverageReport:
         }
 
 
-def coverage(org: Organization, ownership: DocumentOwnership, corpus_ids: list[str]) -> CoverageReport:
+def coverage(
+    org: Organization, ownership: DocumentOwnership, corpus_ids: list[str]
+) -> CoverageReport:
     mapped = [d for d in corpus_ids if ownership.owner_of(DocumentId(d)) is not None]
     unmapped = [d for d in corpus_ids if d not in mapped]
     owners = sorted({str(ownership.owner_of(DocumentId(d))) for d in mapped})
     leaves_without = sorted(
         str(n.identifier)
         for n in org.leaves()
-        if not ownership.documents_of(n.identifier, OwnershipRole.OWNER, OwnershipRole.CO_OWNER)
+        if not ownership.documents_of(
+            n.identifier, OwnershipRole.OWNER, OwnershipRole.CO_OWNER
+        )
     )
-    roles = {r.value: sum(1 for l in ownership.links if l.role is r) for r in OwnershipRole}
-    return CoverageReport(len(corpus_ids), mapped, unmapped, owners, leaves_without, roles)
+    roles = {
+        r.value: sum(1 for l in ownership.links if l.role is r) for r in OwnershipRole
+    }
+    return CoverageReport(
+        len(corpus_ids), mapped, unmapped, owners, leaves_without, roles
+    )
 
 
 def scope_sizes(
     org: Organization, ownership: DocumentOwnership, catalog: dict[str, tuple[str, str]]
 ) -> dict[str, dict[str, int]]:
-    conf = {k: Confidentiality(normalize_confidentiality(v[1]) or "internal") for k, v in catalog.items()}
+    conf = {
+        k: Confidentiality(normalize_confidentiality(v[1]) or "internal")
+        for k, v in catalog.items()
+    }
     resolver = ScopeResolver(org)
     out: dict[str, dict[str, int]] = {}
     for node in org.active_nodes():
         scope = resolver.resolve(node.identifier)
         out[str(node.identifier)] = {
             "visible_nodes": len(scope.visible_nodes),
-            "visible_documents": len(resolver.visible_documents(node.identifier, ownership, conf)),
+            "visible_documents": len(
+                resolver.visible_documents(node.identifier, ownership, conf)
+            ),
         }
     return out

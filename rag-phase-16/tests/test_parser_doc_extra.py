@@ -10,18 +10,28 @@ import pytest
 
 from rag_core.ingestion.domain.errors import MissingLibreOfficeError, ParseFailedError
 from rag_core.ingestion.infrastructure import parser_doc as mod
-from rag_core.ingestion.infrastructure.parser_doc import convert_doc_to_docx, find_soffice, parse_doc
+from rag_core.ingestion.infrastructure.parser_doc import (
+    convert_doc_to_docx,
+    find_soffice,
+    parse_doc,
+)
 from tests.fixtures.ingestion.builders import write_ordered_docx
 
 pytestmark = pytest.mark.ingestion
 
 
 def test_find_soffice_returns_first_candidate(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(mod.shutil, "which", lambda name: "/usr/bin/soffice" if name == "soffice" else None)
+    monkeypatch.setattr(
+        mod.shutil,
+        "which",
+        lambda name: "/usr/bin/soffice" if name == "soffice" else None,
+    )
     assert find_soffice() == Path("/usr/bin/soffice")
 
 
-def test_find_soffice_falls_back_to_libreoffice(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_find_soffice_falls_back_to_libreoffice(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         mod.shutil,
         "which",
@@ -30,18 +40,24 @@ def test_find_soffice_falls_back_to_libreoffice(monkeypatch: pytest.MonkeyPatch)
     assert find_soffice() == Path("/usr/bin/libreoffice")
 
 
-def test_find_soffice_returns_none_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_find_soffice_returns_none_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(mod.shutil, "which", lambda _name: None)
     assert find_soffice() is None
 
 
-def test_convert_raises_when_binary_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_raises_when_binary_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(mod, "find_soffice", lambda: None)
     with pytest.raises(MissingLibreOfficeError):
         convert_doc_to_docx(tmp_path / "x.doc", tmp_path / "out")
 
 
-def test_convert_timeout_becomes_parse_failed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_timeout_becomes_parse_failed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(mod, "find_soffice", lambda: Path("/fake/soffice"))
 
     def boom(*_a, **_k):
@@ -52,29 +68,39 @@ def test_convert_timeout_becomes_parse_failed(tmp_path: Path, monkeypatch: pytes
         convert_doc_to_docx(tmp_path / "x.doc", tmp_path / "out")
 
 
-def test_convert_nonzero_prefers_stderr(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_nonzero_prefers_stderr(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(mod, "find_soffice", lambda: Path("/fake/soffice"))
     monkeypatch.setattr(
         mod.subprocess,
         "run",
-        lambda *_a, **_k: SimpleNamespace(returncode=7, stderr="bad convert\n", stdout="ignored"),
+        lambda *_a, **_k: SimpleNamespace(
+            returncode=7, stderr="bad convert\n", stdout="ignored"
+        ),
     )
     with pytest.raises(ParseFailedError, match="bad convert"):
         convert_doc_to_docx(tmp_path / "x.doc", tmp_path / "out")
 
 
-def test_convert_nonzero_falls_back_to_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_nonzero_falls_back_to_stdout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(mod, "find_soffice", lambda: Path("/fake/soffice"))
     monkeypatch.setattr(
         mod.subprocess,
         "run",
-        lambda *_a, **_k: SimpleNamespace(returncode=3, stderr="", stdout="stdout detail"),
+        lambda *_a, **_k: SimpleNamespace(
+            returncode=3, stderr="", stdout="stdout detail"
+        ),
     )
     with pytest.raises(ParseFailedError, match="stdout detail"):
         convert_doc_to_docx(tmp_path / "x.doc", tmp_path / "out")
 
 
-def test_convert_nonzero_falls_back_to_exit_code(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_nonzero_falls_back_to_exit_code(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(mod, "find_soffice", lambda: Path("/fake/soffice"))
     monkeypatch.setattr(
         mod.subprocess,
@@ -85,7 +111,9 @@ def test_convert_nonzero_falls_back_to_exit_code(tmp_path: Path, monkeypatch: py
         convert_doc_to_docx(tmp_path / "x.doc", tmp_path / "out")
 
 
-def test_convert_writes_expected_stem_docx(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_writes_expected_stem_docx(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     source = tmp_path / "report.doc"
     source.write_bytes(b"legacy")
     dest = tmp_path / "out"
@@ -100,7 +128,9 @@ def test_convert_writes_expected_stem_docx(tmp_path: Path, monkeypatch: pytest.M
     assert produced == dest / "report.docx"
 
 
-def test_convert_accepts_single_renamed_docx(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_accepts_single_renamed_docx(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     source = tmp_path / "report.doc"
     source.write_bytes(b"legacy")
     dest = tmp_path / "out"
@@ -115,7 +145,9 @@ def test_convert_accepts_single_renamed_docx(tmp_path: Path, monkeypatch: pytest
     assert produced.name == "LibreOffice-renamed.docx"
 
 
-def test_convert_fails_when_no_docx_written(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_fails_when_no_docx_written(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     source = tmp_path / "report.doc"
     source.write_bytes(b"legacy")
     dest = tmp_path / "out"
@@ -129,7 +161,9 @@ def test_convert_fails_when_no_docx_written(tmp_path: Path, monkeypatch: pytest.
         convert_doc_to_docx(source, dest, soffice=Path("/fake/soffice"))
 
 
-def test_convert_fails_when_multiple_docx_written(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_fails_when_multiple_docx_written(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     source = tmp_path / "report.doc"
     source.write_bytes(b"legacy")
     dest = tmp_path / "out"
@@ -155,7 +189,9 @@ def test_parse_doc_requires_soffice_when_none_found(
         parse_doc(fake)
 
 
-def test_parse_doc_converts_then_parses(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_parse_doc_converts_then_parses(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     sample = write_ordered_docx(tmp_path / "ordered.docx")
     fake_doc = tmp_path / "ordered.doc"
     fake_doc.write_bytes(b"legacy-bytes")

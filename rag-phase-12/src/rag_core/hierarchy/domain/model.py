@@ -159,9 +159,7 @@ class Node:
         self._assert_name_is_not_capability(self.name_fa)
         allowed = _TYPE_LAYERS[self.node_type]
         if self.layer.value not in allowed:
-            raise InvariantError(
-                f"{self.node_type} cannot sit on {self.layer}"
-            )
+            raise InvariantError(f"{self.node_type} cannot sit on {self.layer}")
         if self.parent_id is None and self.node_type != NodeType.BOARD:
             raise InvariantError("only the board node may have no parent")
         if self.parent_id is not None and self.parent_id == self.identifier:
@@ -213,7 +211,10 @@ class Organization:
             if node.is_active and not parent.is_active:
                 raise InvariantError(f"parent {parent.identifier} is retired")
             self._assert_parent_child(parent, node)
-        if node.escalation_id is not None and node.escalation_id.value not in self._nodes:
+        if (
+            node.escalation_id is not None
+            and node.escalation_id.value not in self._nodes
+        ):
             raise NotFoundError(f"unknown escalation node {node.escalation_id}")
         self._nodes[node.identifier.value] = node
         self.events.append(
@@ -251,7 +252,10 @@ class Organization:
         if node.escalation_id == old:
             node.escalation_id = None
         self.events.append(
-            DomainEvent("NodeMoved", {"node_id": str(node_id), "from": str(old), "to": str(new_parent_id)})
+            DomainEvent(
+                "NodeMoved",
+                {"node_id": str(node_id), "from": str(old), "to": str(new_parent_id)},
+            )
         )
         return node
 
@@ -275,24 +279,36 @@ class Organization:
         active_children = [c for c in self.children_of(node_id) if c.is_active]
         if active_children:
             names = ", ".join(str(c.identifier) for c in active_children)
-            raise InvariantError(f"{node_id} still has active children ({names}); move or retire them first")
+            raise InvariantError(
+                f"{node_id} still has active children ({names}); move or retire them first"
+            )
         target_id = successor_id or node.escalation_target
         assert target_id is not None
         if target_id == node_id:
             raise InvariantError("a node cannot succeed itself")
         successor = self._require_active(target_id)
-        if node.node_type == NodeType.KNOWLEDGE_REPOSITORY and successor.node_type not in {
-            NodeType.KNOWLEDGE_REPOSITORY,
-            NodeType.PARENT_ORGANIZATION,
-        }:
-            raise InvariantError("repository knowledge passes to another repository or to its parent organization")
+        if (
+            node.node_type == NodeType.KNOWLEDGE_REPOSITORY
+            and successor.node_type
+            not in {
+                NodeType.KNOWLEDGE_REPOSITORY,
+                NodeType.PARENT_ORGANIZATION,
+            }
+        ):
+            raise InvariantError(
+                "repository knowledge passes to another repository or to its parent organization"
+            )
         node.status = NodeStatus.RETIRED
         node.successor_id = successor.identifier
         node.retired_on = on or date.today()
         self.events.append(
             DomainEvent(
                 "NodeRetired",
-                {"node_id": str(node_id), "successor": str(successor.identifier), "reason": reason},
+                {
+                    "node_id": str(node_id),
+                    "successor": str(successor.identifier),
+                    "reason": reason,
+                },
             )
         )
         return successor.identifier
@@ -337,7 +353,9 @@ class Organization:
         """Edges from the root (root = 0). Differs from layer for N-LIB (depth 2, L4)."""
         return len(self.ancestors(node_id))
 
-    def descendants(self, node_id: NodeIdentifier, *, active_only: bool = False) -> list[Node]:
+    def descendants(
+        self, node_id: NodeIdentifier, *, active_only: bool = False
+    ) -> list[Node]:
         out: list[Node] = []
         queue = deque(self.children_of(node_id))
         while queue:
@@ -350,7 +368,9 @@ class Organization:
 
     def leaves(self) -> list[Node]:
         """Active nodes without active children."""
-        return [n for n in self.active_nodes() if not self.active_children_of(n.identifier)]
+        return [
+            n for n in self.active_nodes() if not self.active_children_of(n.identifier)
+        ]
 
     def max_depth(self) -> int:
         return max((self.depth(n.identifier) for n in self.active_nodes()), default=0)
@@ -417,4 +437,6 @@ class Organization:
             if cursor.identifier.value in seen:
                 raise InvariantError("existing cycle detected in the tree")
             seen.add(cursor.identifier.value)
-            cursor = self._nodes.get(cursor.parent_id.value) if cursor.parent_id else None
+            cursor = (
+                self._nodes.get(cursor.parent_id.value) if cursor.parent_id else None
+            )

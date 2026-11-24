@@ -1,7 +1,13 @@
 import pytest
 
 from rag_core.shared_kernel.errors import InvariantError
-from rag_core.shared_kernel.identifiers import DocumentId, IssueId, NodeIdentifier, ProjectId, RfpId
+from rag_core.shared_kernel.identifiers import (
+    DocumentId,
+    IssueId,
+    NodeIdentifier,
+    ProjectId,
+    RfpId,
+)
 
 pytestmark = pytest.mark.shared_kernel
 

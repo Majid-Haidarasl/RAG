@@ -24,8 +24,13 @@ from rag_core.shared_kernel.fact_ports import FactValidator, FactVerdict
 from rag_core.shared_kernel.numerals import normalize_digits
 
 STATUS_FA = {
-    "open": "باز", "triaged": "بررسی‌شده", "in_progress": "در جریان", "blocked": "مسدود",
-    "resolved": "حل‌شده", "closed": "بسته", "reopened": "بازگشایی‌شده",
+    "open": "باز",
+    "triaged": "بررسی‌شده",
+    "in_progress": "در جریان",
+    "blocked": "مسدود",
+    "resolved": "حل‌شده",
+    "closed": "بسته",
+    "reopened": "بازگشایی‌شده",
 }
 
 SYSTEM_EN = (
@@ -67,15 +72,24 @@ class IssueDigest:
 
     @property
     def lacks(self) -> list[tuple[str, str, str]]:
-        return [(i.item_id, target, note) for i in self.items for target, note in i.lacks]
+        return [
+            (i.item_id, target, note) for i in self.items for target, note in i.lacks
+        ]
 
 
 def digest(issue: IssueView, graph: IkeGraph) -> IssueDigest:
     items: list[SubItemDigest] = []
     for sub in issue.sub_items:
-        can = sorted(graph.incoming(sub.item_id, RelationType.CAN_HANDLE), key=lambda r: -r.confidence.value)
-        lead = next((r.source_id for r in can if r.source_note.startswith("lead")), None)
-        collaborators = tuple(r.source_id for r in can if r.source_note.startswith("collaborator"))
+        can = sorted(
+            graph.incoming(sub.item_id, RelationType.CAN_HANDLE),
+            key=lambda r: -r.confidence.value,
+        )
+        lead = next(
+            (r.source_id for r in can if r.source_note.startswith("lead")), None
+        )
+        collaborators = tuple(
+            r.source_id for r in can if r.source_note.startswith("collaborator")
+        )
         rel = graph.outgoing(sub.item_id, RelationType.RELATES_TO)
         items.append(
             SubItemDigest(
@@ -86,21 +100,37 @@ def digest(issue: IssueView, graph: IkeGraph) -> IssueDigest:
                 status=sub.status,
                 lead=lead,
                 collaborators=collaborators,
-                knowledge=tuple(r.target_id for r in rel if r.source_note.startswith(NOTE_CITED)),
-                suggested=tuple(r.target_id for r in rel if not r.source_note.startswith(NOTE_CITED)),
-                depends_on=tuple(r.target_id for r in graph.outgoing(sub.item_id, RelationType.DEPENDS_ON)),
-                lacks=tuple((r.target_id, r.source_note) for r in graph.outgoing(sub.item_id, RelationType.KNOWLEDGE_LACK)),
-                acceptance="board" if sub.reserved_decision else f"team_owner:{sub.owner_node}",
+                knowledge=tuple(
+                    r.target_id for r in rel if r.source_note.startswith(NOTE_CITED)
+                ),
+                suggested=tuple(
+                    r.target_id for r in rel if not r.source_note.startswith(NOTE_CITED)
+                ),
+                depends_on=tuple(
+                    r.target_id
+                    for r in graph.outgoing(sub.item_id, RelationType.DEPENDS_ON)
+                ),
+                lacks=tuple(
+                    (r.target_id, r.source_note)
+                    for r in graph.outgoing(sub.item_id, RelationType.KNOWLEDGE_LACK)
+                ),
+                acceptance="board"
+                if sub.reserved_decision
+                else f"team_owner:{sub.owner_node}",
             )
         )
     return IssueDigest(issue, tuple(items))
 
 
-def _join(values: tuple[str, ...] | list[str], sep: str = ", ", empty: str = "none") -> str:
+def _join(
+    values: tuple[str, ...] | list[str], sep: str = ", ", empty: str = "none"
+) -> str:
     return sep.join(values) if values else empty
 
 
-def _name(names: dict[str, tuple[str, str]], executor_id: str | None, fa: bool = False) -> str:
+def _name(
+    names: dict[str, tuple[str, str]], executor_id: str | None, fa: bool = False
+) -> str:
     if executor_id is None:
         return "-" if fa else "none"
     en, fa_name = names.get(executor_id, (executor_id, ""))
@@ -128,24 +158,36 @@ def facts_lines(d: IssueDigest, names: dict[str, tuple[str, str]]) -> list[str]:
     return lines
 
 
-def template_summary(d: IssueDigest, names: dict[str, tuple[str, str]], language: str) -> str:
+def template_summary(
+    d: IssueDigest, names: dict[str, tuple[str, str]], language: str
+) -> str:
     i = d.issue
     if language == "fa":
-        out = [f"خلاصهٔ مسئله {i.issue_id}: {i.title_fa or i.title}. مالک {i.owner_node}، وضعیت "
-               f"{STATUS_FA.get(i.status, i.status)}، پیشرفت {i.progress_percent}٪."]
+        out = [
+            f"خلاصهٔ مسئله {i.issue_id}: {i.title_fa or i.title}. مالک {i.owner_node}، وضعیت "
+            f"{STATUS_FA.get(i.status, i.status)}، پیشرفت {i.progress_percent}٪."
+        ]
         for it in d.items:
-            collab = _join([_name(names, c, fa=True) for c in it.collaborators], "، ", "-")
+            collab = _join(
+                [_name(names, c, fa=True) for c in it.collaborators], "، ", "-"
+            )
             out.append(
                 f"- {it.item_id} ({it.title_fa or it.title}؛ مالک {it.owner_node}؛ {STATUS_FA.get(it.status, it.status)}): "
                 f"مجری اصلی {_name(names, it.lead, fa=True)}؛ همکاران {collab}؛ دانش {_join(it.knowledge, '، ', '-')}؛ "
                 f"وابسته به {_join(it.depends_on, '، ', '-')}؛ پذیرش {it.acceptance}."
             )
         if d.lacks:
-            out.append("کمبودهای دانش: " + "؛ ".join(f"{item} ← {target}" for item, target, _ in d.lacks) + ".")
+            out.append(
+                "کمبودهای دانش: "
+                + "؛ ".join(f"{item} ← {target}" for item, target, _ in d.lacks)
+                + "."
+            )
         else:
             out.append("کمبود دانش ثبت نشد.")
         return "\n".join(out)
-    out = [f"Issue {i.issue_id}: {i.title}. Owner {i.owner_node}, status {i.status}, progress {i.progress_percent}%."]
+    out = [
+        f"Issue {i.issue_id}: {i.title}. Owner {i.owner_node}, status {i.status}, progress {i.progress_percent}%."
+    ]
     for it in d.items:
         out.append(
             f"- {it.item_id} ({it.title}; owner {it.owner_node}; {it.status}): lead {_name(names, it.lead)}; "
@@ -153,7 +195,13 @@ def template_summary(d: IssueDigest, names: dict[str, tuple[str, str]], language
             f"depends on {_join(it.depends_on)}; acceptance {it.acceptance}."
         )
     if d.lacks:
-        out.append("Knowledge gaps: " + "; ".join(f"{item} -> {target} ({note})" for item, target, note in d.lacks) + ".")
+        out.append(
+            "Knowledge gaps: "
+            + "; ".join(
+                f"{item} -> {target} ({note})" for item, target, note in d.lacks
+            )
+            + "."
+        )
     else:
         out.append("No knowledge gap recorded.")
     return "\n".join(out)
@@ -162,13 +210,17 @@ def template_summary(d: IssueDigest, names: dict[str, tuple[str, str]], language
 def summary_prompt(facts: list[str], language: str) -> tuple[str, str]:
     block = "\n".join(facts)
     if language == "fa":
-        user = (f"واقعیت‌ها:\n{block}\n\n"
-                "خلاصه‌ای فارسی در حداکثر هشت جمله بنویس: مسئله و وضعیتش، هر زیرمسئله با گره مالک و مجری اصلی، "
-                "و کمبودهای دانش. شناسهٔ همهٔ زیرمسئله‌ها را بیاور.")
+        user = (
+            f"واقعیت‌ها:\n{block}\n\n"
+            "خلاصه‌ای فارسی در حداکثر هشت جمله بنویس: مسئله و وضعیتش، هر زیرمسئله با گره مالک و مجری اصلی، "
+            "و کمبودهای دانش. شناسهٔ همهٔ زیرمسئله‌ها را بیاور."
+        )
         return SYSTEM_FA, user
-    user = (f"Facts:\n{block}\n\n"
-            "Write an English summary in at most eight sentences: the issue and its status, each sub-issue with its "
-            "owner node and lead executor, and the knowledge gaps. Mention every sub-issue id.")
+    user = (
+        f"Facts:\n{block}\n\n"
+        "Write an English summary in at most eight sentences: the issue and its status, each sub-issue with its "
+        "owner node and lead executor, and the knowledge gaps. Mention every sub-issue id."
+    )
     return SYSTEM_EN, user
 
 
@@ -186,14 +238,33 @@ class SummaryCheck:
         return f"{len(self.mentioned)}/{self.total_items}"
 
     def to_dict(self) -> dict[str, object]:
-        return {"grounded": self.grounded, "unsupported": list(self.unsupported), "flagged": list(self.flagged),
-                "mentioned": list(self.mentioned), "coverage": self.coverage, "claims": self.claims}
+        return {
+            "grounded": self.grounded,
+            "unsupported": list(self.unsupported),
+            "flagged": list(self.flagged),
+            "mentioned": list(self.mentioned),
+            "coverage": self.coverage,
+            "claims": self.claims,
+        }
 
 
-def check_summary(text: str, facts: list[str], item_ids: tuple[str, ...], validator: FactValidator) -> SummaryCheck:
+def check_summary(
+    text: str, facts: list[str], item_ids: tuple[str, ...], validator: FactValidator
+) -> SummaryCheck:
     report = validator.validate(text, ["\n".join(facts)])
-    unsupported = tuple(r.claim.raw_text for r in report.results if r.verdict is FactVerdict.UNSUPPORTED)
-    flagged = tuple(r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED)
+    unsupported = tuple(
+        r.claim.raw_text for r in report.results if r.verdict is FactVerdict.UNSUPPORTED
+    )
+    flagged = tuple(
+        r.claim.raw_text for r in report.results if r.verdict is FactVerdict.FLAGGED
+    )
     upper = normalize_digits(text).upper()
     mentioned = tuple(i for i in item_ids if i.upper() in upper)
-    return SummaryCheck(not unsupported and not flagged, unsupported, flagged, mentioned, len(item_ids), len(report.results))
+    return SummaryCheck(
+        not unsupported and not flagged,
+        unsupported,
+        flagged,
+        mentioned,
+        len(item_ids),
+        len(report.results),
+    )

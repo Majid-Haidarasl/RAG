@@ -2,7 +2,10 @@
 
 import pytest
 
-from rag_core.executors.infrastructure.issues_acl import request_for_issue, request_for_subissue
+from rag_core.executors.infrastructure.issues_acl import (
+    request_for_issue,
+    request_for_subissue,
+)
 from rag_core.shared_kernel.errors import NotFoundError
 from tests.fixtures.executors.registry import team_directory
 from tests.fixtures.issues.seed import azarpakhsh
@@ -32,7 +35,10 @@ def test_subissue_request_carries_nodes_documents_and_decision() -> None:
     assert req.item_id == "AR-ISS-024/LEG" and req.owner_node == "N-ADM-LEG"
     assert req.supporting_nodes == ("N-ADM-FIN",)
     assert req.related_documents == ("AR-LEG-009", "AR-FIN-010")
-    assert req.reserved_decision and req.named_executors == ("Mahsa Jalali", "Reza Abbasi")
+    assert req.reserved_decision and req.named_executors == (
+        "Mahsa Jalali",
+        "Reza Abbasi",
+    )
     assert "penalty" in req.text and "amendment" in req.text
 
 
@@ -41,4 +47,7 @@ def test_issue_request_uses_affected_nodes_and_skips_its_own_file() -> None:
     req = request_for_issue(issue)
     assert req.item_id == "AR-ISS-024" and req.owner_node == "N-LIB"
     assert "N-HW-REP" in req.supporting_nodes and "N-LIB" not in req.supporting_nodes
-    assert "AR-ISS-024" not in req.related_documents and "AR-EXE-023" in req.related_documents
+    assert (
+        "AR-ISS-024" not in req.related_documents
+        and "AR-EXE-023" in req.related_documents
+    )

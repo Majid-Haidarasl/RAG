@@ -4,7 +4,10 @@ from decimal import Decimal
 
 import pytest
 
-from rag_core.rfp.infrastructure.blueprint_json import blueprints_from_dict, load_blueprints
+from rag_core.rfp.infrastructure.blueprint_json import (
+    blueprints_from_dict,
+    load_blueprints,
+)
 from rag_core.shared_kernel.errors import InvariantError
 from tests.fixtures.rfp.samples import BLUEPRINT_DIR, raw_blueprints
 
@@ -39,8 +42,12 @@ def test_unknown_nested_key() -> None:
     for where in ("blueprint", "requirement", "criterion", "link"):
         raw = raw_blueprints()
         bp = raw["blueprints"][0]
-        target = {"blueprint": bp, "requirement": bp["requirements"][0], "criterion": bp["criteria"][0],
-                  "link": bp["links"][0]}[where]
+        target = {
+            "blueprint": bp,
+            "requirement": bp["requirements"][0],
+            "criterion": bp["criteria"][0],
+            "link": bp["links"][0],
+        }[where]
         target["score_hint"] = "x"
         with pytest.raises(InvariantError, match="unknown keys score_hint"):
             blueprints_from_dict(raw)

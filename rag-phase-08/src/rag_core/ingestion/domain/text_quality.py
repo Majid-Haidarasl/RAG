@@ -24,7 +24,20 @@ _BAD = re.compile(r"[\ufffd\ue000-\uf8ff]")
 _PUNCT_STRIP = " \t\n.,:;!?()[]«»\"'،؛؟-–—|/"
 
 # Frequent Persian function words; their mirror images are not real words.
-FUNCTION_WORDS = ("در", "به", "از", "که", "را", "این", "با", "برای", "است", "یا", "می", "هر")
+FUNCTION_WORDS = (
+    "در",
+    "به",
+    "از",
+    "که",
+    "را",
+    "این",
+    "با",
+    "برای",
+    "است",
+    "یا",
+    "می",
+    "هر",
+)
 REVERSED_WORDS = tuple(w[::-1] for w in FUNCTION_WORDS)
 
 CID_TOKEN_RATIO = 0.02
@@ -70,9 +83,15 @@ def assess_text_quality(text: str) -> TextQuality:
 
     words = [t.strip(_PUNCT_STRIP) for t in tokens]
     arabic_tokens = [w for w in words if w and _ARABIC_LETTER.search(w)]
-    single = [w for w in arabic_tokens if len(_ARABIC_LETTER.findall(w)) == 1 and w not in SINGLE_LETTER_WORDS]
+    single = [
+        w
+        for w in arabic_tokens
+        if len(_ARABIC_LETTER.findall(w)) == 1 and w not in SINGLE_LETTER_WORDS
+    ]
     fragments = [
-        w for w in arabic_tokens if len(_ARABIC_LETTER.findall(w)) <= 2 and w not in COMMON_SHORT_WORDS
+        w
+        for w in arabic_tokens
+        if len(_ARABIC_LETTER.findall(w)) <= 2 and w not in COMMON_SHORT_WORDS
     ]
     normal_hits = sum(1 for w in words if w in FUNCTION_WORDS)
     reversed_hits = sum(1 for w in words if w in REVERSED_WORDS)
@@ -81,7 +100,9 @@ def assess_text_quality(text: str) -> TextQuality:
         "chars": float(len(stripped)),
         "tokens": float(len(tokens)),
         "cid_ratio": round(cids / n_tokens, 4),
-        "presentation_ratio": round(presentation / max(1, arabic_letters + presentation), 4),
+        "presentation_ratio": round(
+            presentation / max(1, arabic_letters + presentation), 4
+        ),
         "bad_char_ratio": round(bad / max(1, len(stripped)), 4),
         "arabic_tokens": float(len(arabic_tokens)),
         "single_letter_ratio": round(len(single) / max(1, len(arabic_tokens)), 4),
@@ -91,16 +112,27 @@ def assess_text_quality(text: str) -> TextQuality:
     }
     reasons: list[str] = []
     if metrics["cid_ratio"] > CID_TOKEN_RATIO:
-        reasons.append(f"glyph-id placeholders (cid) in {metrics['cid_ratio']:.1%} of tokens")
+        reasons.append(
+            f"glyph-id placeholders (cid) in {metrics['cid_ratio']:.1%} of tokens"
+        )
     if metrics["presentation_ratio"] > PRESENTATION_RATIO:
-        reasons.append(f"Arabic presentation-form letters ({metrics['presentation_ratio']:.1%})")
+        reasons.append(
+            f"Arabic presentation-form letters ({metrics['presentation_ratio']:.1%})"
+        )
     if metrics["bad_char_ratio"] > BAD_CHAR_RATIO:
-        reasons.append(f"replacement/private-use characters ({metrics['bad_char_ratio']:.1%})")
+        reasons.append(
+            f"replacement/private-use characters ({metrics['bad_char_ratio']:.1%})"
+        )
     if reversed_hits >= 5 and reversed_hits > normal_hits:
-        reasons.append(f"reversed (visual-order) Persian: {reversed_hits} mirrored vs {normal_hits} normal function words")
+        reasons.append(
+            f"reversed (visual-order) Persian: {reversed_hits} mirrored vs {normal_hits} normal function words"
+        )
     if reasons:
         return TextQuality("garbled", tuple(reasons), metrics)
-    if len(arabic_tokens) >= MIN_ARABIC_TOKENS and metrics["fragment_ratio"] > FRAGMENT_RATIO:
+    if (
+        len(arabic_tokens) >= MIN_ARABIC_TOKENS
+        and metrics["fragment_ratio"] > FRAGMENT_RATIO
+    ):
         return TextQuality(
             "fragmented",
             (

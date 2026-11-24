@@ -34,8 +34,15 @@ class EmbeddingSettings:
 class GenerationSettings:
     model: str = "qwen3:8b"
     think: bool = False
-    options: dict[str, Any] = field(default_factory=lambda: {
-        "temperature": 0.2, "top_p": 0.9, "seed": 42, "num_ctx": 8192, "num_predict": 1024})
+    options: dict[str, Any] = field(
+        default_factory=lambda: {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "seed": 42,
+            "num_ctx": 8192,
+            "num_predict": 1024,
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -87,8 +94,13 @@ def settings_from_dict(data: dict[str, Any]) -> RagSettings:
     if not isinstance(data, dict):
         raise InvariantError("config/rag.yaml must be a mapping of sections")
     sections = {
-        "ollama": OllamaSettings, "embedding": EmbeddingSettings, "generation": GenerationSettings,
-        "retrieval": RetrievalConfig, "context": ContextSettings, "qa": QaSettings, "index": IndexSettings,
+        "ollama": OllamaSettings,
+        "embedding": EmbeddingSettings,
+        "generation": GenerationSettings,
+        "retrieval": RetrievalConfig,
+        "context": ContextSettings,
+        "qa": QaSettings,
+        "index": IndexSettings,
     }
     unknown = sorted(set(data) - set(sections) - {"config_version"})
     if unknown:

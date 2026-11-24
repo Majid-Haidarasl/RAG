@@ -30,7 +30,13 @@ class ProjectOverview:
 
 
 class ProjectTrackingService:
-    def __init__(self, registry: ProjectRegistry, issues: Mapping[str, IssueFacts], *, risk_threshold: int = 7) -> None:
+    def __init__(
+        self,
+        registry: ProjectRegistry,
+        issues: Mapping[str, IssueFacts],
+        *,
+        risk_threshold: int = 7,
+    ) -> None:
         self.registry = registry
         self.issues = dict(issues)
         self.risk_threshold = risk_threshold
@@ -39,15 +45,28 @@ class ProjectTrackingService:
         rows: list[ProjectOverview] = []
         for p in self.registry.projects:
             linked = [self.issues[i] for i in p.issues if i in self.issues]
-            counts = {k: len(self.registry.records_of(k, p.project_id)) for k in RECORD_KINDS}
-            rows.append(ProjectOverview(
-                project_id=p.project_id, name_en=p.name_en, name_fa=p.name_fa, owner_node=p.owner_node,
-                status=p.status.value, health=health(linked, risk_threshold=self.risk_threshold),
-                progress_percent=p.progress_percent, remaining_mtoman=p.remaining_mtoman,
-                contract_value_mtoman=p.contract_value_mtoman, issues=len(p.issues),
-                open_issues=sum(1 for i in linked if i.is_open),
-                blocked_subissues=sum(i.blocked_subissues for i in linked if i.is_open), records=counts,
-            ))
+            counts = {
+                k: len(self.registry.records_of(k, p.project_id)) for k in RECORD_KINDS
+            }
+            rows.append(
+                ProjectOverview(
+                    project_id=p.project_id,
+                    name_en=p.name_en,
+                    name_fa=p.name_fa,
+                    owner_node=p.owner_node,
+                    status=p.status.value,
+                    health=health(linked, risk_threshold=self.risk_threshold),
+                    progress_percent=p.progress_percent,
+                    remaining_mtoman=p.remaining_mtoman,
+                    contract_value_mtoman=p.contract_value_mtoman,
+                    issues=len(p.issues),
+                    open_issues=sum(1 for i in linked if i.is_open),
+                    blocked_subissues=sum(
+                        i.blocked_subissues for i in linked if i.is_open
+                    ),
+                    records=counts,
+                )
+            )
         return rows
 
     def matrix(self) -> dict[str, dict[str, int]]:
@@ -59,7 +78,11 @@ class ProjectTrackingService:
         return out
 
     def open_research(self) -> list[str]:
-        return [r.record_id for r in self.registry.records_of(RecordKind.RESEARCH) if r.state.value != "recorded"]
+        return [
+            r.record_id
+            for r in self.registry.records_of(RecordKind.RESEARCH)
+            if r.state.value != "recorded"
+        ]
 
     def remaining_total(self) -> int:
         return sum(p.remaining_mtoman or 0 for p in self.registry.projects)

@@ -41,8 +41,14 @@ def azarpakhsh() -> Issue:
 
 
 def raw_records() -> list[dict]:
-    return copy.deepcopy(json.loads((ISSUES_DIR / "issue-registry.json").read_text(encoding="utf-8"))["issues"])
+    return copy.deepcopy(
+        json.loads((ISSUES_DIR / "issue-registry.json").read_text(encoding="utf-8"))[
+            "issues"
+        ]
+    )
 
 
 def samples() -> list[dict]:
-    return json.loads((ISSUES_DIR / "new-issue-samples.json").read_text(encoding="utf-8"))["samples"]
+    return json.loads(
+        (ISSUES_DIR / "new-issue-samples.json").read_text(encoding="utf-8")
+    )["samples"]

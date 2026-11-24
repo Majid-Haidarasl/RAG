@@ -20,7 +20,9 @@ from rag_core.shared_kernel.fact_ports import FactValidator, FactVerdict
 from rag_core.shared_kernel.numerals import normalize_digits
 
 _FENCE_RE = re.compile(r"^```[a-zA-Z]*\s*|\s*```$")
-ID_RE = re.compile(r"\b(?:AR-[A-Z]{2,5}-\d{2,4}(?:-\d{2,4})?(?:/[A-Z0-9]+)?|PRP-[A-Z]+|REQ-[A-Z]+|CRT-[A-Z]+|LNK-[A-Z]+)\b")
+ID_RE = re.compile(
+    r"\b(?:AR-[A-Z]{2,5}-\d{2,4}(?:-\d{2,4})?(?:/[A-Z0-9]+)?|PRP-[A-Z]+|REQ-[A-Z]+|CRT-[A-Z]+|LNK-[A-Z]+)\b"
+)
 
 
 class ReplyParseError(InvariantError):
@@ -53,7 +55,7 @@ def parse_reply(raw: str, key: str) -> ParsedReply:
         if start < 0 or end <= start:
             raise ReplyParseError("no JSON object in the reply") from None
         try:
-            data = json.loads(text[start: end + 1])
+            data = json.loads(text[start : end + 1])
         except json.JSONDecodeError as exc:
             raise ReplyParseError(f"invalid JSON: {exc.msg}") from None
         mode = "json_extracted"
@@ -67,7 +69,9 @@ def parse_reply(raw: str, key: str) -> ParsedReply:
         questions = [questions]
     if not isinstance(questions, list):
         raise ReplyParseError("'questions' must be a list")
-    return ParsedReply(body.strip(), tuple(str(q).strip() for q in questions if str(q).strip()), mode)
+    return ParsedReply(
+        body.strip(), tuple(str(q).strip() for q in questions if str(q).strip()), mode
+    )
 
 
 @dataclass(frozen=True)
@@ -83,21 +87,39 @@ class ReplyCheck:
         return self.grounded and not self.invented_ids
 
     def to_dict(self) -> dict[str, Any]:
-        return {"grounded": self.grounded, "unsupported": list(self.unsupported),
-                "invented_ids": list(self.invented_ids), "mentioned": self.mentioned, "expected": self.expected,
-                "ok": self.ok}
+        return {
+            "grounded": self.grounded,
+            "unsupported": list(self.unsupported),
+            "invented_ids": list(self.invented_ids),
+            "mentioned": self.mentioned,
+            "expected": self.expected,
+            "ok": self.ok,
+        }
 
 
-def check_reply(parsed: ParsedReply, facts: Iterable[str], items: Iterable[str],
-                validator: FactValidator) -> ReplyCheck:
+def check_reply(
+    parsed: ParsedReply,
+    facts: Iterable[str],
+    items: Iterable[str],
+    validator: FactValidator,
+) -> ReplyCheck:
     facts = list(facts)
     items = tuple(items)
     body = " ".join([parsed.text, *parsed.questions])
     report = validator.validate(body, facts)
-    unsupported = tuple(r.claim.raw_text for r in report.results
-                        if r.verdict in {FactVerdict.UNSUPPORTED, FactVerdict.FLAGGED})
+    unsupported = tuple(
+        r.claim.raw_text
+        for r in report.results
+        if r.verdict in {FactVerdict.UNSUPPORTED, FactVerdict.FLAGGED}
+    )
     known = ids_in(facts) | {i.upper() for i in items}
-    invented = tuple(sorted(i for i in ids_in([body]) if i not in known and i.split("/", 1)[0] not in known))
+    invented = tuple(
+        sorted(
+            i
+            for i in ids_in([body])
+            if i not in known and i.split("/", 1)[0] not in known
+        )
+    )
     upper = normalize_digits(parsed.text).upper()
     mentioned = sum(1 for i in items if i.upper() in upper)
     return ReplyCheck(not unsupported, unsupported, invented, mentioned, len(items))
@@ -105,10 +127,10 @@ def check_reply(parsed: ParsedReply, facts: Iterable[str], items: Iterable[str],
 
 @dataclass
 class AiReply:
-    task: str                        # rfp_summary | feedback
-    subject: str                     # RFP id or proposal id
+    task: str  # rfp_summary | feedback
+    subject: str  # RFP id or proposal id
     language: str
-    status: str = "error"            # accepted | rejected | error
+    status: str = "error"  # accepted | rejected | error
     raw: str = ""
     parsed: ParsedReply | None = None
     check: ReplyCheck | None = None
@@ -119,10 +141,19 @@ class AiReply:
     completion_tokens: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        return {"task": self.task, "subject": self.subject, "language": self.language, "status": self.status,
-                "text": self.parsed.text if self.parsed else "",
-                "questions": list(self.parsed.questions) if self.parsed else [],
-                "parse_mode": self.parsed.mode if self.parsed else "error",
-                "check": self.check.to_dict() if self.check else None, "error": self.error,
-                "verdicts": list(self.verdicts), "raw": self.raw, "seconds": round(self.seconds, 3),
-                "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens}
+        return {
+            "task": self.task,
+            "subject": self.subject,
+            "language": self.language,
+            "status": self.status,
+            "text": self.parsed.text if self.parsed else "",
+            "questions": list(self.parsed.questions) if self.parsed else [],
+            "parse_mode": self.parsed.mode if self.parsed else "error",
+            "check": self.check.to_dict() if self.check else None,
+            "error": self.error,
+            "verdicts": list(self.verdicts),
+            "raw": self.raw,
+            "seconds": round(self.seconds, 3),
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+        }

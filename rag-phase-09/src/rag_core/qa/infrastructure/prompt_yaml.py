@@ -28,6 +28,8 @@ def load_qa_prompts(directory: Path, prompt_id: str = "qa.answer") -> QaPromptSe
         system=answer["system"],
         user=answer["user"],
         refusal_token=answer.get("refusal_token", "INSUFFICIENT_CONTEXT"),
-        language_names=dict(answer.get("language_names") or {"fa": "Persian (فارسی)", "en": "English"}),
+        language_names=dict(
+            answer.get("language_names") or {"fa": "Persian (فارسی)", "en": "English"}
+        ),
         messages={k: dict(v) for k, v in (messages_doc.get("messages") or {}).items()},
     )

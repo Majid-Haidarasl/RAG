@@ -27,11 +27,14 @@ import statistics
 import subprocess
 
 _WORD_RE = re.compile(
-    r'<word xMin="([-\d.]+)" yMin="([-\d.]+)" xMax="([-\d.]+)" yMax="([-\d.]+)">(.*?)</word>', re.S
+    r'<word xMin="([-\d.]+)" yMin="([-\d.]+)" xMax="([-\d.]+)" yMax="([-\d.]+)">(.*?)</word>',
+    re.S,
 )
 _ARABIC_LETTER = re.compile(r"[\u0620-\u064a\u066e-\u06d3\u06fa-\u06ff]")
 _LTR_CHAR = re.compile(r"[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669]")
-_LTR_RUN = re.compile(r"[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669][A-Za-z0-9\u06f0-\u06f9\u0660-\u0669.,:/%+\-]*[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669]")
+_LTR_RUN = re.compile(
+    r"[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669][A-Za-z0-9\u06f0-\u06f9\u0660-\u0669.,:/%+\-]*[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669]"
+)
 _BIDI = re.compile(r"[\u202a-\u202e\u200e\u200f\u2066-\u2069]")
 
 JOIN_FACTOR = 0.6
@@ -251,8 +254,13 @@ def page_paragraphs(boxes: list[Box], join_gap: float) -> tuple[str, ...]:
     return tuple(" ".join(p) for p in paragraphs if p)
 
 
-def extract_pdf_pages(path: Path, executable: str | None = None) -> tuple[list[PopplerPage], dict[str, float | None]]:
+def extract_pdf_pages(
+    path: Path, executable: str | None = None
+) -> tuple[list[PopplerPage], dict[str, float | None]]:
     pages = parse_bbox_pages(run_bbox(path, executable))
     join_gap, mode = estimate_join_gap(pages)
-    out = [PopplerPage(n, page_paragraphs(boxes, join_gap)) for n, boxes in enumerate(pages, start=1)]
+    out = [
+        PopplerPage(n, page_paragraphs(boxes, join_gap))
+        for n, boxes in enumerate(pages, start=1)
+    ]
     return out, {"join_gap": round(join_gap, 4), "word_gap_mode": mode}

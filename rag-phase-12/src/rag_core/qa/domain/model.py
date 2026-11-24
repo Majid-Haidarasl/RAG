@@ -19,11 +19,13 @@ from rag_core.shared_kernel.language import LanguageCode
 class QaStatus(StrEnum):
     ANSWERED = "answered"
     INSUFFICIENT_CONTEXT = "insufficient_context"  # evidence retrieved, model refused
-    NOT_FOUND_IN_SCOPE = "not_found_in_scope"      # no evidence in the node's scope
-    OUT_OF_SCOPE = "out_of_scope"                  # evidence exists outside scope -> escalate
+    NOT_FOUND_IN_SCOPE = "not_found_in_scope"  # no evidence in the node's scope
+    OUT_OF_SCOPE = "out_of_scope"  # evidence exists outside scope -> escalate
 
 
-REFUSAL_STATUSES = frozenset({QaStatus.INSUFFICIENT_CONTEXT, QaStatus.NOT_FOUND_IN_SCOPE, QaStatus.OUT_OF_SCOPE})
+REFUSAL_STATUSES = frozenset(
+    {QaStatus.INSUFFICIENT_CONTEXT, QaStatus.NOT_FOUND_IN_SCOPE, QaStatus.OUT_OF_SCOPE}
+)
 
 
 @dataclass(frozen=True)
@@ -68,7 +70,11 @@ class QaAnswer:
     @property
     def grounded(self) -> bool:
         """Answered, with at least one citation and no invalid one."""
-        return self.status is QaStatus.ANSWERED and bool(self.citations) and not self.invalid_citations
+        return (
+            self.status is QaStatus.ANSWERED
+            and bool(self.citations)
+            and not self.invalid_citations
+        )
 
     @property
     def fact_flags(self) -> list[str]:
@@ -84,19 +90,38 @@ class QaAnswer:
         for vc in self.valid_citations:
             for label in vc.block_labels:
                 base, _, lang = label.partition("/")
-                src = next((s for s in self.used_chunks if s.label == base and (not lang or s.language == lang)), None)
+                src = next(
+                    (
+                        s
+                        for s in self.used_chunks
+                        if s.label == base and (not lang or s.language == lang)
+                    ),
+                    None,
+                )
                 if src is None:
                     continue
-                out.append(Citation(DocumentId(src.document_id), src.version, LanguageCode(src.language),
-                                    chunk_id=f"{src.document_id}#c{src.order:04d}", section=f"§{src.order}",
-                                    heading_path=src.heading_path))
+                out.append(
+                    Citation(
+                        DocumentId(src.document_id),
+                        src.version,
+                        LanguageCode(src.language),
+                        chunk_id=f"{src.document_id}#c{src.order:04d}",
+                        section=f"§{src.order}",
+                        heading_path=src.heading_path,
+                    )
+                )
         return out
 
     def to_rag_answer(self) -> Answer:
         """Bridge to the Phase 3 ``Answer`` value object (grounded or abstained)."""
         if self.grounded:
-            return Answer(AnswerKind.GROUNDED, self.text, tuple(self.knowledge_citations()))
-        return Answer(AnswerKind.ABSTAINED, self.status.value if self.status in REFUSAL_STATUSES else "UNVERIFIED")
+            return Answer(
+                AnswerKind.GROUNDED, self.text, tuple(self.knowledge_citations())
+            )
+        return Answer(
+            AnswerKind.ABSTAINED,
+            self.status.value if self.status in REFUSAL_STATUSES else "UNVERIFIED",
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -110,11 +135,18 @@ class QaAnswer:
             "used_chunks": [s.to_dict() for s in self.used_chunks],
             "retrieved": self.retrieved,
             "fact_check": [
-                {"kind": r.claim.kind.value, "value": r.claim.raw_text, "verdict": r.verdict.value, "notes": r.notes}
+                {
+                    "kind": r.claim.kind.value,
+                    "value": r.claim.raw_text,
+                    "verdict": r.verdict.value,
+                    "notes": r.notes,
+                }
                 for r in self.fact_check.results
             ],
             "fact_flags": self.fact_flags,
-            "escalation": None if self.escalation is None else self.escalation.to_dict(),
+            "escalation": None
+            if self.escalation is None
+            else self.escalation.to_dict(),
             "prompt_version": self.prompt_version,
             "model": self.model,
             "timings_s": {k: round(v, 3) for k, v in self.timings_s.items()},

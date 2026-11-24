@@ -7,7 +7,12 @@ from datetime import date
 
 from rag_core.ingestion.domain.catalog import lookup
 from rag_core.ingestion.domain.model import IngestedDocument
-from rag_core.knowledge.domain.model import KnowledgeChunk, KnowledgeItem, KnowledgeVersion, VersionTag
+from rag_core.knowledge.domain.model import (
+    KnowledgeChunk,
+    KnowledgeItem,
+    KnowledgeVersion,
+    VersionTag,
+)
 from rag_core.knowledge.infrastructure.memory import InMemoryKnowledgeItemRepository
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.identifiers import DocumentId, NodeIdentifier
@@ -35,10 +40,14 @@ def to_domain_chunks(doc: IngestedDocument) -> list[KnowledgeChunk]:
 
 
 class KnowledgeLifecycleService:
-    def __init__(self, repository: InMemoryKnowledgeItemRepository | None = None) -> None:
+    def __init__(
+        self, repository: InMemoryKnowledgeItemRepository | None = None
+    ) -> None:
         self.repository = repository or InMemoryKnowledgeItemRepository()
 
-    def ingest(self, doc: IngestedDocument, *, effective_from: date | None = None) -> LifecycleOutcome:
+    def ingest(
+        self, doc: IngestedDocument, *, effective_from: date | None = None
+    ) -> LifecycleOutcome:
         if doc.language is None:
             raise ValueError(f"{doc.path}: language is required for the lifecycle")
         document_id = DocumentId(doc.document_id)
@@ -50,7 +59,9 @@ class KnowledgeLifecycleService:
             item = KnowledgeItem.register(
                 document_id=document_id,
                 owning_node=NodeIdentifier(entry.owning_node if entry else "N-LIB"),
-                confidentiality=Confidentiality(entry.confidentiality if entry else "internal"),
+                confidentiality=Confidentiality(
+                    entry.confidentiality if entry else "internal"
+                ),
                 subject_domain=entry.doc_type if entry else "unknown",
                 language=doc.language,
                 version=start_tag,
@@ -59,21 +70,33 @@ class KnowledgeLifecycleService:
                 effective_from=effective_from,
             )
             self.repository.save(item)
-            return LifecycleOutcome(doc.document_id, doc.language.value, "registered", str(start_tag))
+            return LifecycleOutcome(
+                doc.document_id, doc.language.value, "registered", str(start_tag)
+            )
         if item.latest_tag(doc.language) is None:
             version = item.add_version(
-                start_tag, doc.language, chunks, file_sha256=doc.file_sha256, effective_from=effective_from
+                start_tag,
+                doc.language,
+                chunks,
+                file_sha256=doc.file_sha256,
+                effective_from=effective_from,
             )
             self.repository.save(item)
-            return LifecycleOutcome(doc.document_id, doc.language.value, "added_language", str(version.tag))
+            return LifecycleOutcome(
+                doc.document_id, doc.language.value, "added_language", str(version.tag)
+            )
         result: KnowledgeVersion | None = item.reingest(
             doc.language, doc.file_sha256, chunks, effective_from=effective_from
         )
         self.repository.save(item)
         if result is None:
             active = item.active_version(doc.language)
-            return LifecycleOutcome(doc.document_id, doc.language.value, "unchanged", str(active.tag))
-        return LifecycleOutcome(doc.document_id, doc.language.value, "new_version", str(result.tag))
+            return LifecycleOutcome(
+                doc.document_id, doc.language.value, "unchanged", str(active.tag)
+            )
+        return LifecycleOutcome(
+            doc.document_id, doc.language.value, "new_version", str(result.tag)
+        )
 
     def items(self) -> list[KnowledgeItem]:
         return self.repository.all()

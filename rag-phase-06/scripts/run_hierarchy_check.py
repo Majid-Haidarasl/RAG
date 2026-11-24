@@ -48,7 +48,9 @@ def find_root(explicit: Path | None) -> Path:
         return explicit.resolve()
     cwd = Path.cwd().resolve()
     for candidate in [cwd, *cwd.parents, ROOT_CANDIDATE]:
-        if (candidate / "pyproject.toml").is_file() and (candidate / "data" / "registry").is_dir():
+        if (candidate / "pyproject.toml").is_file() and (
+            candidate / "data" / "registry"
+        ).is_dir():
             return candidate
     raise SystemExit("could not find the repo root (pyproject.toml + data/registry/)")
 
@@ -59,11 +61,25 @@ def simulate_workflows(registry_dir: Path) -> dict[str, object]:
     svc = HierarchyWorkflowService(loaded.organization, loaded.ownership)
     org = svc.organization
     svc.add_node(
-        Node(N("N-SW-DATA"), "Data Team (simulated)", "تیم داده (شبیه‌سازی)", NodeType.TEAM, LayerIndex(3), N("N-SW"), is_leaf=True)
+        Node(
+            N("N-SW-DATA"),
+            "Data Team (simulated)",
+            "تیم داده (شبیه‌سازی)",
+            NodeType.TEAM,
+            LayerIndex(3),
+            N("N-SW"),
+            is_leaf=True,
+        )
     )
     svc.move_node(N("N-SW-DATA"), N("N-HW"))
-    changes = svc.retire_node(N("N-SW-VIS"), N("N-SW-UX"), reason="simulated merge into UX")
-    events = [e.name for e in org.events if e.name in {"NodeRegistered", "NodeMoved", "NodeRetired"}]
+    changes = svc.retire_node(
+        N("N-SW-VIS"), N("N-SW-UX"), reason="simulated merge into UX"
+    )
+    events = [
+        e.name
+        for e in org.events
+        if e.name in {"NodeRegistered", "NodeMoved", "NodeRetired"}
+    ]
     return {
         "added": "N-SW-DATA under N-SW",
         "moved": "N-SW-DATA -> N-HW",
@@ -72,10 +88,16 @@ def simulate_workflows(registry_dir: Path) -> dict[str, object]:
         "reassigned": [f"{c.document_id.value}:{c.role.value}" for c in changes],
         "events": dict(Counter(events[-3:])),
         "routing_examples": {
-            "N-SW-WEB asks, evidence N-SW-MOB": str(route_question(org, N("N-SW-WEB"), [N("N-SW-MOB")]).target),
-            "N-SW-WEB asks, evidence N-HW-REP": str(route_question(org, N("N-SW-WEB"), [N("N-HW-REP")]).target),
+            "N-SW-WEB asks, evidence N-SW-MOB": str(
+                route_question(org, N("N-SW-WEB"), [N("N-SW-MOB")]).target
+            ),
+            "N-SW-WEB asks, evidence N-HW-REP": str(
+                route_question(org, N("N-SW-WEB"), [N("N-HW-REP")]).target
+            ),
             "N-SW-WEB asks, reserved decision": str(
-                route_question(org, N("N-SW-WEB"), [N("N-SW-WEB")], reserved_decision=True).target
+                route_question(
+                    org, N("N-SW-WEB"), [N("N-SW-WEB")], reserved_decision=True
+                ).target
             ),
         },
     }
@@ -112,7 +134,9 @@ def main() -> int:
     if org is not None and ownership is not None:
         layers = sorted(org.layers.values(), key=lambda l: l.index.value)
         per_layer = {l.code: len(org.nodes_on_layer(l.index.value)) for l in layers}
-        transfer_complete = [l.code for l in layers if l.transfer is not None and l.transfer.is_complete]
+        transfer_complete = [
+            l.code for l in layers if l.transfer is not None and l.transfer.is_complete
+        ]
         cov = coverage(org, ownership, sorted(catalog))
         sizes = scope_sizes(org, ownership, catalog)
         summary = {
@@ -144,10 +168,16 @@ def main() -> int:
             }
             for l in layers
         ]
-        payload["paths"] = {str(n.identifier): org.path_string(n.identifier) for n in org.active_nodes()}
+        payload["paths"] = {
+            str(n.identifier): org.path_string(n.identifier) for n in org.active_nodes()
+        }
         payload["workflow_simulation"] = simulate_workflows(registry_dir)
 
-    unmapped = summary.get("coverage", {}).get("documents_unmapped", ["?"]) if summary else ["?"]  # type: ignore[union-attr]
+    unmapped = (
+        summary.get("coverage", {}).get("documents_unmapped", ["?"])
+        if summary
+        else ["?"]
+    )  # type: ignore[union-attr]
     ok = (
         report.ok
         and org is not None
@@ -162,7 +192,9 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"hierarchy-{stamp}.json"
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     print()
     print(SEPARATOR_START)
@@ -182,22 +214,39 @@ def main() -> int:
     if summary:
         cov = summary["coverage"]
         print(f"layers: {summary['layers']}")
-        print("nodes_per_layer: " + " ".join(f"{k}={v}" for k, v in summary["nodes_per_layer"].items()))  # type: ignore[union-attr]
+        print(
+            "nodes_per_layer: "
+            + " ".join(f"{k}={v}" for k, v in summary["nodes_per_layer"].items())
+        )  # type: ignore[union-attr]
         print(f"nodes_total: {summary['nodes']}")
         print(f"leaves: {len(summary['leaves'])}")  # type: ignore[arg-type]
         print(f"max_depth: {summary['max_depth']}")
         print(f"q3_exemption: {summary['q3_exemption']}")
         print(f"docs_mapped: {cov['documents_mapped']}/{cov['documents_total']}")  # type: ignore[index]
         print(f"docs_unmapped: {len(cov['documents_unmapped'])}")  # type: ignore[index,arg-type]
-        print("doc_links: " + " ".join(f"{k}={v}" for k, v in cov["links_by_role"].items()))  # type: ignore[index,union-attr]
+        print(
+            "doc_links: "
+            + " ".join(f"{k}={v}" for k, v in cov["links_by_role"].items())
+        )  # type: ignore[index,union-attr]
         print(f"nodes_owning_docs: {len(cov['nodes_with_owned_docs'])}")  # type: ignore[index,arg-type]
-        print(f"leaves_without_owned_docs: {', '.join(cov['leaves_without_owned_docs']) or 'none'}")  # type: ignore[index,arg-type]
-        print(f"transfer_requirement_coverage: {len(summary['transfer_complete'])}/{summary['layers']}")  # type: ignore[arg-type]
+        print(
+            f"leaves_without_owned_docs: {', '.join(cov['leaves_without_owned_docs']) or 'none'}"
+        )  # type: ignore[index,arg-type]
+        print(
+            f"transfer_requirement_coverage: {len(summary['transfer_complete'])}/{summary['layers']}"
+        )  # type: ignore[arg-type]
         sizes = summary["scope_sizes"]
         sample = ["N-BRD", "N-CEO", "N-SW", "N-SW-WEB", "N-ADM-HR", "N-LIB"]
-        print("scope_docs: " + " ".join(f"{n}={sizes[n]['visible_documents']}" for n in sample if n in sizes))  # type: ignore[index,operator]
+        print(
+            "scope_docs: "
+            + " ".join(
+                f"{n}={sizes[n]['visible_documents']}" for n in sample if n in sizes
+            )
+        )  # type: ignore[index,operator]
         sim = payload["workflow_simulation"]
-        print(f"workflow_sim: add+move -> {sim['path_after_move']}; retire N-SW-VIS -> N-SW-UX reassigned {len(sim['reassigned'])}")  # type: ignore[index,arg-type]
+        print(
+            f"workflow_sim: add+move -> {sim['path_after_move']}; retire N-SW-VIS -> N-SW-UX reassigned {len(sim['reassigned'])}"
+        )  # type: ignore[index,arg-type]
         routing = sim["routing_examples"]  # type: ignore[index]
         print("escalation: " + "; ".join(f"{k} => {v}" for k, v in routing.items()))  # type: ignore[union-attr]
     print(f"results_json: {out_json}")

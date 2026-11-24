@@ -5,8 +5,15 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from rag_core.hierarchy.application.workflows import LoadedRegistry, catalog_index, load_and_validate
-from rag_core.hierarchy.infrastructure.registry_csv import CsvRegistryLoader, RegistryRows
+from rag_core.hierarchy.application.workflows import (
+    LoadedRegistry,
+    catalog_index,
+    load_and_validate,
+)
+from rag_core.hierarchy.infrastructure.registry_csv import (
+    CsvRegistryLoader,
+    RegistryRows,
+)
 
 REPO = Path(__file__).resolve().parents[3]
 REGISTRY_DIR = REPO / "data" / "registry"

@@ -39,7 +39,9 @@ from rag_core.shared_kernel.numerals import normalize_digits
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.S | re.I)
 _FENCE_RE = re.compile(r"```[a-zA-Z]*")
-_NUMBER_RE = re.compile(r"^\s*([-+]?\d+(?:\.\d+)?)\s*(?:(?:/|out of|of)\s*(\d+(?:\.\d+)?))?", re.I)
+_NUMBER_RE = re.compile(
+    r"^\s*([-+]?\d+(?:\.\d+)?)\s*(?:(?:/|out of|of)\s*(\d+(?:\.\d+)?))?", re.I
+)
 _CONTAINER_KEYS = ("scores", "criteria", "rubric", "evaluation", "ratings")
 _VALUE_KEYS = ("score", "points", "value", "rating")
 _NAME_KEYS = ("criterion", "name", "key", "id")
@@ -67,8 +69,15 @@ class ParsedJudgement:
         return not self.missing
 
     def to_dict(self) -> dict[str, object]:
-        return {"scores": dict(self.scores), "total": self.total, "mode": self.mode, "warnings": list(self.warnings),
-                "missing": list(self.missing), "issues": list(self.issues), "reported_total": self.reported_total}
+        return {
+            "scores": dict(self.scores),
+            "total": self.total,
+            "mode": self.mode,
+            "warnings": list(self.warnings),
+            "missing": list(self.missing),
+            "issues": list(self.issues),
+            "reported_total": self.reported_total,
+        }
 
 
 def strip_wrappers(raw: str) -> str:
@@ -117,10 +126,12 @@ def json_objects(text: str) -> list[str]:
                     end = j
                     break
         if end < 0:
-            tail = (quote if in_str else "") + "".join(closing[c] for c in reversed(stack))
+            tail = (quote if in_str else "") + "".join(
+                closing[c] for c in reversed(stack)
+            )
             out.append(text[i:] + tail)
             break
-        out.append(text[i:end + 1])
+        out.append(text[i : end + 1])
         i = end + 1
     return out
 
@@ -170,7 +181,9 @@ class JudgeOutputParser:
         raise JudgeParseError("no criterion scores found in judge output")
 
     # -- JSON ----------------------------------------------------------------------
-    def _from_mapping(self, payload: dict[str, Any], mode: str) -> ParsedJudgement | None:
+    def _from_mapping(
+        self, payload: dict[str, Any], mode: str
+    ) -> ParsedJudgement | None:
         container: Any = payload
         for key in _CONTAINER_KEYS:
             value = payload.get(key)
@@ -182,7 +195,9 @@ class JudgeOutputParser:
             for item in container:
                 if not isinstance(item, dict):
                     continue
-                name = next((item[k] for k in _NAME_KEYS if isinstance(item.get(k), str)), None)
+                name = next(
+                    (item[k] for k in _NAME_KEYS if isinstance(item.get(k), str)), None
+                )
                 value = next((item[k] for k in _VALUE_KEYS if k in item), None)
                 if name is not None:
                     pairs.append((name, value))
@@ -213,7 +228,10 @@ class JudgeOutputParser:
     def _from_key_values(self, text: str) -> ParsedJudgement | None:
         found: list[tuple[str | None, str, Any]] = []
         for c in self.rubric.criteria:
-            names = "|".join(re.escape(n).replace("_", r"[\s_\-]?") for n in sorted(c.names, key=len, reverse=True))
+            names = "|".join(
+                re.escape(n).replace("_", r"[\s_\-]?")
+                for n in sorted(c.names, key=len, reverse=True)
+            )
             pattern = re.compile(
                 rf"(?<![A-Za-z])(?:{names})(?![A-Za-z])[\"'*\s]*[:=]\s*[\"'*]*\s*"
                 rf"([-+]?\d+(?:\.\d+)?(?:\s*(?:/|out of)\s*\d+(?:\.\d+)?)?)",
@@ -241,8 +259,13 @@ class JudgeOutputParser:
             return float(m.group(1)), den
         return None
 
-    def _build(self, found: list[tuple[str | None, str, Any]], mode: str, reported: float | None,
-               issues: list[str]) -> ParsedJudgement:
+    def _build(
+        self,
+        found: list[tuple[str | None, str, Any]],
+        mode: str,
+        reported: float | None,
+        issues: list[str],
+    ) -> ParsedJudgement:
         scores: dict[str, int] = {}
         raw_values: dict[str, object] = {}
         warnings: list[str] = []
@@ -255,8 +278,14 @@ class JudgeOutputParser:
             maximum = self.rubric.criterion(key).max_points
             denominator: float | None = None
             if isinstance(value, dict):
-                denominator = next((self._number(value[k])[0] for k in ("out_of", "max") if k in value
-                                    and self._number(value[k]) is not None), None)
+                denominator = next(
+                    (
+                        self._number(value[k])[0]
+                        for k in ("out_of", "max")
+                        if k in value and self._number(value[k]) is not None
+                    ),
+                    None,
+                )
                 value = next((value[k] for k in _VALUE_KEYS if k in value), None)
             raw_values[key] = value
             number = self._number(value)
@@ -283,4 +312,6 @@ class JudgeOutputParser:
         computed = sum(ordered.values())
         if reported is not None and abs(reported - computed) > 0.5:
             warnings.append(f"total_mismatch:reported={reported:g},computed={computed}")
-        return ParsedJudgement(ordered, mode, tuple(warnings), missing, tuple(issues), reported, raw_values)
+        return ParsedJudgement(
+            ordered, mode, tuple(warnings), missing, tuple(issues), reported, raw_values
+        )

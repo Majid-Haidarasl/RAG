@@ -12,9 +12,13 @@ def _p(index: int, text: str, heading: str = "H") -> ContentBlock:
 
 def test_heading_starts_a_new_chunk_and_is_kept_as_prefix() -> None:
     blocks = [
-        ContentBlock(BlockKind.HEADING, "Leave", 0, heading_path="Leave", heading_level=1),
+        ContentBlock(
+            BlockKind.HEADING, "Leave", 0, heading_path="Leave", heading_level=1
+        ),
         _p(1, "Twenty-six days.", "Leave"),
-        ContentBlock(BlockKind.HEADING, "Sick", 2, heading_path="Sick", heading_level=1),
+        ContentBlock(
+            BlockKind.HEADING, "Sick", 2, heading_path="Sick", heading_level=1
+        ),
         _p(3, "Five days.", "Sick"),
     ]
     chunks = chunk_blocks(blocks, document_id="AR-HR-005")
@@ -43,7 +47,13 @@ def test_table_is_atomic_when_it_fits() -> None:
 def test_oversized_paragraph_is_split_with_overlap() -> None:
     text = ("lorem ipsum dolor sit amet " * 80).strip()
     blocks = [_p(0, text, "X")]
-    chunks = chunk_blocks(blocks, document_id="AR-ORG-001", max_chars=200, overlap_chars=40, max_tokens=10000)
+    chunks = chunk_blocks(
+        blocks,
+        document_id="AR-ORG-001",
+        max_chars=200,
+        overlap_chars=40,
+        max_tokens=10000,
+    )
     assert len(chunks) >= 2
     # Overlap: the start of chunk 2 should appear near the end of chunk 1.
     tail = chunks[0].text[-40:]

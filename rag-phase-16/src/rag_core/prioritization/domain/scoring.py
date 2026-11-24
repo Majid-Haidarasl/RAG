@@ -35,7 +35,9 @@ def factor_values(s: IssueSignal, caps: Caps) -> dict[str, float]:
     }
 
 
-def score(s: IssueSignal, weights: Weights, caps: Caps) -> tuple[float, dict[str, float], dict[str, float]]:
+def score(
+    s: IssueSignal, weights: Weights, caps: Caps
+) -> tuple[float, dict[str, float], dict[str, float]]:
     values = factor_values(s, caps)
     contributions = {f: round(100 * weights[f] * values[f], 2) for f in FACTORS}
     total = round(100 * sum(weights[f] * values[f] for f in FACTORS), 2)
@@ -45,7 +47,7 @@ def score(s: IssueSignal, weights: Weights, caps: Caps) -> tuple[float, dict[str
 @dataclass
 class Ranking:
     ranked: list[ScoredIssue] = field(default_factory=list)
-    excluded: list[tuple[str, str]] = field(default_factory=list)   # (issue id, reason)
+    excluded: list[tuple[str, str]] = field(default_factory=list)  # (issue id, reason)
 
     @property
     def key_ids(self) -> list[str]:
@@ -59,13 +61,22 @@ class Ranking:
         return next((r for r in self.ranked if r.issue_id == issue_id), None)
 
     def to_dict(self) -> dict[str, object]:
-        return {"ranked": [r.to_dict() for r in self.ranked], "excluded": [list(e) for e in self.excluded],
-                "key": self.key_ids}
+        return {
+            "ranked": [r.to_dict() for r in self.ranked],
+            "excluded": [list(e) for e in self.excluded],
+            "key": self.key_ids,
+        }
 
 
 class PriorityScorer:
-    def __init__(self, weights: Weights, caps: Caps | None = None, *, key_count: int = 3,
-                 key_min_score: float = 25.0) -> None:
+    def __init__(
+        self,
+        weights: Weights,
+        caps: Caps | None = None,
+        *,
+        key_count: int = 3,
+        key_min_score: float = 25.0,
+    ) -> None:
         if key_count < 1:
             raise InvariantError("key_count must be >= 1")
         if not 0 <= key_min_score <= 100:
@@ -92,15 +103,32 @@ class PriorityScorer:
         ranked: list[ScoredIssue] = []
         for i, (total, s, values, contributions) in enumerate(scored, start=1):
             key = i <= self.key_count and total >= self.key_min_score
-            ranked.append(ScoredIssue(s.issue_id, s.title_en, s.title_fa, total, i, key, values, contributions, s))
+            ranked.append(
+                ScoredIssue(
+                    s.issue_id,
+                    s.title_en,
+                    s.title_fa,
+                    total,
+                    i,
+                    key,
+                    values,
+                    contributions,
+                    s,
+                )
+            )
         return Ranking(ranked, sorted(excluded))
 
 
 def legacy_order(signals: Iterable[IssueSignal]) -> list[str]:
     """Phase 7 ``rank_issues`` formula (3*urgency + 2*risk + dependents) on the same open issues."""
     open_signals = [s for s in signals if s.is_open]
-    return [s.issue_id for s in sorted(open_signals,
-                                       key=lambda s: (-(3 * s.urgency + 2 * s.risk + s.dependents), s.issue_id))]
+    return [
+        s.issue_id
+        for s in sorted(
+            open_signals,
+            key=lambda s: (-(3 * s.urgency + 2 * s.risk + s.dependents), s.issue_id),
+        )
+    ]
 
 
 @dataclass(frozen=True)
@@ -111,11 +139,19 @@ class Sensitivity:
     flips: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, object]:
-        return {"perturbations": self.perturbations, "top1_stable": self.top1_stable,
-                "key_set_stable": self.key_set_stable, "flips": list(self.flips)}
+        return {
+            "perturbations": self.perturbations,
+            "top1_stable": self.top1_stable,
+            "key_set_stable": self.key_set_stable,
+            "flips": list(self.flips),
+        }
 
 
-def sensitivity(scorer: PriorityScorer, signals: list[IssueSignal], ratios: tuple[float, ...] = (0.8, 1.2)) -> Sensitivity:
+def sensitivity(
+    scorer: PriorityScorer,
+    signals: list[IssueSignal],
+    ratios: tuple[float, ...] = (0.8, 1.2),
+) -> Sensitivity:
     """Change each weight by each ratio (renormalized) and see if the top issue and the key set stay."""
     base = scorer.rank(signals)
     base_top = base.order[:1]
@@ -126,8 +162,12 @@ def sensitivity(scorer: PriorityScorer, signals: list[IssueSignal], ratios: tupl
         if scorer.weights[factor] == 0:
             continue
         for ratio in ratios:
-            other = PriorityScorer(scorer.weights.perturbed(factor, ratio), scorer.caps, key_count=scorer.key_count,
-                                   key_min_score=scorer.key_min_score)
+            other = PriorityScorer(
+                scorer.weights.perturbed(factor, ratio),
+                scorer.caps,
+                key_count=scorer.key_count,
+                key_min_score=scorer.key_min_score,
+            )
             r = other.rank(signals)
             n += 1
             if r.order[:1] == base_top:

@@ -35,7 +35,11 @@ class CitedRef:
 
     @property
     def label(self) -> str:
-        base = self.document_id if self.order is None else f"{self.document_id} §{self.order}"
+        base = (
+            self.document_id
+            if self.order is None
+            else f"{self.document_id} §{self.order}"
+        )
         return f"{base}/{self.language}" if self.language else base
 
 
@@ -56,7 +60,11 @@ def words(text: str) -> list[str]:
 def groups_found(text: str, groups: tuple[tuple[str, ...], ...]) -> tuple[int, int]:
     """(groups with at least one alternative in ``text``, total groups)."""
     padded = f" {' '.join(words(text))} "
-    hits = sum(1 for g in groups if any(f" {' '.join(words(alt))} " in padded for alt in g if words(alt)))
+    hits = sum(
+        1
+        for g in groups
+        if any(f" {' '.join(words(alt))} " in padded for alt in g if words(alt))
+    )
     return hits, len(groups)
 
 
@@ -74,8 +82,12 @@ def bracket_refs(text: str) -> list[CitedRef]:
             if not m:
                 continue
             sec = m.group("sec") or m.group("cid")
-            ref = CitedRef(part.strip(), m.group("doc").upper(), int(sec) if sec else None,
-                           (m.group("lang") or "").lower() or None)
+            ref = CitedRef(
+                part.strip(),
+                m.group("doc").upper(),
+                int(sec) if sec else None,
+                (m.group("lang") or "").lower() or None,
+            )
             if ref.label not in seen:
                 seen.add(ref.label)
                 found.append(ref)

@@ -37,7 +37,9 @@ class ProgressPercentage:
         amount = self.value if isinstance(self.value, Decimal) else Decimal(self.value)
         object.__setattr__(self, "value", amount)
         if amount < 0 or amount > 100:
-            raise InvariantError(f"ProgressPercentage must be in [0, 100], got {amount}")
+            raise InvariantError(
+                f"ProgressPercentage must be in [0, 100], got {amount}"
+            )
 
     def __int__(self) -> int:
         return int(self.value)
@@ -115,7 +117,9 @@ class Issue:
         owning_node: NodeIdentifier,
         **kwargs: object,
     ) -> Issue:
-        issue = cls(identifier=identifier, title=title, owning_node=owning_node, **kwargs)  # type: ignore[arg-type]
+        issue = cls(
+            identifier=identifier, title=title, owning_node=owning_node, **kwargs
+        )  # type: ignore[arg-type]
         issue.events.append(DomainEvent("IssueCreated", {"issue_id": str(identifier)}))
         return issue
 
@@ -131,7 +135,9 @@ class Issue:
             raise InvariantError(f"duplicate sub-issue position {subissue.position}")
         self.subissues.append(subissue)
         self.subissues.sort(key=lambda s: s.position)
-        self.events.append(DomainEvent("IssueDecomposed", {"subissue_id": str(subissue.identifier)}))
+        self.events.append(
+            DomainEvent("IssueDecomposed", {"subissue_id": str(subissue.identifier)})
+        )
 
     def subissue(self, identifier: IssueId) -> SubIssue:
         for sub in self.subissues:
@@ -169,7 +175,9 @@ class ProjectRecord:
     title: str
     owning_node: NodeIdentifier
     related_issue_ids: tuple[IssueId, ...] = ()
-    completion_percent: ProgressPercentage = field(default_factory=lambda: ProgressPercentage.from_int(0))
+    completion_percent: ProgressPercentage = field(
+        default_factory=lambda: ProgressPercentage.from_int(0)
+    )
 
     def __post_init__(self) -> None:
         if not self.title.strip():

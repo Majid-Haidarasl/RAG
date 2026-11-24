@@ -10,7 +10,12 @@ pytestmark = [pytest.mark.proposals]
 
 
 def problems(raw: dict) -> list[str]:
-    return [str(p) for p in ProposalValidator([shipped_blueprint()], DOCS).validate(registry_from_dict(raw))]
+    return [
+        str(p)
+        for p in ProposalValidator([shipped_blueprint()], DOCS).validate(
+            registry_from_dict(raw)
+        )
+    ]
 
 
 def prp(raw: dict, pid: str) -> dict:
@@ -37,7 +42,10 @@ def test_scores_must_match_the_criteria() -> None:
     raw = raw_registry()
     prp(raw, "PRP-A")["scores"]["CRT-API"] = "90"
     del prp(raw, "PRP-B")["scores"]["CRT-FIN"]
-    assert problems(raw) == ["unknown_criterion:PRP-A/CRT-API", "missing_score:PRP-B/CRT-FIN"]
+    assert problems(raw) == [
+        "unknown_criterion:PRP-A/CRT-API",
+        "missing_score:PRP-B/CRT-FIN",
+    ]
 
 
 def test_score_range() -> None:
@@ -50,7 +58,10 @@ def test_response_sections() -> None:
     raw = raw_registry()
     prp(raw, "PRP-B")["sections"].remove("test_plan")
     prp(raw, "PRP-A")["sections"].append("slides")
-    assert problems(raw) == ["unknown_section:PRP-A/slides", "missing_section:PRP-B/test_plan"]
+    assert problems(raw) == [
+        "unknown_section:PRP-A/slides",
+        "missing_section:PRP-B/test_plan",
+    ]
 
 
 def test_evidence_documents() -> None:

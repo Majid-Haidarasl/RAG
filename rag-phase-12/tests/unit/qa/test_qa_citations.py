@@ -2,7 +2,12 @@
 
 import pytest
 
-from rag_core.qa.domain.citations import cited_blocks, parse_citations, strip_citations, verify_citations
+from rag_core.qa.domain.citations import (
+    cited_blocks,
+    parse_citations,
+    strip_citations,
+    verify_citations,
+)
 from rag_core.rag.domain.context import ContextAssembler
 from rag_core.rag.domain.retriever import Hit
 from tests.fixtures.rag.fakes import rec
@@ -11,7 +16,9 @@ pytestmark = [pytest.mark.qa]
 
 
 def ctx(*records):  # noqa: ANN002, ANN201
-    return ContextAssembler().assemble([Hit(r, i + 1, 1.0) for i, r in enumerate(records)])
+    return ContextAssembler().assemble(
+        [Hit(r, i + 1, 1.0) for i, r in enumerate(records)]
+    )
 
 
 def test_parse_basic_label() -> None:
@@ -26,13 +33,22 @@ def test_parse_persian_digits_and_spacing() -> None:
 
 
 def test_parse_multiple_refs_and_separators() -> None:
-    cits = parse_citations("x [AR-HR-005 §1; AR-HR-004 §3، AR-SW-022 §2] y [AR-ISS-024 §5/en]")
-    assert [c.label for c in cits] == ["AR-HR-005 §1", "AR-HR-004 §3", "AR-SW-022 §2", "AR-ISS-024 §5/en"]
+    cits = parse_citations(
+        "x [AR-HR-005 §1; AR-HR-004 §3، AR-SW-022 §2] y [AR-ISS-024 §5/en]"
+    )
+    assert [c.label for c in cits] == [
+        "AR-HR-005 §1",
+        "AR-HR-004 §3",
+        "AR-SW-022 §2",
+        "AR-ISS-024 §5/en",
+    ]
 
 
 def test_parse_chunk_id_form_and_document_level() -> None:
     cits = parse_citations("a [AR-HR-005#c0012] b [AR-FIN-010]")
-    assert cits[0].order == 12 and cits[1].order is None and cits[1].label == "AR-FIN-010"
+    assert (
+        cits[0].order == 12 and cits[1].order is None and cits[1].label == "AR-FIN-010"
+    )
 
 
 def test_parse_lowercase_and_contract_like_ids() -> None:

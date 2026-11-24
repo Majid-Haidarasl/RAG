@@ -88,7 +88,9 @@ def parse_docx(path: Path) -> list[ContentBlock]:
             text = (item.text or "").strip()
             level = _heading_level(item)
             if level is not None and text:
-                heading_stack = [(lvl, title) for lvl, title in heading_stack if lvl < level]
+                heading_stack = [
+                    (lvl, title) for lvl, title in heading_stack if lvl < level
+                ]
                 heading_stack.append((level, text))
                 blocks.append(
                     ContentBlock(

@@ -7,6 +7,7 @@ Model outputs are not changed; only the automatic scoring is recomputed. Writes
 <run_dir>/rescored.json. judge_summary rows are reported as-run (their rubric changed and
 needs a real re-run).
 """
+
 import copy
 import json
 import os
@@ -15,7 +16,16 @@ import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
-from common import CONFIG, DATA, fact_hits, mean, normalize, read_jsonl, setup_utf8, write_json  # noqa: E402
+from common import (
+    CONFIG,
+    DATA,
+    fact_hits,
+    mean,
+    normalize,
+    read_jsonl,
+    setup_utf8,
+    write_json,
+)  # noqa: E402
 import run_llm_test as L  # noqa: E402
 
 
@@ -52,7 +62,9 @@ def rescore_llm(rows):
 
 def rescore_lvm(rows):
     with open(DATA / "images" / "images.json", encoding="utf-8") as f:
-        tasks = {t["task_id"]: t for img in json.load(f)["images"] for t in img["tasks"]}
+        tasks = {
+            t["task_id"]: t for img in json.load(f)["images"] for t in img["tasks"]
+        }
     out = []
     for r in rows:
         r = copy.deepcopy(r)
@@ -79,28 +91,57 @@ def main():
     run_dir = sys.argv[1]
     llm_rows = read_jsonl(os.path.join(run_dir, "llm_runs.jsonl"))
     lvm_path = os.path.join(run_dir, "lvm_runs.jsonl")
-    lvm_rows = read_jsonl(lvm_path) if os.path.exists(lvm_path) else []  # e.g. --only llm
+    lvm_rows = (
+        read_jsonl(lvm_path) if os.path.exists(lvm_path) else []
+    )  # e.g. --only llm
     new_llm = rescore_llm(llm_rows)
     new_lvm = rescore_lvm(lvm_rows)
     agg = L.aggregate(new_llm)
     lvm_ok = [r for r in new_lvm if r.get("status") == "ok"]
-    res = {"note": "scores recomputed with kit scoring/data of this version; model outputs unchanged",
-           "llm": agg,
-           "lvm": {"score_mean": mean([r.get("score") for r in lvm_ok]) if lvm_ok else None,
-                   "per_task": {r["task_id"]: r.get("score") for r in lvm_ok}},
-           "changed_cases": []}
+    res = {
+        "note": "scores recomputed with kit scoring/data of this version; model outputs unchanged",
+        "llm": agg,
+        "lvm": {
+            "score_mean": mean([r.get("score") for r in lvm_ok]) if lvm_ok else None,
+            "per_task": {r["task_id"]: r.get("score") for r in lvm_ok},
+        },
+        "changed_cases": [],
+    }
     for a, b in zip(llm_rows, new_llm):
-        for k in ("fact_rate", "citation_ok", "false_refusal", "executor_coverage", "executor_name_exact_rate"):
+        for k in (
+            "fact_rate",
+            "citation_ok",
+            "false_refusal",
+            "executor_coverage",
+            "executor_name_exact_rate",
+        ):
             if a.get(k) != b.get(k) and k in b:
-                res["changed_cases"].append({"task": b["task"], "case_id": b["case_id"], "think": b["think"],
-                                             "metric": k, "as_run": a.get(k), "rescored": b.get(k)})
+                res["changed_cases"].append(
+                    {
+                        "task": b["task"],
+                        "case_id": b["case_id"],
+                        "think": b["think"],
+                        "metric": k,
+                        "as_run": a.get(k),
+                        "rescored": b.get(k),
+                    }
+                )
     for a, b in zip(lvm_rows, new_lvm):
         if a.get("score") != b.get("score"):
-            res["changed_cases"].append({"task": "lvm", "case_id": b["task_id"], "metric": "score",
-                                         "as_run": a.get("score"), "rescored": b.get("score")})
+            res["changed_cases"].append(
+                {
+                    "task": "lvm",
+                    "case_id": b["task_id"],
+                    "metric": "score",
+                    "as_run": a.get("score"),
+                    "rescored": b.get("score"),
+                }
+            )
     write_json(os.path.join(run_dir, "rescored.json"), res)
     for c in res["changed_cases"]:
-        print(f"{c['task']:10s} {c['case_id']:22s} {c['metric']:24s} {c['as_run']} -> {c['rescored']}")
+        print(
+            f"{c['task']:10s} {c['case_id']:22s} {c['metric']:24s} {c['as_run']} -> {c['rescored']}"
+        )
     print(json.dumps(agg["quality_think_off"], ensure_ascii=False, indent=1))
     print("LVM", res["lvm"])
     print(f"saved -> {os.path.join(run_dir, 'rescored.json')}")

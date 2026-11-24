@@ -72,7 +72,11 @@ class Bm25Config:
 class Bm25Index:
     """Okapi BM25 with the non-negative idf ``ln(1 + (N - df + .5)/(df + .5))``."""
 
-    def __init__(self, documents: Iterable[tuple[str, str]] = (), config: Bm25Config | None = None) -> None:
+    def __init__(
+        self,
+        documents: Iterable[tuple[str, str]] = (),
+        config: Bm25Config | None = None,
+    ) -> None:
         self.config = config or Bm25Config()
         self._tf: dict[str, Counter[str]] = {}
         self._len: dict[str, int] = {}
@@ -109,11 +113,17 @@ class Bm25Index:
         df = self._df.get(term, 0)
         return math.log(1.0 + (n - df + 0.5) / (df + 0.5))
 
-    def search(self, query: str, k: int, allowed: Iterable[str] | None = None) -> list[tuple[str, float]]:
+    def search(
+        self, query: str, k: int, allowed: Iterable[str] | None = None
+    ) -> list[tuple[str, float]]:
         terms = list(dict.fromkeys(lexical_tokens(query)))
         if not terms or not self._tf:
             return []
-        keys = self._tf.keys() if allowed is None else [a for a in allowed if a in self._tf]
+        keys = (
+            self._tf.keys()
+            if allowed is None
+            else [a for a in allowed if a in self._tf]
+        )
         avg = (sum(self._len.values()) / len(self._len)) or 1.0
         k1, b = self.config.k1, self.config.b
         idfs = {t: self.idf(t) for t in terms if t in self._df}

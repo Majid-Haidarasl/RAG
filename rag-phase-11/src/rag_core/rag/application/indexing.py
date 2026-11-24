@@ -34,7 +34,11 @@ def _anchor_fields(chunk: TextChunk | None) -> dict[str, int | None]:
     if chunk is None or not chunk.anchors:
         return {"page": None, "paragraph": None, "table": None}
     first = chunk.anchors[0]
-    return {"page": first.page, "paragraph": first.paragraph_index, "table": first.table_index}
+    return {
+        "page": first.page,
+        "paragraph": first.paragraph_index,
+        "table": first.table_index,
+    }
 
 
 def records_from_lifecycle(
@@ -73,7 +77,9 @@ def records_from_lifecycle(
                         heading_path=chunk.heading_path,
                         owner_node=owner,
                         layer=layer,
-                        knowledge_class=entry.doc_type if entry else item.scope.subject_domain,
+                        knowledge_class=entry.doc_type
+                        if entry
+                        else item.scope.subject_domain,
                         confidentiality=item.confidentiality.value,
                         status=chunk.status.value,
                         version_status=VersionStatus(version.status).value,
@@ -97,7 +103,10 @@ def mark_exact_duplicates(records: list[ChunkRecord]) -> list[ChunkRecord]:
         for m in members:
             if m.key != head:
                 canonical[m.key] = head
-    return [replace(r, duplicate_of=canonical[r.key]) if r.key in canonical else r for r in records]
+    return [
+        replace(r, duplicate_of=canonical[r.key]) if r.key in canonical else r
+        for r in records
+    ]
 
 
 @dataclass
@@ -116,23 +125,36 @@ class IndexBuildReport:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "records": self.records, "active": self.active, "embedded": self.embedded, "reused": self.reused,
-            "removed": self.removed, "dim": self.dim, "model": self.model,
-            "seconds": round(self.seconds, 3), "embed_seconds": round(self.embed_seconds, 3),
-            "batches": self.batches, "active_by_language": self.by_language,
+            "records": self.records,
+            "active": self.active,
+            "embedded": self.embedded,
+            "reused": self.reused,
+            "removed": self.removed,
+            "dim": self.dim,
+            "model": self.model,
+            "seconds": round(self.seconds, 3),
+            "embed_seconds": round(self.embed_seconds, 3),
+            "batches": self.batches,
+            "active_by_language": self.by_language,
         }
 
 
 class IndexBuilder:
     """Refresh a ``SqliteIndexStore``-like store (records + vectors)."""
 
-    def __init__(self, store, embedder: EmbeddingPort, model: str, batch_size: int = 16) -> None:  # noqa: ANN001
+    def __init__(
+        self, store, embedder: EmbeddingPort, model: str, batch_size: int = 16
+    ) -> None:  # noqa: ANN001
         self.store = store
         self.embedder = embedder
         self.model = model
         self.batch_size = batch_size
 
-    def refresh(self, records: list[ChunkRecord], progress: Callable[[int, int], None] | None = None) -> IndexBuildReport:
+    def refresh(
+        self,
+        records: list[ChunkRecord],
+        progress: Callable[[int, int], None] | None = None,
+    ) -> IndexBuildReport:
         t0 = time.perf_counter()
         report = IndexBuildReport(records=len(records), model=self.model)
         self.store.replace_records(records)
@@ -153,7 +175,9 @@ class IndexBuilder:
         for i in range(0, len(todo), self.batch_size):
             batch = todo[i : i + self.batch_size]
             vectors = self.embedder.embed([r.text for r in batch])
-            self.store.put_vectors(self.model, [(r.key, r.content_hash, v) for r, v in zip(batch, vectors)])
+            self.store.put_vectors(
+                self.model, [(r.key, r.content_hash, v) for r, v in zip(batch, vectors)]
+            )
             report.embedded += len(batch)
             report.batches += 1
             if vectors:

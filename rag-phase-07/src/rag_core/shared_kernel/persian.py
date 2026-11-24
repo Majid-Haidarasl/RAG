@@ -22,12 +22,12 @@ _ID_RE = re.compile(
 
 # "می " or "نمی " before a verb, or a missing half-space: میرود → می‌رود
 _MI_SPACE = re.compile(r"(?<![\w\u200c])(ن?می)[\u00a0\u2009 ]+(?=\S)")
-_MI_GLUED = re.compile(r"(?<![\w\u200c])(ن?می)(?=[اآأإءبپتثجچحخدذرزژسشصضطظعغفقکكگلمنوهیيى])")
+_MI_GLUED = re.compile(
+    r"(?<![\w\u200c])(ن?می)(?=[اآأإءبپتثجچحخدذرزژسشصضطظعغفقکكگلمنوهیيى])"
+)
 
 # Plural/suffix " ها " after a Persian letter: خانه‌ ها / خانه ها → خانه‌ها
-_HA_SPACE = re.compile(
-    r"([\u0600-\u06FF])[ ]+ها(?=[\s\.,،؛:!?؟]|$)"
-)
+_HA_SPACE = re.compile(r"([\u0600-\u06FF])[ ]+ها(?=[\s\.,،؛:!?؟]|$)")
 
 # Arabic-Indic digits → Persian digits (prose). Latin digits are left alone.
 _ARABIC_INDIC_TO_PERSIAN = str.maketrans("٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹")
@@ -65,7 +65,9 @@ def normalize_document_ids(text: str) -> tuple[str, list[tuple[str, str]]]:
     return _ID_RE.sub(_repl, text), fixes
 
 
-def normalize_persian_text(text: str, *, language: str | None = None) -> tuple[str, dict[str, int]]:
+def normalize_persian_text(
+    text: str, *, language: str | None = None
+) -> tuple[str, dict[str, int]]:
     """Normalize typography. Counts are for the ingestion summary.
 
     Latin digits in prose are preserved. Arabic-Indic digits in Persian

@@ -38,7 +38,12 @@ from enum import StrEnum
 
 from rag_core.issues.domain.model import Issue, SubIssue
 from rag_core.issues.domain.ports import TextEmbedder
-from rag_core.knowledge.domain.fingerprint import MinHasher, containment, jaccard, tokens
+from rag_core.knowledge.domain.fingerprint import (
+    MinHasher,
+    containment,
+    jaccard,
+    tokens,
+)
 
 DUPLICATE_SCORE = 0.60
 DUPLICATE_MIN_TEXT = 0.45
@@ -72,7 +77,12 @@ def content_tokens(text: str) -> frozenset[str]:
             if tok.endswith(suffix) and len(tok) - len(suffix) >= 3:
                 tok = tok[: -len(suffix)]
                 break
-        if tok.isascii() and tok.endswith("s") and len(tok) > 4 and not tok.endswith("ss"):
+        if (
+            tok.isascii()
+            and tok.endswith("s")
+            and len(tok) > 4
+            and not tok.endswith("ss")
+        ):
             tok = tok[:-1]
         out.add(tok)
     return frozenset(out)
@@ -105,7 +115,11 @@ class IssueProfile:
 
     @classmethod
     def of_issue(cls, issue: Issue) -> IssueProfile:
-        canonical = str(issue.duplicate_of) if issue.duplicate_of and issue.status.is_done else None
+        canonical = (
+            str(issue.duplicate_of)
+            if issue.duplicate_of and issue.status.is_done
+            else None
+        )
         return cls(
             key=str(issue.identifier),
             kind="issue",
@@ -128,7 +142,9 @@ class IssueProfile:
         return cls(
             key=str(sub.identifier),
             kind="sub_issue",
-            text=" ".join(p for p in (sub.title, sub.title_fa, sub.scope, parent.customer) if p),
+            text=" ".join(
+                p for p in (sub.title, sub.title_fa, sub.scope, parent.customer) if p
+            ),
             texts=(
                 " ".join(p for p in (sub.title, sub.scope, parent.customer) if p),
                 " ".join(p for p in (sub.title_fa, parent.title_fa) if p),
@@ -223,13 +239,19 @@ def _cosine(u: list[float], v: list[float]) -> float:
 
 
 class IssueComparator:
-    def __init__(self, config: ComparisonConfig | None = None, embedder: TextEmbedder | None = None) -> None:
+    def __init__(
+        self,
+        config: ComparisonConfig | None = None,
+        embedder: TextEmbedder | None = None,
+    ) -> None:
         self.config = config or ComparisonConfig()
         self.embedder = embedder
         self._minhash = MinHasher(num_perm=64)
 
     # ------------------------------------------------------------ scoring
-    def score(self, query: IssueProfile, other: IssueProfile, semantic: float | None = None) -> ScoreBreakdown:
+    def score(
+        self, query: IssueProfile, other: IssueProfile, semantic: float | None = None
+    ) -> ScoreBreakdown:
         tq = content_tokens(query.text)
         tj = tc = text = 0.0
         for candidate_text in other.language_texts():
@@ -242,10 +264,14 @@ class IssueComparator:
         parts = {
             "nodes": _set_overlap(query.nodes, other.nodes),
             "documents": _set_overlap(query.documents, other.documents),
-            "category": _equal(query.category, other.category) if query.category and other.category else None,
+            "category": _equal(query.category, other.category)
+            if query.category and other.category
+            else None,
             "contract": _equal(query.contract, other.contract),
         }
-        weights = {k: w for k, w in self.config.meta_weights.items() if parts[k] is not None}
+        weights = {
+            k: w for k, w in self.config.meta_weights.items() if parts[k] is not None
+        }
         total = sum(weights.values())
         meta = sum(weights[k] * parts[k] for k in weights) / total if total else 0.0  # type: ignore[operator]
         if semantic is None:
@@ -254,13 +280,23 @@ class IssueComparator:
             score = 0.45 * text + 0.20 * semantic + 0.35 * meta
         r = lambda x: None if x is None else round(x, 4)  # noqa: E731
         return ScoreBreakdown(
-            round(tj, 4), round(tc, 4), round(text, 4),
-            r(parts["nodes"]), r(parts["documents"]), r(parts["category"]), r(parts["contract"]),
-            round(meta, 4), r(semantic), round(score, 4),
+            round(tj, 4),
+            round(tc, 4),
+            round(text, 4),
+            r(parts["nodes"]),
+            r(parts["documents"]),
+            r(parts["category"]),
+            r(parts["contract"]),
+            round(meta, 4),
+            r(semantic),
+            round(score, 4),
         )
 
     def label(self, b: ScoreBreakdown) -> MatchLabel:
-        if b.score >= self.config.duplicate_score and b.text >= self.config.duplicate_min_text:
+        if (
+            b.score >= self.config.duplicate_score
+            and b.text >= self.config.duplicate_min_text
+        ):
             return MatchLabel.DUPLICATE
         if b.score >= self.config.related_score:
             return MatchLabel.RELATED
@@ -275,20 +311,33 @@ class IssueComparator:
                 out.extend(IssueProfile.of_subissue(issue, s) for s in issue.subissues)
         return out
 
-    def compare(self, query: Issue | IssueProfile, existing: list[Issue]) -> ComparisonResult:
+    def compare(
+        self, query: Issue | IssueProfile, existing: list[Issue]
+    ) -> ComparisonResult:
         q = query if isinstance(query, IssueProfile) else IssueProfile.of_issue(query)
-        pool = [p for p in self.profiles(existing) if p.key != q.key and not p.key.startswith(q.key + "/")]
+        pool = [
+            p
+            for p in self.profiles(existing)
+            if p.key != q.key and not p.key.startswith(q.key + "/")
+        ]
         pool = self._prefilter(q, pool)
         semantic: dict[str, float] = {}
         if self.embedder is not None and pool:
             vectors = self.embedder.embed([q.text] + [p.text for p in pool])
-            semantic = {p.key: _cosine(vectors[0], v) for p, v in zip(pool, vectors[1:])}
+            semantic = {
+                p.key: _cosine(vectors[0], v) for p, v in zip(pool, vectors[1:])
+            }
         by_key: dict[str, Candidate] = {}
         folded: list[tuple[IssueProfile, Candidate]] = []
         for p in pool:
             b = self.score(q, p, semantic.get(p.key) if semantic else None)
             cand = Candidate(
-                key=p.key, kind=p.kind, title=p.title, status=p.status, label=self.label(b), breakdown=b,
+                key=p.key,
+                kind=p.kind,
+                title=p.title,
+                status=p.status,
+                label=self.label(b),
+                breakdown=b,
                 shared_nodes=tuple(sorted(q.nodes & p.nodes)),
                 shared_documents=tuple(sorted(q.documents & p.documents)),
             )
@@ -302,9 +351,15 @@ class IssueComparator:
                 by_key[p.key] = cand
             elif cand.score > target.score:
                 by_key[target.key] = Candidate(
-                    key=target.key, kind=target.kind, title=target.title, status=target.status,
-                    label=cand.label, breakdown=cand.breakdown, shared_nodes=target.shared_nodes,
-                    shared_documents=target.shared_documents, via=p.key,
+                    key=target.key,
+                    kind=target.kind,
+                    title=target.title,
+                    status=target.status,
+                    label=cand.label,
+                    breakdown=cand.breakdown,
+                    shared_nodes=target.shared_nodes,
+                    shared_documents=target.shared_documents,
+                    via=p.key,
                 )
         candidates = list(by_key.values())
         candidates.sort(key=lambda c: (-c.score, c.kind != "issue", c.key))
@@ -312,14 +367,22 @@ class IssueComparator:
         label = top[0].label if top else MatchLabel.NEW
         return ComparisonResult(q.key, label, top)
 
-    def _prefilter(self, q: IssueProfile, pool: list[IssueProfile]) -> list[IssueProfile]:
+    def _prefilter(
+        self, q: IssueProfile, pool: list[IssueProfile]
+    ) -> list[IssueProfile]:
         """MinHash prefilter for large registries; metadata overlap always keeps a candidate."""
         if len(pool) < self.config.prefilter_min_candidates:
             return pool
         sig_q = self._minhash.signature(content_tokens(q.text))
         kept = []
         for p in pool:
-            est = MinHasher.estimate(sig_q, self._minhash.signature(content_tokens(p.text)))
-            if est >= self.config.prefilter_threshold or q.nodes & p.nodes or q.documents & p.documents:
+            est = MinHasher.estimate(
+                sig_q, self._minhash.signature(content_tokens(p.text))
+            )
+            if (
+                est >= self.config.prefilter_threshold
+                or q.nodes & p.nodes
+                or q.documents & p.documents
+            ):
                 kept.append(p)
         return kept
