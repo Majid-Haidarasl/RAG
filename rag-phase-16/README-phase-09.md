@@ -1,3 +1,5 @@
+<div dir="rtl">
+
 # فاز ۹ — تحلیل مجریان و مدل مسئله–دانش–مجری (نسخهٔ ۰.۹.۰)
 
 هستهٔ RAG سلسله‌مراتبی آفلاین · مطالعهٔ موردی **آرمان‌رایان** · ایشو #۹ گیت‌هاب · پرونده مرجع: **آذرپخش** (AR-ISS-024).
@@ -8,25 +10,32 @@
 
 ## سیستم هدف
 
-- Ubuntu 24.04.5 LTS، پایتون 3.12.3؛
+- سیستم‌عامل `Ubuntu 24.04.5 LTS` و پایتون 3.12.3؛
 - دست‌کم ۱۶ گیگابایت RAM؛
 - کارت گرافیک NVIDIA با ۱۲ گیگابایت حافظه (فقط مرحلهٔ زندهٔ Ollama از GPU استفاده می‌کند)؛
-- Ollama 0.40.2 با مدل‌های `bge-m3:latest` و `qwen3:8b`؛
+- برنامهٔ `Ollama 0.40.2` با مدل‌های `bge-m3:latest` و `qwen3:8b`؛
 - مسیر پروژه `~/Desktop/RAG`.
 
 مرحلهٔ زنده از همان نمایهٔ فاز ۸ (`.rag-index/phase-08.sqlite`) استفاده می‌کند؛ اگر پیکره تغییر نکرده باشد چیزی دوباره embed نمی‌شود. فقط دو خلاصه (فارسی و انگلیسی) با `qwen3:8b` تولید می‌شود.
 
 ## پیش‌نیاز مرحلهٔ زنده
 
+</div>
+
 ```bash
 ollama list
 ```
+
+<div dir="rtl">
+
 
 باید `bge-m3:latest` و `qwen3:8b` در فهرست باشند. اگر Ollama یا یکی از مدل‌ها نباشد، مرحلهٔ زنده `skipped` گزارش می‌شود و نتیجهٔ PASS/FAIL را تغییر نمی‌دهد.
 
 ## اجرا روی اوبونتو
 
 فرض: zip در `~/Downloads/rag-phase-09.zip` است و کلون ریپو در `~/Desktop/RAG` (یا هر پوشه‌ای که ریپو را در آن کلون کرده‌اید).
+
+</div>
 
 ```bash
 cd ~/Downloads
@@ -35,11 +44,16 @@ cd ~/Desktop/RAG
 bash scripts/setup_and_test.sh
 ```
 
+<div dir="rtl">
+
+
 ترتیب اجرا: `pytest`، ورود پیکره (فاز ۴)، چرخهٔ عمر و تکرار (فاز ۵)، سلسله‌مراتب (فاز ۶)، بررسی مسئله‌ها (فاز ۷)، مرحلهٔ RAG (فاز ۸)، سپس بررسی مجریان و IKE فاز ۹.
 
 آخرین بلوک بین دو خط `======== PHASE 9 SUMMARY ========` چاپ می‌شود. عددهای بخش «نتیجه» از همین بلوک برداشته می‌شوند.
 
 اجرای جدا:
+
+</div>
 
 ```bash
 source .venv/bin/activate
@@ -47,6 +61,9 @@ pytest -m "matching or ike_model"
 python scripts/run_ike_check.py            # بررسی آفلاین + مرحلهٔ زنده
 python scripts/run_ike_check.py --no-live  # فقط بررسی آفلاین
 ```
+
+<div dir="rtl">
+
 
 ## چه چیزی ساخته شد
 
@@ -65,13 +82,15 @@ python scripts/run_ike_check.py --no-live  # فقط بررسی آفلاین
   - مرجع پذیرش: `board` برای تصمیم رزروشده (LEG)، وگرنه مالک تیم؛
   - دفتر ظرفیت: اگر ساعت‌های رزرو از ظرفیت بگذرد، خطا می‌دهد و اولویت‌بندی با معاون مربوط است.
 - **مقایسهٔ مسئله و دانش:** برای هر زیرمسئله، جست‌وجو از گره مالک با بازیاب فاز ۸ (top_k=8): اسناد پوشش‌داده‌شده، پیشنهادی (بازیابی‌شده ولی ارجاع‌نشده)، جاافتاده، بیرون از دامنه، و وجود شاهد کافی.
-- **مدل رابطه‌های IKE:** شش نوع رابطه `relates_to`، `part_of`، `depends_on`، `can_handle`، `evidence_for`، `knowledge_lack` با قاعدهٔ نوع دو سر رابطه، بررسی تکرار، وابستگی بین زیرمسئله‌های یک مسئله و تشخیص چرخه.
+- **مدل رابطه‌های** `IKE`: شش نوع رابطه `relates_to`، `part_of`، `depends_on`، `can_handle`، `evidence_for`، `knowledge_lack` با قاعدهٔ نوع دو سر رابطه، بررسی تکرار، وابستگی بین زیرمسئله‌های یک مسئله و تشخیص چرخه.
 - **کمبود دانش:** سند ارجاع‌شده‌ای که هیچ مجری پیشنهادی در اختیار ندارد، نبودِ مسئول، سند بیرون از دامنهٔ گره مالک، نبودِ شاهد در دامنه.
 - **خلاصهٔ مسئله:** فهرست واقعیت‌ها از گراف، خلاصهٔ قالبی فارسی و انگلیسی، و در مرحلهٔ زنده خلاصهٔ `qwen3:8b`؛ هر شناسه و عدد خلاصه باید در واقعیت‌ها باشد (بررسی واقعیت فاز ۸) و پوشش زیرمسئله‌ها شمرده می‌شود.
 
 ## خطوط مورد انتظار در خلاصه
 
 این مقدارها روی سیستم آزمون تأیید شدند:
+
+</div>
 
 ```
 status: PASS
@@ -88,6 +107,9 @@ summary_template: fa=grounded:True coverage=4/4 claims=20 en=grounded:True cover
 live: ok
 checks: pytest=ok prior_steps=ok executor_registry_valid=ok seed_executors_resolved=ok matching_matches_seed=ok referral_policy=ok leads_match_exe023=ok records_built=ok ike_graph_valid=ok ike_graph_consistent=ok template_summaries_grounded=ok
 ```
+
+<div dir="rtl">
+
 
 ترتیب نام همکاران در هر سطر بر پایهٔ امتیاز است. شاخص‌های مقایسهٔ دانش (`knowledge_offline`، `live_knowledge`) و شمار رابطه‌های گراف آفلاین و زنده به نتیجهٔ بازیابی بستگی دارند.
 
@@ -145,3 +167,5 @@ checks: pytest=ok prior_steps=ok executor_registry_valid=ok seed_executors_resol
 | `results/phase-09/` | فایل JSON نتایج هر اجرا |
 | `tests/unit/executors/`، `tests/unit/ike/` | تست‌های فاز ۹ |
 | `docs/phase-09/ike-model.md` | طراحی مدل مجری و IKE، قاعده‌ها و نکته‌های باز |
+
+</div>

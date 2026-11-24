@@ -1,3 +1,5 @@
+<div dir="rtl">
+
 # فاز ۱۶ — جمع‌بندی و انتشار (نسخهٔ ۱.۰.۰)
 
 هستهٔ RAG سلسله‌مراتبی آفلاین · مطالعهٔ موردی **آرمان‌رایان** · ایشو #۱۶ گیت‌هاب («Final wrap-up»).
@@ -7,7 +9,7 @@
 1. **مستندات نهایی:** `README.md` کل پروژه، راهنمای کاربر، گزارش نهایی فاز ۱ تا ۱۶، مستندات فنی و فهرست شواهد.
 2. **اسلایدها و آموزش:** ۱۲ اسلاید فارسی با منبعشان، متن دموی زنده، و مسیر آموزشی با تمرین برای عضو تازهٔ تیم.
 3. **بررسی انتشار:** اسکریپت `scripts/run_release_check.py` با تنظیمات `config/release.yaml`.
-4. **انتخاب `ai_ids`:** به `baseline` برگشت، چون اجرای فاز ۱۵ آن را بهتر از `listed_guarded` اندازه گرفت.
+4. **انتخاب** `ai_ids`: به `baseline` برگشت، چون اجرای فاز ۱۵ آن را بهتر از `listed_guarded` اندازه گرفت.
 5. **مرتب‌کردن متن‌ها:** سرخط همهٔ بلوک‌های خلاصه یک‌شکل شد و توضیح‌های اضافهٔ اجرا در READMEها و اسکریپت‌ها کوتاه شد.
 6. **چک‌لیست:** همهٔ خروجی‌های طرح ۱۶ فازی انجام شده‌اند؛ فقط برچسب `v1.0` مانده که بعد از اجرای نهایی زده می‌شود.
 
@@ -47,11 +49,16 @@
 
 روی Ubuntu، یا روی Windows 11 داخل Ubuntu در WSL 2 (نصب: `docs/user-guide.md`):
 
+</div>
+
 ```bash
 cd ~/Desktop/RAG
 unzip -o ~/Downloads/rag-phase-16.zip
 bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 ```
+
+<div dir="rtl">
+
 
 اسکریپت همان اسکریپت فازهای قبل است؛ بعد از بررسی فاز ۱۵، بررسی فاز ۱۶ اجرا می‌شود و آخرین بلوک
 `PHASE 16 SUMMARY` است.
@@ -59,25 +66,25 @@ bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 ## در خلاصه چه انتظاری داریم
 
 - تست‌ها: **1715** قبول (1643 قبلی + ۷۲ تست تازه)، صفر رد.
-- `version: 1.0.0 places=7/7`
-- `docs: complete=14/14`
-- `phrase_scan: files=… phrases=11 hits=0`
-- `negative_controls: phrases=11/11 short_doc=caught missing_doc=caught wrong_version=caught changelog=caught deck=caught`
-- `changelog: versions=14 newest=1.0.0 problems=0`
-- `presentation: presentation/armanrayan-rag-core.pptx slides=12 source=yes problems=0`
-- `evidence: present=13/13`
-- `checklist: deliverables=80 done=63 external=13 run=3 planned=1 phases=16 problems=0`
-- `checklist_phases: 1=done 2=external 3=done … 15=done 16=partial`
-- `eval_defaults: retrieval=baseline qa_prompt=qa.answer judge_prompt=strict_precheck ai_ids=baseline expected=4/4 problems=0`
+- خط `version: 1.0.0 places=7/7`
+- خط `docs: complete=14/14`
+- خط `phrase_scan: files=… phrases=11 hits=0`
+- خط `negative_controls: phrases=11/11 short_doc=caught missing_doc=caught wrong_version=caught changelog=caught deck=caught`
+- خط `changelog: versions=14 newest=1.0.0 problems=0`
+- خط `presentation: presentation/armanrayan-rag-core.pptx slides=12 source=yes problems=0`
+- خط `evidence: present=13/13`
+- خط `checklist: deliverables=80 done=63 external=13 run=3 planned=1 phases=16 problems=0`
+- خط `checklist_phases: 1=done 2=external 3=done … 15=done 16=partial`
+- خط `eval_defaults: retrieval=baseline qa_prompt=qa.answer judge_prompt=strict_precheck ai_ids=baseline expected=4/4 problems=0`
 - چهار خط `live_confirm … agrees=yes` و `readiness: ready=yes live_confirmed=4/4`
-- `checks:` همه `ok` (۱۲ بررسی) و `status: PASS`.
+- خط `checks:` همه `ok` (۱۲ بررسی) و `status: PASS`.
 
 در بلوک فاز ۱۴ خط `selection:` حالا `ai_ids=baseline` نشان می‌دهد و در بلوک فاز ۱۵ خط چک‌لیست همان عددهای بالا را دارد.
 
 ## نتیجهٔ اجرا روی سیستم آزمون
 
 اجرا در ۳ آذر ۱۴۰۵، حدود ساعت ۰۲:۱۱ به وقت تهران (20261123T224140Z به وقت جهانی)، با پایتون 3.15.2 و Ollama 0.40.17.
-نتیجه: **همهٔ فازهای ۴ تا ۱۶ `status: PASS`**؛ در فاز ۱۶ هر ۱۲ بررسی `ok`.
+نتیجه: **همهٔ فازهای ۴ تا ۱۶** `status: PASS`؛ در فاز ۱۶ هر ۱۲ بررسی `ok`.
 
 | مورد | مقدار |
 |---|---|
@@ -126,10 +133,12 @@ bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 - توضیح سرآغاز `scripts/setup_and_test.sh` کوتاه و فهرست‌وار شد و گزارش‌های موقت به نام `/tmp/rag-phase-16-*.log` نوشته می‌شوند.
 - وضعیت فاز در چک‌لیست: فازی که خروجی‌هایش این‌جا انجام شده یا در پوشهٔ خودش تحویل شده، `done` حساب می‌شود
   (قبلاً فاز ۱ با این‌که کامل بود `partial` نشان داده می‌شد).
-- `config/release.yaml` نوع منبع نسخه را هم بررسی می‌کند تا غلط تایپی بی‌صدا نماند.
+- فایل `config/release.yaml` نوع منبع نسخه را هم بررسی می‌کند تا غلط تایپی بی‌صدا نماند.
 
 ## محدودیت‌ها
 
 - بررسی عبارت‌ها فقط فهرست ثابت `scan.phrases` را می‌گردد، نه هر جملهٔ نامناسب.
 - اسلایدها با فونت Vazirmatn ساخته شده‌اند؛ بدون آن فونت ظاهرشان کمی عوض می‌شود.
 - عددهای گزارش نهایی روی پیکرهٔ کوچک و ساختگی آرمان‌رایان اندازه‌گیری شده‌اند.
+
+</div>
