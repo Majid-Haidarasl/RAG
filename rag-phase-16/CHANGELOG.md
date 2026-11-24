@@ -16,6 +16,8 @@ Phases 1 and 2 were planning kits in their own folders (`rag-phase-01`, `rag-pha
   `docs/phase-16/final-checklist.md`, `eval/evidence/`, `presentation/`, `training/`.
 - Install guide for Ubuntu and Windows 11 (WSL 2).
 - Final run: 1715 tests passed, line coverage 96.3 %, branch coverage 89.8 %, every phase PASS; tag `v1.0`.
+- Presentation redesigned after the release: 15 slides edited in PowerPoint (font B Nazanin);
+  `presentation/build_slides.js` keeps the earlier 12-slide draft. The deck check now allows 10-15 slides.
 - Cleaner output: every summary block now starts with `======== PHASE N SUMMARY ========`;
   the run notes in the READMEs and scripts were shortened and made consistent.
 

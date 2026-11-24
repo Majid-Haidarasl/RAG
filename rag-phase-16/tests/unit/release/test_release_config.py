@@ -27,7 +27,7 @@ MINIMAL = {"version": "1.0.0", "tag": "v1.0"}
 def test_shipped_release_config() -> None:
     r = load_release_settings(ROOT / "config" / "release.yaml")
     assert r.config_version == "1.0.0" and r.version == "1.0.0" and r.tag == "v1.0"
-    assert r.presentation.min_slides == 10 and r.presentation.max_slides == 12
+    assert r.presentation.min_slides == 10 and r.presentation.max_slides == 15
     assert r.changelog.versions[0] == "0.3.0" and r.changelog.versions[-1] == "1.0.0"
     assert (
         len(r.changelog.versions) == 14 and len(r.evidence) == 13 and len(r.docs) >= 12

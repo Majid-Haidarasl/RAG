@@ -8,7 +8,7 @@ Always offline (no Ollama needed), driven by config/release.yaml:
 * negative controls: planted phrases, a short and a missing document, a wrong version,
   a changelog without the newest entry and a too-short deck are all caught;
 * CHANGELOG.md lists every version from 0.3.0 to 1.0.0, newest first;
-* the slide deck is a real .pptx with 10-12 slides and its source is in the kit;
+* the slide deck is a real .pptx with 10-15 slides and its source is in the kit;
 * the result files of this run exist for every phase (evidence index);
 * the release checklist has no problems and only the v1.0 tag is still planned;
 * config/eval.yaml selects the four measured defaults (ai_ids=baseline);

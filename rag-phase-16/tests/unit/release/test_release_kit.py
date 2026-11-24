@@ -83,7 +83,7 @@ def test_presentation_deck_and_source() -> None:
         )
         == []
     )
-    assert 10 <= slide_count(names) <= 12
+    assert 10 <= slide_count(names) <= 15
     source = read_text(ROOT, RSET.presentation.source)
     assert (
         source is not None

@@ -40,7 +40,7 @@ presentation:
   path: presentation/armanrayan-rag-core.pptx
   source: presentation/build_slides.js
   min_slides: 10
-  max_slides: 12
+  max_slides: 15
 
 # Result files of one full run (scripts/setup_and_test.sh writes them before this check).
 evidence:

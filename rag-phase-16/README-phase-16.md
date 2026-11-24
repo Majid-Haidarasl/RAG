@@ -7,7 +7,7 @@
 فاز ۱۶ آخرین فاز است. کار تازه‌ای به سیستم اضافه نمی‌کند؛ پروژه را برای تحویل آماده می‌کند:
 
 1. **مستندات نهایی:** `README.md` کل پروژه، راهنمای کاربر، گزارش نهایی فاز ۱ تا ۱۶، مستندات فنی و فهرست شواهد.
-2. **اسلایدها و آموزش:** ۱۲ اسلاید فارسی با منبعشان، متن دموی زنده، و مسیر آموزشی با تمرین برای عضو تازهٔ تیم.
+2. **اسلایدها و آموزش:** ۱۵ اسلاید فارسی که نسخهٔ نهایی آن در پاورپوینت ویرایش شده، همراه با منبع پیش‌نویس قبلی، متن دموی زنده، و مسیر آموزشی با تمرین برای عضو تازهٔ تیم.
 3. **بررسی انتشار:** اسکریپت `scripts/run_release_check.py` با تنظیمات `config/release.yaml`.
 4. **انتخاب** `ai_ids`: به `baseline` برگشت، چون اجرای فاز ۱۵ آن را بهتر از `listed_guarded` اندازه گرفت.
 5. **مرتب‌کردن متن‌ها:** سرخط همهٔ بلوک‌های خلاصه یک‌شکل شد و توضیح‌های اضافهٔ اجرا در READMEها و اسکریپت‌ها کوتاه شد.
@@ -22,7 +22,7 @@
 | `phrase_scan` | در هیچ فایل متنی پروژه، عبارت‌های پیش‌نویس (فهرست `scan.phrases`) نمانده است |
 | `negative_controls` | بررسی‌ها خطای عمدی را می‌گیرند: عبارت کاشته‌شده، سند کوتاه یا گمشده، نسخهٔ غلط، CHANGELOG ناقص، اسلاید کم |
 | `changelog` | `CHANGELOG.md` همهٔ نسخه‌ها از 0.3.0 تا 1.0.0 را دارد و تازه‌ترین بالاست |
-| `presentation` | فایل `.pptx` واقعاً pptx است، ۱۰ تا ۱۲ اسلاید دارد و منبعش هست |
+| `presentation` | فایل `.pptx` واقعاً pptx است، ۱۰ تا ۱۵ اسلاید دارد و منبعش هست |
 | `evidence_present` | برای هر فاز دست‌کم یک فایل نتیجه از همین اجرا هست |
 | `checklist_complete` | چک‌لیست بی‌مشکل است و جز برچسب `v1.0` کاری نمانده |
 | `eval_defaults` | `config/eval.yaml` چهار انتخاب اندازه‌گیری‌شده را دارد (`ai_ids=baseline`) |
@@ -71,7 +71,7 @@ bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 - خط `phrase_scan: files=… phrases=11 hits=0`
 - خط `negative_controls: phrases=11/11 short_doc=caught missing_doc=caught wrong_version=caught changelog=caught deck=caught`
 - خط `changelog: versions=14 newest=1.0.0 problems=0`
-- خط `presentation: presentation/armanrayan-rag-core.pptx slides=12 source=yes problems=0`
+- خط `presentation: presentation/armanrayan-rag-core.pptx slides=15 source=yes problems=0`
 - خط `evidence: present=13/13`
 - خط `checklist: deliverables=80 done=63 external=13 run=3 planned=1 phases=16 problems=0`
 - خط `checklist_phases: 1=done 2=external 3=done … 15=done 16=partial`
@@ -95,7 +95,7 @@ bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 | مستندات | `docs: complete=14/14` |
 | عبارت‌ها | `phrase_scan: files=569 phrases=11 hits=0` |
 | کنترل‌های منفی | همه گرفته شد (`phrases=11/11`، سند کوتاه و گمشده، نسخهٔ غلط، CHANGELOG، اسلاید) |
-| CHANGELOG / اسلایدها / شواهد | `versions=14` / `slides=12` / `present=13/13` |
+| CHANGELOG / اسلایدها / شواهد | `versions=14` / `slides=12` در اجرای نهایی (نسخهٔ بازطراحی‌شده ۱۵ اسلاید دارد) / `present=13/13` |
 | چک‌لیست | `deliverables=80 done=63 external=13 run=3 planned=1 phases=16 problems=0` |
 | انتخاب‌ها | `eval_defaults … expected=4/4`؛ چهار خط `live_confirm … agrees=yes` |
 | آمادگی | `readiness: ready=yes live_confirmed=4/4` |
@@ -138,7 +138,7 @@ bash scripts/setup_and_test.sh 2>&1 | tee ~/rag-phase-16-run.log
 ## محدودیت‌ها
 
 - بررسی عبارت‌ها فقط فهرست ثابت `scan.phrases` را می‌گردد، نه هر جملهٔ نامناسب.
-- اسلایدها با فونت Vazirmatn ساخته شده‌اند؛ بدون آن فونت ظاهرشان کمی عوض می‌شود.
+- فونت اسلایدهای نهایی `B Nazanin` است؛ اگر این فونت نصب نباشد، ظاهر اسلایدها کمی عوض می‌شود.
 - عددهای گزارش نهایی روی پیکرهٔ کوچک و ساختگی آرمان‌رایان اندازه‌گیری شده‌اند.
 
 </div>
