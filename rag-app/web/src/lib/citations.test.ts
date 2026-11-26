@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { splitCitations } from './citations'
+import { formatCitationLabel, splitCitations } from './citations'
+
+describe('formatCitationLabel', () => {
+  it('replaces section sign with Persian بند', () => {
+    expect(formatCitationLabel('AR-HR-006 §9')).toBe('AR-HR-006 · بند ۹')
+    expect(formatCitationLabel('AR-HR-005 §12/fa')).toBe(
+      'AR-HR-005 · بند ۱۲/fa',
+    )
+    expect(formatCitationLabel('AR-FIN-010')).toBe('AR-FIN-010')
+  })
+})
 
 describe('splitCitations', () => {
   it('splits two separate brackets into text and cite segments', () => {

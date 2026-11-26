@@ -11,12 +11,6 @@ export type HealthChipProps = {
   isError: boolean
 }
 
-function modeLabel(mode: HealthResponse['mode']): string | null {
-  if (mode === 'hybrid') return 'ترکیبی'
-  if (mode === 'lexical') return 'واژگانی'
-  return null
-}
-
 function degradationReason(health: HealthResponse): string {
   return health.error ?? health.ollama?.reason ?? ''
 }
@@ -63,16 +57,13 @@ export function HealthChip({ health, isError }: HealthChipProps) {
     return reason ? <Tooltip title={reason}>{chip}</Tooltip> : chip
   }
 
-  const mode = modeLabel(health.mode)
-  const label = mode ? `آماده · ${mode}` : 'آماده'
-
   return (
     <Chip
       aria-live="polite"
       color="success"
       variant="outlined"
       icon={<CheckCircleOutlinedIcon />}
-      label={label}
+      label="آماده"
       size="small"
     />
   )

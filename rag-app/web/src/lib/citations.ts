@@ -1,8 +1,19 @@
-import { toLatinDigits } from './digits'
+import { toLatinDigits, toPersianDigits } from './digits'
 
 export type Segment =
   | { kind: 'text'; text: string }
   | { kind: 'cite'; label: string; raw: string }
+
+/**
+ * Display citation labels without the section sign (§), which looks like
+ * two stacked "s" characters in many fonts. Matching still uses the API label.
+ */
+export function formatCitationLabel(label: string): string {
+  return label.replace(
+    /\s*§\s*(\d+)/g,
+    (_m, n: string) => ` · بند ${toPersianDigits(n)}`,
+  )
+}
 
 /** Matches rag_core.qa.domain.citations bracket finder. */
 const BRACKET_RE = /\[([^\[\]]{3,200})\]/g

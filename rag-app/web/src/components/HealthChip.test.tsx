@@ -36,7 +36,7 @@ describe('HealthChip', () => {
     expect(screen.getByText('در حال آماده‌سازی')).toBeInTheDocument()
   })
 
-  it('shows ready state with hybrid mode label', () => {
+  it('shows ready state without mode suffix', () => {
     renderChip({
       ...base,
       status: 'ready',
@@ -44,7 +44,8 @@ describe('HealthChip', () => {
       can_answer: true,
       error: null,
     })
-    expect(screen.getByText('آماده · ترکیبی')).toBeInTheDocument()
+    expect(screen.getByText('آماده')).toBeInTheDocument()
+    expect(screen.queryByText(/ترکیبی/)).not.toBeInTheDocument()
   })
 
   it('shows degraded state and tooltip reason from ollama.reason', async () => {

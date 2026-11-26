@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from rag_api import __version__
 from rag_api.errors import install_error_handlers
@@ -58,6 +59,15 @@ def create_app(
         allow_headers=["*"],
     )
     application.include_router(router)
+    web_dist = resolved_settings.web_dist
+    if web_dist is not None:
+        dist = web_dist.expanduser().resolve()
+        if dist.is_dir() and (dist / "index.html").is_file():
+            application.mount(
+                "/",
+                StaticFiles(directory=dist, html=True),
+                name="web",
+            )
     return application
 
 

@@ -56,7 +56,8 @@ describe('NodeSelect', () => {
     const user = userEvent.setup()
     renderSelect()
 
-    await user.type(screen.getByLabelText('واحد سازمانی'), 'منابع انسانی')
+    await user.click(screen.getByRole('button', { name: 'واحد سازمانی' }))
+    await user.type(await screen.findByPlaceholderText(/جست/), 'منابع انسانی')
 
     expect(await screen.findByText('N-ADM-HR')).toBeInTheDocument()
     expect(screen.queryByText('N-FIN')).not.toBeInTheDocument()
@@ -66,8 +67,9 @@ describe('NodeSelect', () => {
     const user = userEvent.setup()
     const { onChange } = renderSelect()
 
-    await user.type(screen.getByLabelText('واحد سازمانی'), 'منابع انسانی')
-    await user.click(await screen.findByText('منابع انسانی'))
+    await user.click(screen.getByRole('button', { name: 'واحد سازمانی' }))
+    await user.type(await screen.findByPlaceholderText(/جست/), 'منابع انسانی')
+    await user.click(await screen.findByRole('button', { name: /منابع انسانی/ }))
 
     expect(onChange).toHaveBeenCalledWith('N-ADM-HR')
   })
