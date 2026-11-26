@@ -16,7 +16,7 @@ Issue #11 names `src/processing/` and `src/transfer/`. As in earlier phases the 
 | TransferPackage generation | `transfer/domain/items.py` (items, issue groups, capacity, `NodeKnowledge`), `transfer/domain/render.py` (facts and texts), `transfer/domain/builder.py` (`TransferPackageBuilder`), `transfer/application/services.py` (`TransferService`) |
 | detail levels | `transfer/domain/levels.py` (`DetailLevelRule`, `DEFAULT_RULES`, `RuleBook`) |
 | quality gate | `transfer/domain/review.py` (fact check + judge), `transfer/infrastructure/judging_acl.py` (package → Phase 10 judge case) |
-| AI transfer suggestions | `transfer/domain/suggestions.py`, `SuggestionService` |
+| AI transfer suggestions | `transfer/domain/suggestions.py`, `SuggestionService`; prompts in `config/prompts/transfer/suggestions.yaml` |
 | CSV / DB storage of latest packages | `transfer/infrastructure/sqlite_store.py`, `transfer/infrastructure/csv_export.py` (uses the Phase 3 `csv_format.py`) |
 | inputs from other contexts | `transfer/infrastructure/sources_acl.py` (hierarchy, lifecycle versions, issues, executors), `transfer/infrastructure/ike_acl.py` (Phase 9 leads and knowledge lacks) |
 | settings | `config/transfer.yaml`, `transfer/infrastructure/config.py` |

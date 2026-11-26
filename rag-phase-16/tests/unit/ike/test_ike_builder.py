@@ -18,7 +18,7 @@ from tests.fixtures.ike.samples import sample_issue, sample_referrals, search_re
 pytestmark = [pytest.mark.ike, pytest.mark.ike_model]
 
 
-def _graph(comparisons=None):  # noqa: ANN001, ANN202
+def _graph(comparisons=None):
     return IkeGraphBuilder().build(sample_issue(), sample_referrals(), comparisons)
 
 
@@ -31,6 +31,11 @@ def test_registry_only_graph_counts() -> None:
         "knowledge_lack": 4,
         "depends_on": 1,
         "part_of": 3,
+        "similar_issue": 0,
+        "blocked_by": 0,
+        "executor_worked_on": 0,
+        "supports": 0,
+        "conflicts": 0,
     }
     assert graph.validate() == []
     assert str(graph.node_id) == "N-LIB"

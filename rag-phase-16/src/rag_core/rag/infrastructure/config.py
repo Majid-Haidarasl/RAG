@@ -58,6 +58,20 @@ class QaSettings:
     evidence_min_vector: float = 0.45
     evidence_min_lexical: float = 3.0
     escalate_margin: float = 0.02
+    promote_min_judge_total: int | None = None  # None → judge rubric accept_total
+
+
+@dataclass(frozen=True)
+class EmbeddingDedupSettings:
+    same_threshold: float = 0.92
+    borderline_low: float = 0.75
+
+
+@dataclass(frozen=True)
+class KnowledgeSettings:
+    embedding_dedup: EmbeddingDedupSettings = field(
+        default_factory=EmbeddingDedupSettings
+    )
 
 
 @dataclass(frozen=True)
@@ -89,6 +103,7 @@ class RagSettings:
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
     context: ContextSettings = field(default_factory=ContextSettings)
     qa: QaSettings = field(default_factory=QaSettings)
+    knowledge: KnowledgeSettings = field(default_factory=KnowledgeSettings)
     index: IndexSettings = field(default_factory=IndexSettings)
     ingestion: IngestionSettings = field(default_factory=IngestionSettings)
 
@@ -117,6 +132,21 @@ def _build_ingestion(data: dict[str, Any] | None) -> IngestionSettings:
     return IngestionSettings(lvm=_build(LvmIngestionSettings, data.get("lvm"), "ingestion.lvm"))
 
 
+def _build_knowledge(data: dict[str, Any] | None) -> KnowledgeSettings:
+    if data is None:
+        return KnowledgeSettings()
+    if not isinstance(data, dict):
+        raise InvariantError("config section 'knowledge' must be a mapping")
+    unknown = sorted(set(data) - {"embedding_dedup"})
+    if unknown:
+        raise InvariantError(f"unknown keys in 'knowledge': {', '.join(unknown)}")
+    return KnowledgeSettings(
+        embedding_dedup=_build(
+            EmbeddingDedupSettings, data.get("embedding_dedup"), "knowledge.embedding_dedup"
+        )
+    )
+
+
 def settings_from_dict(data: dict[str, Any]) -> RagSettings:
     if not isinstance(data, dict):
         raise InvariantError("config/rag.yaml must be a mapping of sections")
@@ -129,13 +159,16 @@ def settings_from_dict(data: dict[str, Any]) -> RagSettings:
         "qa": QaSettings,
         "index": IndexSettings,
     }
-    unknown = sorted(set(data) - set(sections) - {"config_version", "ingestion"})
+    unknown = sorted(
+        set(data) - set(sections) - {"config_version", "ingestion", "knowledge"}
+    )
     if unknown:
         raise InvariantError(f"unknown config sections: {', '.join(unknown)}")
     built = {name: _build(cls, data.get(name), name) for name, cls in sections.items()}
     return RagSettings(
         config_version=str(data.get("config_version", "0.8.0")),
         ingestion=_build_ingestion(data.get("ingestion")),
+        knowledge=_build_knowledge(data.get("knowledge")),
         **built,
     )
 

@@ -36,6 +36,20 @@ Ports: `JudgeModelPort.generate(system, user) -> LlmResult` (implemented by the 
 
 Total 20. The guidance text per output kind is in `rubric.yaml` and is shown to the LLM judge as its scoring scale. Anchors (for example "5 = fully supported, 3 = one small unsupported detail, 0-2 = an invented number") keep the judge's scale fixed. Each criterion has aliases that the parser accepts (`groundedness`, `faithfulness` → `grounding`; `accuracy` → `correctness`; `citations`, `traceability` → `citation`; `coverage` → `completeness`; `language`, `fluency` → `clarity`).
 
+### Spec §16.1 sample rubric → kit criteria (traceability only)
+
+The project plan sample rubric lists **7** criteria. The kit keeps its own **5-criterion** weights (`5/5/4/3/3`) and minima; the table below is for **traceability** between the sample wording and the kit keys. It does not change scoring.
+
+| Spec §16.1 sample criterion (points) | Maps to kit criterion |
+|---|---|
+| Faithfulness to source (5) | `grounding` |
+| Completeness vs user request (4) | `completeness` |
+| Detail level fit for target layer (3) | `clarity` + `completeness` |
+| Handling uncertainty and gaps (3) | `correctness` |
+| Clarity and professional structure (2) | `clarity` |
+| Source traceability (2) | `citation` |
+| No unsupported claims (1) | `grounding` |
+
 ## 3. Thresholds
 
 `AcceptancePolicy.decide(scores)`:

@@ -6,10 +6,10 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from rag_core.knowledge.domain.services import Citation
+from rag_core.qa.domain.citations import VerifiedCitation
 from rag_core.rag.domain.model import Answer, AnswerKind
 from rag_core.rag.domain.ports import EscalationRoute
 from rag_core.rag.domain.records import SearchFilters, SourceRef
-from rag_core.qa.domain.citations import VerifiedCitation
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.fact_ports import FactValidationReport, FactVerdict
 from rag_core.shared_kernel.identifiers import DocumentId
@@ -52,6 +52,8 @@ class QaAnswer:
     citations: list[VerifiedCitation] = field(default_factory=list)
     used_chunks: list[SourceRef] = field(default_factory=list)
     retrieved: list[str] = field(default_factory=list)  # record keys, rank order
+    related: list[str] = field(default_factory=list)  # related knowledge/document ids
+    confidence: float | None = None
     fact_check: FactValidationReport = field(default_factory=FactValidationReport)
     escalation: EscalationRoute | None = None
     raw_model_text: str = ""
@@ -134,6 +136,8 @@ class QaAnswer:
             "citations": [c.to_dict() for c in self.citations],
             "used_chunks": [s.to_dict() for s in self.used_chunks],
             "retrieved": self.retrieved,
+            "related": list(self.related),
+            "confidence": self.confidence,
             "fact_check": [
                 {
                     "kind": r.claim.kind.value,

@@ -62,8 +62,12 @@ Each project's numbers (progress, remaining, contract) must appear in the active
 | SC | scorecard_open | dimension open (conditional: one level down) | medium |
 | ST | stale_unsolved | unsolved-issue record whose linked issues are all closed | low |
 | EV | unevidenced_record | record without evidence | high |
+| OD | knowledge_outdated | knowledge age_days > `gap_thresholds.outdated_days` | medium |
+| CF | sources_conflict | flagged conflicting source pair on a subject | high |
+| JT | judge_below_threshold | judge total < rubric `accept_total` (`GapThresholds.judge_min_total`) | high |
+| LC | low_confidence | confidence < `gap_thresholds.confidence_min` | medium |
 
-Gap ids are `RULE:subject` (e.g. `DEP:AR-ISS-024/WIN`); gaps are sorted by severity, rule order and subject. Rules can be switched off or re-graded in `config/projects.yaml`.
+Gap ids are `RULE:subject` (e.g. `DEP:AR-ISS-024/WIN`); gaps are sorted by severity, rule order and subject. Rules can be switched off or re-graded in `config/projects.yaml`. OD/CF/JT/LC read optional quality views on `GapInputs` (`knowledge_ages`, `conflicts`, `judge_scores`, `confidences`) and thresholds from `gap_thresholds` (JT defaults to the Phase 10 rubric `accept_total`).
 
 Expected on the shipped data: RG 2, DEP 2 (`AR-ISS-024/WIN`, `AR-ISS-024/LEG`), CH 3, SC 3, plus one KL gap per AR-ISS-024 sub-issue with knowledge lacks in the Phase 9 digest.
 

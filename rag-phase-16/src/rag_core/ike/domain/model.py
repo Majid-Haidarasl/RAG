@@ -17,10 +17,10 @@ relations are rejected); ``add_checked`` also enforces the kind rules.
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
-import re
 
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.events import DomainEvent
@@ -34,6 +34,11 @@ class RelationType(StrEnum):
     KNOWLEDGE_LACK = "knowledge_lack"
     DEPENDS_ON = "depends_on"
     PART_OF = "part_of"
+    SIMILAR_ISSUE = "similar_issue"
+    BLOCKED_BY = "blocked_by"
+    EXECUTOR_WORKED_ON = "executor_worked_on"
+    SUPPORTS = "supports"
+    CONFLICTS = "conflicts"
 
 
 class EndpointKind(StrEnum):
@@ -84,6 +89,26 @@ RELATION_RULES: dict[
     ),
     RelationType.DEPENDS_ON: (frozenset({_K.SUBISSUE}), frozenset({_K.SUBISSUE})),
     RelationType.PART_OF: (frozenset({_K.SUBISSUE}), frozenset({_K.ISSUE})),
+    RelationType.SIMILAR_ISSUE: (
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.BLOCKED_BY: (
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.EXECUTOR_WORKED_ON: (
+        frozenset({_K.EXECUTOR}),
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.SUPPORTS: (
+        frozenset({_K.KNOWLEDGE}),
+        frozenset({_K.ISSUE, _K.SUBISSUE}),
+    ),
+    RelationType.CONFLICTS: (
+        frozenset({_K.KNOWLEDGE}),
+        frozenset({_K.KNOWLEDGE, _K.ISSUE, _K.SUBISSUE}),
+    ),
 }
 
 
@@ -141,12 +166,15 @@ def relation_problems(relation: IkeRelation) -> list[str]:
     if (
         relation.relation_type is RelationType.DEPENDS_ON
         and sk is tk is EndpointKind.SUBISSUE
+        and relation.source_id.split("/", 1)[0] != relation.target_id.split("/", 1)[0]
     ):
-        if relation.source_id.split("/", 1)[0] != relation.target_id.split("/", 1)[0]:
-            problems.append(f"{label}: dependencies must stay inside one issue")
-    if relation.relation_type is RelationType.PART_OF and sk is EndpointKind.SUBISSUE:
-        if relation.source_id.split("/", 1)[0] != relation.target_id:
-            problems.append(f"{label}: a sub-issue is part of its own parent only")
+        problems.append(f"{label}: dependencies must stay inside one issue")
+    if (
+        relation.relation_type is RelationType.PART_OF
+        and sk is EndpointKind.SUBISSUE
+        and relation.source_id.split("/", 1)[0] != relation.target_id
+    ):
+        problems.append(f"{label}: a sub-issue is part of its own parent only")
     return problems
 
 

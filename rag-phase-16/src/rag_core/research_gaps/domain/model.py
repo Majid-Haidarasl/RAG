@@ -31,6 +31,10 @@ class GapKind(StrEnum):
     MEASUREMENT = "measurement"  # scorecard dimension without measured evidence
     STALE = "stale"  # unsolved-issue record whose issues are all closed
     EVIDENCE = "evidence"  # a record without evidence
+    OUTDATED = "outdated"  # knowledge older than the configured age limit
+    CONFLICT = "conflict"  # sources conflict on the same subject
+    JUDGE = "judge"  # judge total below the rubric accept_total
+    CONFIDENCE = "confidence"  # answer or retrieval confidence below threshold
 
 
 class Severity(StrEnum):
@@ -140,11 +144,70 @@ class DimensionView:
 
 
 @dataclass(frozen=True)
+class KnowledgeAgeView:
+    document_id: str
+    age_days: int
+    issue_id: str = ""
+    nodes: tuple[str, ...] = ()
+    title_en: str = ""
+    title_fa: str = ""
+
+
+@dataclass(frozen=True)
+class ConflictView:
+    subject: str
+    documents: tuple[str, ...]
+    issue_id: str = ""
+    nodes: tuple[str, ...] = ()
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class JudgeScoreView:
+    subject: str
+    total: int
+    out_of: int = 20
+    issue_id: str = ""
+    nodes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ConfidenceView:
+    subject: str
+    confidence: float
+    issue_id: str = ""
+    nodes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class GapThresholds:
+    """Thresholds for OD / CF / JT / LC. ``judge_min_total`` comes from the rubric."""
+
+    outdated_days: int = 365
+    confidence_min: float = 0.45
+    judge_min_total: int = 18
+    judge_out_of: int = 20
+
+    def __post_init__(self) -> None:
+        if self.outdated_days < 1:
+            raise InvariantError("outdated_days must be >= 1")
+        if not 0.0 <= self.confidence_min <= 1.0:
+            raise InvariantError("confidence_min must be in [0, 1]")
+        if not 1 <= self.judge_min_total <= self.judge_out_of:
+            raise InvariantError("judge_min_total must be within 1..judge_out_of")
+
+
+@dataclass(frozen=True)
 class GapInputs:
     records: tuple[RecordView, ...] = ()
     subissues: tuple[SubIssueView, ...] = ()
     issues: tuple[IssueStateView, ...] = ()
     scorecard: tuple[DimensionView, ...] = ()
+    knowledge_ages: tuple[KnowledgeAgeView, ...] = ()
+    conflicts: tuple[ConflictView, ...] = ()
+    judge_scores: tuple[JudgeScoreView, ...] = ()
+    confidences: tuple[ConfidenceView, ...] = ()
+    thresholds: GapThresholds = field(default_factory=GapThresholds)
     as_of: date | None = None
     extra: dict[str, str] = field(default_factory=dict)
 

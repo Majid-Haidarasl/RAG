@@ -31,12 +31,16 @@ def test_shipped_config_matches_phase2_decisions() -> None:
     assert s.ingestion.lvm.dpi == 150
     assert s.ingestion.lvm.model_id == "lvm-qwen2.5vl-3b"
     assert (ROOT / s.ingestion.lvm.prompt_dir / "page_text.yaml").is_file()
+    assert s.qa.promote_min_judge_total is None
+    assert s.knowledge.embedding_dedup.same_threshold == 0.92
+    assert s.knowledge.embedding_dedup.borderline_low == 0.75
 
 
 def test_defaults_when_sections_missing() -> None:
     s = settings_from_dict({})
     assert s.generation.model == "qwen3:8b" and s.context.budget_tokens == 3500
     assert s.ingestion.lvm.enabled is False and s.ingestion.lvm.dpi == 150
+    assert s.knowledge.embedding_dedup.same_threshold == 0.92
 
 
 def test_unknown_keys_rejected() -> None:

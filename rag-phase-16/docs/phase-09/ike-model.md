@@ -16,7 +16,7 @@ Issue #9 lists `src/executors/…` and `src/ike/…`. Following the earlier phas
 | ACLs (executors) | `executors/infrastructure/hierarchy_acl.py` (Phase 6 teams), `executors/infrastructure/issues_acl.py` (Phase 7 sub-issues → `ReferralRequest`) |
 | issue-knowledge comparison | `ike/domain/comparison.py` (`compare_knowledge`, `IssueKnowledgeComparison`) |
 | IKE relations | `ike/domain/model.py` (`IkeGraph`, `IkeRelation`, `RelationType`, `RELATION_RULES`), builder `ike/domain/builder.py` |
-| summary generation | `ike/domain/summary.py` (digest, facts, templates, prompt, check), service `ike/application/services.py` (`IkeSummaryService`) |
+| summary generation | `ike/domain/summary.py` (digest, facts, templates, prompt, check), service `ike/application/services.py` (`IkeSummaryService`); prompts in `config/prompts/ike/summary.yaml` |
 | ACLs (ike) | `ike/infrastructure/issues_acl.py`, `executors_acl.py`, `retrieval_acl.py` (Phase 8 retriever → `KnowledgeSearchPort`) |
 | check script | `scripts/run_ike_check.py` |
 | tests | `tests/unit/executors/`, `tests/unit/ike/`, fixtures `tests/fixtures/executors/`, `tests/fixtures/ike/` |
@@ -96,6 +96,11 @@ Endpoint kinds by id: issue `AR-ISS-NNN`, sub-issue `AR-ISS-NNN/CODE`, executor 
 | `can_handle` | executor | issue, sub-issue | referral plan (score as confidence, note "lead"/"collaborator") |
 | `evidence_for` | knowledge | executor | cited documents the executor holds |
 | `knowledge_lack` | issue, sub-issue | knowledge, issue, topic | see below |
+| `similar_issue` | issue, sub-issue | issue, sub-issue | probable duplicate / related issue |
+| `blocked_by` | issue, sub-issue | issue, sub-issue | hard blocker (distinct from soft `depends_on`) |
+| `executor_worked_on` | executor | issue, sub-issue | prior work history |
+| `supports` | knowledge | issue, sub-issue | knowledge that backs an answer path |
+| `conflicts` | knowledge | knowledge, issue, sub-issue | contradicting sources or answers |
 
 Knowledge lacks:
 

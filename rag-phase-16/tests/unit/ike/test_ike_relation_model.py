@@ -85,6 +85,23 @@ def test_add_checked_rejects_ill_typed_relation_but_add_stays_permissive() -> No
     assert len(graph.relations) == 1
 
 
+@pytest.mark.parametrize(
+    "relation",
+    [
+        rel("AR-ISS-024", "AR-ISS-031", RelationType.SIMILAR_ISSUE),
+        rel("AR-ISS-024/WIN", "AR-ISS-024/HW", RelationType.BLOCKED_BY),
+        rel("EX-SAEED-AKBARI", "AR-ISS-024/HW", RelationType.EXECUTOR_WORKED_ON),
+        rel("AR-HW-012", "AR-ISS-024/HW", RelationType.SUPPORTS),
+        rel("AR-HW-012", "AR-HW-015", RelationType.CONFLICTS),
+    ],
+)
+def test_new_relation_types_are_allowed(relation: IkeRelation) -> None:
+    assert relation_problems(relation) == []
+    graph = IkeGraph(NodeIdentifier("N-LIB"))
+    graph.add_checked(relation)
+    assert len(graph.relations) == 1
+
+
 def test_add_if_absent_skips_existing_relation() -> None:
     graph = IkeGraph(NodeIdentifier("N-LIB"))
     first = rel("AR-ISS-024/HW", "AR-HW-012", RelationType.RELATES_TO)

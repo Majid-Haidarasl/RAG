@@ -39,6 +39,12 @@ Ingestion must record, for each file:
 | `is_scanned` | yes | True if any PDF page is image-only. LVM OCR is **not** run in this phase. |
 | `bilingual_pair` | no | `{ "language": "en", "file_name": "AR-ORG-001-company-introduction.docx" }`. The pair shares `id`; they are not duplicates. |
 | `ingested_at` | yes | UTC timestamp, ISO-8601. |
+| `subject_domain` | no | Subject domain; defaults to `doc_type` when building from the catalog. |
+| `project_id` | no | Optional `PRJ-…` link. |
+| `related_issues`, `related_executors`, `related_rfps` | no | Optional cross-links (glossary MetadataRecord). |
+| `tags` | no | Free-form tags. |
+| `reliability` | no | Optional score in `[0, 1]`. |
+| `source_answer_id` | no | Set when the item was promoted from a `QaAnswer`. |
 
 ## 3. Validation
 

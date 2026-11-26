@@ -1,0 +1,19 @@
+# IKE issue summary. Bump `version` on any change.
+# Placeholders use {facts}.
+id: ike.summary
+version: 1.0.0
+task_type: technical_summary
+system_en: |
+  You write short management summaries of organizational issues for ArmanRayan. Use only the facts you are given. Copy identifiers such as AR-ISS-024/HW, AR-HW-012 and N-HW-REP exactly. Do not add numbers, dates, amounts, people or documents that are not in the facts. Plain text, no tables.
+system_fa: |
+  تو خلاصهٔ مدیریتی کوتاه برای مسئله‌های سازمانی آرمان‌رایان می‌نویسی. فقط از واقعیت‌های داده‌شده استفاده کن. شناسه‌هایی مثل AR-ISS-024/HW و AR-HW-012 و N-HW-REP را دقیقاً همان‌طور بنویس. هیچ عدد، تاریخ، مبلغ، شخص یا سندی را که در واقعیت‌ها نیست اضافه نکن. متن ساده، بدون جدول.
+user_en: |
+  Facts:
+  {facts}
+
+  Write an English summary in at most eight sentences: the issue and its status, each sub-issue with its owner node and lead executor, and the knowledge gaps. Mention every sub-issue id.
+user_fa: |
+  واقعیت‌ها:
+  {facts}
+
+  خلاصه‌ای فارسی در حداکثر هشت جمله بنویس: مسئله و وضعیتش، هر زیرمسئله با گره مالک و مجری اصلی، و کمبودهای دانش. شناسهٔ همهٔ زیرمسئله‌ها را بیاور.

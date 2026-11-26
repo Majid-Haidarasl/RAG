@@ -23,6 +23,16 @@ gap_rules:                     # code: enabled + base severity (low | medium | h
   SC: {enabled: true, severity: medium}   # open scorecard dimension (conditional: one level lower)
   ST: {enabled: true, severity: low}      # unsolved-issue record whose issues are all closed
   EV: {enabled: true, severity: high}     # record without evidence
+  OD: {enabled: true, severity: medium}   # knowledge older than gap_thresholds.outdated_days
+  CF: {enabled: true, severity: high}     # conflicting sources on one subject
+  JT: {enabled: true, severity: high}     # judge total below rubric accept_total
+  LC: {enabled: true, severity: medium}   # answer/retrieval confidence below floor
+
+gap_thresholds:
+  outdated_days: 365           # OD: knowledge age in days
+  confidence_min: 0.45         # LC: same floor as qa.evidence_min_vector by default
+  # judge_min_total is taken from config/prompts/judge/rubric.yaml accept_total
+  # unless set here as an explicit override.
 
 prioritization:
   weights:                     # must sum to 1.0; score = 100 x sum(weight x factor)

@@ -55,7 +55,9 @@ def test_phase2_baseline_models_are_registered() -> None:
     embed = registry.get("emb-bge-m3")
     assert embed.role is ModelRole.EMBEDDING
     assert embed.embedding_dim == 1024
+    assert embed.limits is not None and embed.notes
     assert len(PHASE2_BASELINE) == 3
+    assert all(e.notes for e in PHASE2_BASELINE)
 
 
 def test_fake_embedding_is_deterministic_and_fixed_dim() -> None:
