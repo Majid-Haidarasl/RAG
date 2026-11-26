@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 
@@ -16,11 +17,22 @@ from rag_api.settings import ApiSettings, get_settings
 Builder = Callable[[ApiSettings], RagRuntime]
 
 
+def _configure_logging() -> None:
+    rag_logger = logging.getLogger("rag_api")
+    if not rag_logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        rag_logger.addHandler(handler)
+        rag_logger.propagate = False
+    rag_logger.setLevel(logging.INFO)
+
+
 def create_app(
     settings: ApiSettings | None = None,
     builder: Builder | None = None,
     background: bool = True,
 ) -> FastAPI:
+    _configure_logging()
     resolved_settings = settings if settings is not None else get_settings()
     resolved_builder = builder if builder is not None else build_runtime
 
