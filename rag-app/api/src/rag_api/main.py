@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from rag_api import __version__
 from rag_api.errors import install_error_handlers
@@ -44,10 +45,13 @@ def create_app(
         app.state.settings = resolved_settings
         yield
 
+    docs_enabled = resolved_settings.docs_enabled
     application = FastAPI(
         title="ArmanRayan RAG API",
         version=__version__,
-        docs_url="/docs",
+        docs_url="/docs" if docs_enabled else None,
+        redoc_url="/redoc" if docs_enabled else None,
+        openapi_url="/openapi.json" if docs_enabled else None,
         lifespan=lifespan,
     )
     install_error_handlers(application)
@@ -58,6 +62,15 @@ def create_app(
         allow_headers=["*"],
     )
     application.include_router(router)
+    web_dist = resolved_settings.web_dist
+    if web_dist is not None:
+        dist = web_dist.expanduser().resolve()
+        if dist.is_dir() and (dist / "index.html").is_file():
+            application.mount(
+                "/",
+                StaticFiles(directory=dist, html=True),
+                name="web",
+            )
     return application
 
 

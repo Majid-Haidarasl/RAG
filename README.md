@@ -41,6 +41,7 @@ bash scripts/setup_and_test.sh
 
 ## مستندات
 
+- برنامهٔ وب و واسط برنامه‌نویسی در [`rag-app/README.md`](rag-app/README.md) آمده است.
 - راهنمای نصب و اجرا در فایل [`rag-phase-16/docs/user-guide.md`](rag-phase-16/docs/user-guide.md) آمده است.
 - گزارش نهایی در فایل [`rag-phase-16/docs/final-report.md`](rag-phase-16/docs/final-report.md) آمده است.
 - تغییرات نسخه‌ها در فایل [`rag-phase-16/CHANGELOG.md`](rag-phase-16/CHANGELOG.md) ثبت شده است.

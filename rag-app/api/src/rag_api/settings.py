@@ -4,22 +4,26 @@ import functools
 from pathlib import Path
 from typing import Literal
 
-from pydantic import field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ApiSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="RAG_API_")
+    model_config = SettingsConfigDict(env_prefix="RAG_API_", populate_by_name=True)
 
     core_root: Path = Path(__file__).resolve().parents[4] / "rag-phase-16"
     model_mode: Literal["ollama", "fake"] = "ollama"
-    default_node: str = "N-CEO"
+    default_node: str = "N-ADM-HR"
     max_question_chars: int = 2000
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
     web_dist: Path | None = None
+    docs_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("RAG_API_DOCS", "docs_enabled"),
+    )
 
     @property
     def rag_config_path(self) -> Path:

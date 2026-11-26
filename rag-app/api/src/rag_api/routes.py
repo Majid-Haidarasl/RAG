@@ -112,8 +112,11 @@ def health(holder: HolderDep) -> HealthResponse:
 
     runtime = holder.runtime
     assert runtime is not None
-    mode: Literal["hybrid", "lexical"] | None
-    mode = runtime.mode if runtime.mode in ("hybrid", "lexical") else None
+    mode: Literal["hybrid", "lexical", "fake"] | None
+    if holder.settings.model_mode == "fake":
+        mode = "fake"
+    else:
+        mode = runtime.mode if runtime.mode in ("hybrid", "lexical") else None
     return HealthResponse(
         status="ready" if runtime.can_answer else "degraded",
         mode=mode,
