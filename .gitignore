@@ -31,3 +31,8 @@ node_modules/
 /rag-phase-*/exports/rfp/
 /rag-phase-*/eval/results/*
 !/rag-phase-*/eval/results/README.md
+
+# rag-app
+rag-app/api/.venv/
+rag-app/web/node_modules/
+rag-app/web/dist/
