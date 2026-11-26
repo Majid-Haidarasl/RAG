@@ -10,9 +10,20 @@ export type StatusView = {
   icon: StatusIcon
 }
 
-export function statusView(status: QaStatus, grounded: boolean): StatusView {
+export function statusView(
+  status: QaStatus,
+  grounded: boolean,
+  factFlags: readonly string[] = [],
+): StatusView {
   switch (status) {
     case 'answered':
+      if (grounded && factFlags.length > 0) {
+        return {
+          label: 'پاسخ مستند با اعداد تأییدنشده',
+          color: 'warning',
+          icon: 'warn',
+        }
+      }
       return grounded
         ? { label: 'پاسخ مستند', color: 'success', icon: 'ok' }
         : { label: 'پاسخ بدون ارجاع معتبر', color: 'warning', icon: 'warn' }

@@ -37,7 +37,7 @@ function StatusIconEl({ icon }: { icon: StatusIcon }) {
 }
 
 export function AnswerCard({ answer, question, onCiteClick }: AnswerCardProps) {
-  const view = statusView(answer.status, answer.grounded)
+  const view = statusView(answer.status, answer.grounded, answer.fact_flags)
   const invalidLabels = new Set(
     answer.citations.filter((c) => !c.valid).map((c) => c.label),
   )

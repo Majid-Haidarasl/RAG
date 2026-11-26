@@ -15,6 +15,7 @@ import { useAsk, useHealth, useNodes } from './api/hooks'
 import type { AskResponse } from './api/types'
 import { AnswerCard } from './components/AnswerCard'
 import { CitationList } from './components/CitationList'
+import { HealthChip } from './components/HealthChip'
 import { NodeSelect } from './components/NodeSelect'
 import { QuestionForm } from './components/QuestionForm'
 import { errorMessage } from './lib/status'
@@ -148,11 +149,18 @@ function App() {
           >
             دستیار دانش آرمان‌رایان
           </Typography>
+          <HealthChip health={health} isError={healthQuery.isError} />
         </Toolbar>
       </AppBar>
 
       <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3} sx={{ alignItems: 'stretch' }}>
+          {health?.mode === 'fake' ? (
+            <Alert severity="warning">
+              حالت آزمایشی — پاسخ‌ها واقعی نیستند
+            </Alert>
+          ) : null}
+
           {healthLoading ? (
             <Alert severity="info">سیستم در حال آماده‌سازی است…</Alert>
           ) : null}

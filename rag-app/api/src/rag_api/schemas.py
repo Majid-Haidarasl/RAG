@@ -34,7 +34,7 @@ class IndexInfo(BaseModel):
 
 class HealthResponse(BaseModel):
     status: Literal["loading", "ready", "degraded", "error"]
-    mode: Literal["hybrid", "lexical"] | None
+    mode: Literal["hybrid", "lexical", "fake"] | None
     can_answer: bool
     core_version: str
     api_version: str

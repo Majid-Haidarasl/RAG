@@ -48,6 +48,17 @@ describe('HealthChip', () => {
     expect(screen.queryByText(/ترکیبی/)).not.toBeInTheDocument()
   })
 
+  it('shows fake mode as experimental', () => {
+    renderChip({
+      ...base,
+      status: 'ready',
+      mode: 'fake',
+      can_answer: true,
+      error: null,
+    })
+    expect(screen.getByText('آزمایشی')).toBeInTheDocument()
+  })
+
   it('shows degraded state and tooltip reason from ollama.reason', async () => {
     const user = userEvent.setup()
     renderChip({

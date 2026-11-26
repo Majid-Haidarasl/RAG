@@ -42,6 +42,19 @@ export function HealthChip({ health, isError }: HealthChipProps) {
     )
   }
 
+  if (health.mode === 'fake') {
+    return (
+      <Chip
+        aria-live="polite"
+        color="warning"
+        variant="outlined"
+        icon={<WarningAmberIcon />}
+        label="آزمایشی"
+        size="small"
+      />
+    )
+  }
+
   if (health.status === 'degraded') {
     const reason = degradationReason(health)
     const chip = (

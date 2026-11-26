@@ -24,7 +24,7 @@ export type IndexInfo = {
 
 export type HealthResponse = {
   status: 'loading' | 'ready' | 'degraded' | 'error'
-  mode: 'hybrid' | 'lexical' | null
+  mode: 'hybrid' | 'lexical' | 'fake' | null
   can_answer: boolean
   core_version: string
   api_version: string

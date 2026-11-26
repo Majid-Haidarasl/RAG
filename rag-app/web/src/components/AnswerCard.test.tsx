@@ -56,4 +56,20 @@ describe('AnswerCard', () => {
     expect(screen.getByText(/پیشنهاد ارجاع به:/)).toBeInTheDocument()
     expect(screen.getByText(/مدیرعامل/)).toBeInTheDocument()
   })
+
+  it('shows grounded fact-flag status label', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <AnswerCard
+          answer={{ ...answeredAsk, fact_flags: ['۴', '۱۶'] }}
+          question="سقف مرخصی؟"
+          onCiteClick={vi.fn()}
+        />
+      </ThemeProvider>,
+    )
+
+    expect(
+      screen.getByText('پاسخ مستند با اعداد تأییدنشده'),
+    ).toBeInTheDocument()
+  })
 })

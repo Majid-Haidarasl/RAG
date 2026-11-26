@@ -147,6 +147,25 @@ describe('App', () => {
     expect(body.question).toBe(question)
   })
 
+  it('shows persistent fake-mode warning', async () => {
+    const fetchMock = vi.mocked(fetch)
+    fetchMock.mockImplementation(async (input) => {
+      const url = String(input)
+      if (url.includes('/api/health')) {
+        return jsonResponse({ ...healthReady, mode: 'fake' })
+      }
+      if (url.includes('/api/nodes')) return jsonResponse(nodesBody)
+      return jsonResponse({ error: { code: 'http_error', message: 'miss' } }, 404)
+    })
+
+    renderApp()
+
+    expect(
+      await screen.findByText('حالت آزمایشی — پاسخ‌ها واقعی نیستند'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('آزمایشی')).toBeInTheDocument()
+  })
+
   it('shows Persian warming_up message on 503', async () => {
     const user = userEvent.setup()
     const fetchMock = vi.mocked(fetch)

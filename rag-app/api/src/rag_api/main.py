@@ -45,10 +45,13 @@ def create_app(
         app.state.settings = resolved_settings
         yield
 
+    docs_enabled = resolved_settings.docs_enabled
     application = FastAPI(
         title="ArmanRayan RAG API",
         version=__version__,
-        docs_url="/docs",
+        docs_url="/docs" if docs_enabled else None,
+        redoc_url="/redoc" if docs_enabled else None,
+        openapi_url="/openapi.json" if docs_enabled else None,
         lifespan=lifespan,
     )
     install_error_handlers(application)

@@ -11,8 +11,24 @@ describe('statusView', () => {
     })
   })
 
+  it('maps answered + grounded + fact flags', () => {
+    expect(statusView('answered', true, ['12', '۱۶'])).toEqual({
+      label: 'پاسخ مستند با اعداد تأییدنشده',
+      color: 'warning',
+      icon: 'warn',
+    })
+  })
+
   it('maps answered + not grounded', () => {
     expect(statusView('answered', false)).toEqual({
+      label: 'پاسخ بدون ارجاع معتبر',
+      color: 'warning',
+      icon: 'warn',
+    })
+  })
+
+  it('ignores fact flags when not grounded', () => {
+    expect(statusView('answered', false, ['12'])).toEqual({
       label: 'پاسخ بدون ارجاع معتبر',
       color: 'warning',
       icon: 'warn',

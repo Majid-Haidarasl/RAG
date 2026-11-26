@@ -5,12 +5,12 @@ from fastapi.testclient import TestClient
 
 
 @pytest.mark.slow
-def test_health_ready_lexical(client: TestClient) -> None:
+def test_health_ready_fake(client: TestClient) -> None:
     response = client.get("/api/health")
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ready"
-    assert body["mode"] == "lexical"
+    assert body["mode"] == "fake"
     assert body["can_answer"] is True
 
 
@@ -19,7 +19,7 @@ def test_nodes_list(client: TestClient) -> None:
     response = client.get("/api/nodes")
     assert response.status_code == 200
     body = response.json()
-    assert body["default_node_id"] == "N-CEO"
+    assert body["default_node_id"] == "N-ADM-HR"
     assert len(body["nodes"]) == 21
     ids = {node["id"] for node in body["nodes"]}
     assert "N-SW-SUP" in ids
