@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Literal
@@ -15,6 +16,17 @@ from rag_api.settings import ApiSettings
 logger = logging.getLogger(__name__)
 
 Builder = Callable[[ApiSettings], RagRuntime]
+
+
+def _record_counts(runtime: RagRuntime) -> tuple[int, int]:
+    index = getattr(runtime, "index", None)
+    if index is not None:
+        return index.records, index.active
+    store = getattr(getattr(runtime, "retriever", None), "store", None)
+    if store is None:
+        return 0, 0
+    records = store.all()
+    return len(records), sum(1 for record in records if getattr(record, "is_active", False))
 
 
 class RuntimeHolder:
@@ -41,13 +53,23 @@ class RuntimeHolder:
         self.ready_at = None
 
         def _run() -> None:
+            logger.info("runtime building")
+            started = time.perf_counter()
             try:
                 runtime = self._builder(self.settings)
-            except Exception as exc:
-                logger.exception("runtime startup failed")
+            except Exception as exc:  # noqa: BLE001
+                logger.info("runtime failed: %s", exc)
                 self.error = str(exc)
                 self.state = "error"
                 return
+            records, active = _record_counts(runtime)
+            logger.info(
+                "runtime ready mode=%s records=%d active=%d seconds=%.3f",
+                getattr(runtime, "mode", None),
+                records,
+                active,
+                time.perf_counter() - started,
+            )
             self.runtime = runtime
             self.ready_at = datetime.now(UTC)
             self.state = "ready"

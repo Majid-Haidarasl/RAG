@@ -155,9 +155,7 @@ def ask(body: AskRequest, holder: HolderDep) -> AskResponse:
     if not runtime.scope.exists(body.node_id):
         raise ApiError(404, "unknown_node", f"unknown node {body.node_id}")
     try:
-        answer = holder.ask(
-            QaRequest(body.question, body.node_id, top_k=body.top_k)
-        )
+        answer = holder.ask(QaRequest(body.question, body.node_id, top_k=body.top_k))
     except ApiError:
         raise
     except OllamaUnavailable as exc:

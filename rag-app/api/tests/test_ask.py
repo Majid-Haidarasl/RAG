@@ -63,9 +63,7 @@ def test_ask_model_unavailable() -> None:
         runtime.service = None
         return runtime
 
-    with TestClient(
-        create_app(settings, builder=builder, background=False)
-    ) as test_client:
+    with TestClient(create_app(settings, builder=builder, background=False)) as test_client:
         response = test_client.post(
             "/api/ask",
             json={"question": "سلام", "node_id": "N-CEO"},

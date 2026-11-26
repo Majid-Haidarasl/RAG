@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
 from rag_core.qa.application.service import NodeScopedQaService, QaConfig
-from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts
 from rag_core.qa.domain.ports import ChatModelPort
 from rag_core.qa.domain.prompts import QaPromptSet
+from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts
 from rag_core.rag.application.corpus import CorpusIndexInput, build_corpus_records
 from rag_core.rag.application.indexing import IndexBuilder, IndexBuildReport, build_retriever
 from rag_core.rag.domain.context import ContextAssembler
@@ -158,9 +158,7 @@ def build_runtime(settings: ApiSettings) -> RagRuntime:
         )
 
     prompts = load_qa_prompts(root / rag.qa.prompt_dir, rag.qa.prompt_id)
-    assembler = ContextAssembler(
-        rag.context.budget_tokens, rag.context.max_block_tokens
-    )
+    assembler = ContextAssembler(rag.context.budget_tokens, rag.context.max_block_tokens)
     qa_config = QaConfig(
         rag.qa.evidence_min_vector,
         rag.qa.evidence_min_lexical,
@@ -187,7 +185,7 @@ def build_runtime(settings: ApiSettings) -> RagRuntime:
             FakeChatModel(),
             prompts,
             qa_config,
-            rag.generation.model,
+            "fake",
         )
     else:
         client, models = probe_models(rag)
@@ -210,9 +208,7 @@ def build_runtime(settings: ApiSettings) -> RagRuntime:
                 ).refresh(corpus.records)
                 vectors = store.load_vectors(rag.embedding.model)
             if vectors.dim != rag.embedding.dim:
-                raise OllamaError(
-                    f"embedding dim {vectors.dim} != configured {rag.embedding.dim}"
-                )
+                raise OllamaError(f"embedding dim {vectors.dim} != configured {rag.embedding.dim}")
             retriever = build_retriever(
                 corpus.records,
                 vectors=vectors,

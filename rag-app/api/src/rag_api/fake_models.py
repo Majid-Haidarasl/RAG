@@ -4,7 +4,7 @@ import re
 
 from rag_core.models.domain.ports import LlmResult
 
-_BLOCK_LABEL = re.compile(r"^\[([^\]]+)\]", re.M)
+_BLOCK_LABEL = re.compile(r"^\[([^\]]+)\]", re.MULTILINE)
 
 
 class FakeChatModel:

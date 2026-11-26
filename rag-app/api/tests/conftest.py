@@ -11,7 +11,5 @@ from rag_api.settings import ApiSettings
 
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    with TestClient(
-        create_app(ApiSettings(model_mode="fake"), background=False)
-    ) as test_client:
+    with TestClient(create_app(ApiSettings(model_mode="fake"), background=False)) as test_client:
         yield test_client

@@ -80,10 +80,8 @@ def to_ask_response(answer: QaAnswer, runtime: RagRuntime) -> AskResponse:
         if citation.valid
         for label in citation.block_labels
     }
-    sources = [
-        source_out(ref, runtime, cited_labels) for ref in answer.used_chunks
-    ]
-    sources.sort(key=lambda item: (0 if item.cited else 1))
+    sources = [source_out(ref, runtime, cited_labels) for ref in answer.used_chunks]
+    sources.sort(key=lambda item: 0 if item.cited else 1)
 
     escalation: EscalationOut | None = None
     if answer.escalation is not None and answer.escalation.action == "escalate":
