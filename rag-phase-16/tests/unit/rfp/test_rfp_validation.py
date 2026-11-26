@@ -32,7 +32,7 @@ def validator(**changes: object) -> BlueprintValidator:
     return BlueprintValidator(**args)  # type: ignore[arg-type]
 
 
-def codes(bp, v: BlueprintValidator | None = None) -> list[str]:  # noqa: ANN001
+def codes(bp, v: BlueprintValidator | None = None) -> list[str]:
     return [p.code for p in (v or validator()).validate_one(bp)]
 
 

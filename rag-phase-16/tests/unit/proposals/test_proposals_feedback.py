@@ -18,12 +18,12 @@ from tests.fixtures.rfp.samples import shipped_blueprint, shipped_registry
 pytestmark = [pytest.mark.proposals]
 
 
-def fb(pid: str, lang: str):  # noqa: ANN201
+def fb(pid: str, lang: str):
     bp, reg = shipped_blueprint(), shipped_registry()
     return build_feedback(bp, reg, evaluate(bp, reg), pid, lang)
 
 
-def case(pid: str, lang: str):  # noqa: ANN201
+def case(pid: str, lang: str):
     f = fb(pid, lang)
     return summary_case(
         f"P13-fb-{pid}-{lang}",

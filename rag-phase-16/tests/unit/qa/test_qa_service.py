@@ -29,7 +29,7 @@ PROMPTS = load_qa_prompts(
 
 def lexical_service(
     reply="INSUFFICIENT_CONTEXT",
-) -> tuple[NodeScopedQaService, FakeChat]:  # noqa: ANN001
+) -> tuple[NodeScopedQaService, FakeChat]:
     chat = FakeChat(reply)
     retriever = build_retriever(sample_records(), scope=sample_scope())
     return NodeScopedQaService(
@@ -44,7 +44,7 @@ def lexical_service(
 
 def hybrid_service(
     reply="INSUFFICIENT_CONTEXT", threshold=0.6
-) -> tuple[NodeScopedQaService, FakeChat]:  # noqa: ANN001
+) -> tuple[NodeScopedQaService, FakeChat]:
     records = sample_records()
     emb = FakeEmbedder()
     index = InMemoryVectorIndex()

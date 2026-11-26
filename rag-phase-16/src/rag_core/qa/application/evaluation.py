@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from statistics import mean
 
@@ -120,7 +120,7 @@ def _p95(values: list[float]) -> float:
     if not values:
         return 0.0
     ordered = sorted(values)
-    return ordered[min(len(ordered) - 1, int(round(0.95 * (len(ordered) - 1))))]
+    return ordered[min(len(ordered) - 1, round(0.95 * (len(ordered) - 1)))]
 
 
 @dataclass

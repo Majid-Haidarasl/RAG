@@ -18,7 +18,7 @@ from tests.fixtures.rag.fakes import FakeChat
 pytestmark = [pytest.mark.ike, pytest.mark.ike_model]
 
 
-def _graph():  # noqa: ANN202
+def _graph():
     return IkeService().build(sample_issue(), sample_referrals())
 
 

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
 
 from rag_core.judging.domain.cases import Expectation, JudgeCase, SourceBlock
 from rag_core.judging.domain.rubric import OutputKind
@@ -54,35 +54,35 @@ def reply(scores: dict[str, object] | None = None, **extra: object) -> str:
 
 
 def qa_fa(output: str = GOOD_FA, **changes: object) -> JudgeCase:
-    base: dict[str, object] = dict(
-        case_id="T-FA",
-        kind=OutputKind.QA_ANSWER,
-        language="fa",
-        task="زمان پاسخ و رفع موقت برای حادثهٔ اولویت ۱ چقدر است؟",
-        output=output,
-        sources=(SLA_FA,),
-        expectation=Expectation(status="answered", facts=(("30", "سی"), ("4", "چهار"))),
-        node="N-SW-SUP",
-        origin="test",
-    )
+    base: dict[str, object] = {
+        "case_id": "T-FA",
+        "kind": OutputKind.QA_ANSWER,
+        "language": "fa",
+        "task": "زمان پاسخ و رفع موقت برای حادثهٔ اولویت ۱ چقدر است؟",
+        "output": output,
+        "sources": (SLA_FA,),
+        "expectation": Expectation(status="answered", facts=(("30", "سی"), ("4", "چهار"))),
+        "node": "N-SW-SUP",
+        "origin": "test",
+    }
     base.update(changes)
     return JudgeCase(**base)  # type: ignore[arg-type]
 
 
 def qa_en(output: str = GOOD_EN, **changes: object) -> JudgeCase:
-    base: dict[str, object] = dict(
-        case_id="T-EN",
-        kind=OutputKind.QA_ANSWER,
-        language="en",
-        task="What are the response and resolution targets for a Priority 2 incident?",
-        output=output,
-        sources=(SLA_EN,),
-        expectation=Expectation(
+    base: dict[str, object] = {
+        "case_id": "T-EN",
+        "kind": OutputKind.QA_ANSWER,
+        "language": "en",
+        "task": "What are the response and resolution targets for a Priority 2 incident?",
+        "output": output,
+        "sources": (SLA_EN,),
+        "expectation": Expectation(
             status="answered", facts=(("2", "two"), ("16", "sixteen"))
         ),
-        node="N-SW-SUP",
-        origin="test",
-    )
+        "node": "N-SW-SUP",
+        "origin": "test",
+    }
     base.update(changes)
     return JudgeCase(**base)  # type: ignore[arg-type]
 

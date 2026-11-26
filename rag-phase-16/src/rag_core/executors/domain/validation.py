@@ -64,12 +64,12 @@ class ExecutorRegistryValidator:
         for rec in records:
             report.checked += 1
             ident = str(rec.get("id", "?"))
-            err = lambda rule, msg: report.errors.append(
-                ExecutorFinding(ident, rule, msg)
-            )  # noqa: E731
-            warn = lambda rule, msg: report.warnings.append(
-                ExecutorFinding(ident, rule, msg)
-            )  # noqa: E731
+
+            def err(rule: str, msg: str, *, _ident: str = ident) -> None:
+                report.errors.append(ExecutorFinding(_ident, rule, msg))
+
+            def warn(rule: str, msg: str, *, _ident: str = ident) -> None:
+                report.warnings.append(ExecutorFinding(_ident, rule, msg))
             missing = [k for k in REQUIRED if not rec.get(k)]
             if missing:
                 err("required", "missing " + ", ".join(missing))

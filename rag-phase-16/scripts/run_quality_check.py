@@ -25,11 +25,11 @@ block and writes results/phase-15/quality-check-<UTC>.json and .md.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
@@ -40,14 +40,14 @@ _scripts = Path(__file__).resolve().parent
 if str(_scripts) not in sys.path:
     sys.path.insert(0, str(_scripts))
 
-from run_project_check import parse_prior, rel  # noqa: E402
+from run_project_check import parse_prior, rel
 
-from rag_core import __version__  # noqa: E402
-from rag_core.judging.application.services import judge_all  # noqa: E402
-from rag_core.judging.domain.results import JudgeResult  # noqa: E402
-from rag_core.judging.domain.threshold import Decision, PolicyOutcome  # noqa: E402
-from rag_core.judging.infrastructure.calibration_json import load_calibration  # noqa: E402
-from rag_core.quality.application.services import (  # noqa: E402
+from rag_core import __version__
+from rag_core.judging.application.services import judge_all
+from rag_core.judging.domain.results import JudgeResult
+from rag_core.judging.domain.threshold import Decision, PolicyOutcome
+from rag_core.judging.infrastructure.calibration_json import load_calibration
+from rag_core.quality.application.services import (
     choice_checks,
     load_eval_result,
     newest_eval_result,
@@ -58,28 +58,28 @@ from rag_core.quality.domain.checklist import (
     checklist_problems,
     phase_status,
     status_counts,
-)  # noqa: E402
-from rag_core.quality.domain.coverage import coverage_gate  # noqa: E402
-from rag_core.quality.infrastructure.checklist_yaml import load_deliverables  # noqa: E402
+)
+from rag_core.quality.domain.coverage import coverage_gate
+from rag_core.quality.infrastructure.checklist_yaml import load_deliverables
 from rag_core.quality.infrastructure.config import (
     QualitySettings,
     load_quality_settings,
-)  # noqa: E402
-from rag_core.quality.infrastructure.coverage_json import load_coverage_report  # noqa: E402
-from rag_core.quality.infrastructure.inventory import count_test_functions, inventory  # noqa: E402
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
+)
+from rag_core.quality.infrastructure.coverage_json import load_coverage_report
+from rag_core.quality.infrastructure.inventory import count_test_functions, inventory
+from rag_core.shared_kernel.errors import DomainError
 from rag_core.tuning.application.precheck import (
     PrecheckedJudge,
     fact_precheck,
     precheck_summary,
-)  # noqa: E402
-from rag_core.tuning.application.services import Generated, IdVariantRunner  # noqa: E402
-from rag_core.tuning.domain.required_ids import IdVariant, summarize_id_runs  # noqa: E402
-from rag_core.tuning.domain.variants import selection_problems  # noqa: E402
-from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings  # noqa: E402
-from rag_core.tuning.infrastructure.gold_jsonl import load_gold  # noqa: E402
-from rag_core.tuning.infrastructure.ids_acl import IdJob  # noqa: E402
-from rag_core.tuning.infrastructure.judging_acl import derive_calibration  # noqa: E402
+)
+from rag_core.tuning.application.services import Generated, IdVariantRunner
+from rag_core.tuning.domain.required_ids import IdVariant, summarize_id_runs
+from rag_core.tuning.domain.variants import selection_problems
+from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings
+from rag_core.tuning.infrastructure.gold_jsonl import load_gold
+from rag_core.tuning.infrastructure.ids_acl import IdJob
+from rag_core.tuning.infrastructure.judging_acl import derive_calibration
 
 KIT = f"rag-core {__version__} (phase 15 unit-test completion, hardening, coverage, release checklist)"
 SEPARATOR_START = "======== PHASE 15 SUMMARY ========"
@@ -112,7 +112,7 @@ class AcceptAll:
     def __init__(self) -> None:
         self.calls = 0
 
-    def judge(self, case):  # noqa: ANN001, ANN201
+    def judge(self, case):
         self.calls += 1
         return JudgeResult.for_case(
             case, self.name, {}, PolicyOutcome(Decision.ACCEPT, 20, 20)
@@ -231,7 +231,7 @@ def metrics_markdown(payload: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:  # noqa: C901 - one linear check script, like the earlier phases
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 15 unit-test completion, coverage and release readiness."
     )
@@ -276,7 +276,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     cov_dir = root / qset.coverage.report_dir
     out_dir = args.out or cov_dir
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"quality-check-{stamp}.json"
     out_md = out_dir / f"quality-check-{stamp}.md"
     t0 = time.perf_counter()
@@ -401,7 +401,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
 
     payload: dict[str, Any] = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,

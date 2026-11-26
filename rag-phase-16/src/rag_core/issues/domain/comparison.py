@@ -54,15 +54,7 @@ META_WEIGHT = 0.4
 META_WEIGHTS = {"nodes": 0.35, "documents": 0.30, "category": 0.15, "contract": 0.20}
 
 STOPWORDS = frozenset(
-    """
-    the a an and or of to in on for with by from at is are was were be been this that these those it its as
-    not no but into than then also only must may can should will has have had which who whom whose about
-    after before under over between per via each all any other same new issue issues sub
-    و در به از که این آن با برای را تا یا هم نیز است هست بود شد شده شود می کند کرد باید نباید هر
-    یک دو سه بر اما اگر چون پس ها های ای ی خود ما شما آنها ایشان نیست هستند بودن کردن شدن
-    بهدلیل دلیل بیشتر کمتر هنگام میشود میشوند میکند میکنند کرده کردهاند شدهاست دارد دارند داشت
-    دهد میدهد میدهند خواهد بوده باشد همچنان حالی وقتی زمانی
-    """.split()
+    ["the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "by", "from", "at", "is", "are", "was", "were", "be", "been", "this", "that", "these", "those", "it", "its", "as", "not", "no", "but", "into", "than", "then", "also", "only", "must", "may", "can", "should", "will", "has", "have", "had", "which", "who", "whom", "whose", "about", "after", "before", "under", "over", "between", "per", "via", "each", "all", "any", "other", "same", "new", "issue", "issues", "sub", "و", "در", "به", "از", "که", "این", "آن", "با", "برای", "را", "تا", "یا", "هم", "نیز", "است", "هست", "بود", "شد", "شده", "شود", "می", "کند", "کرد", "باید", "نباید", "هر", "یک", "دو", "سه", "بر", "اما", "اگر", "چون", "پس", "ها", "های", "ای", "ی", "خود", "ما", "شما", "آنها", "ایشان", "نیست", "هستند", "بودن", "کردن", "شدن", "بهدلیل", "دلیل", "بیشتر", "کمتر", "هنگام", "میشود", "میشوند", "میکند", "میکنند", "کرده", "کردهاند", "شدهاست", "دارد", "دارند", "داشت", "دهد", "میدهد", "میدهند", "خواهد", "بوده", "باشد", "همچنان", "حالی", "وقتی", "زمانی"]
 )
 _FA_PLURALS = ("های", "ها")
 
@@ -278,7 +270,7 @@ class IssueComparator:
             score = TEXT_WEIGHT * text + META_WEIGHT * meta
         else:
             score = 0.45 * text + 0.20 * semantic + 0.35 * meta
-        r = lambda x: None if x is None else round(x, 4)  # noqa: E731
+        r = lambda x: None if x is None else round(x, 4)
         return ScoreBreakdown(
             round(tj, 4),
             round(tc, 4),

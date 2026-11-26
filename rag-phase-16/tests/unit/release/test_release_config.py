@@ -1,7 +1,7 @@
 """config/release.yaml and the file readers of the release check."""
 
-from pathlib import Path
 import zipfile
+from pathlib import Path
 
 import pytest
 

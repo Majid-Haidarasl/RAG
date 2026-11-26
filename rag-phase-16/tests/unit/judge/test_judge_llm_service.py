@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[3]
 PROMPTS = load_judge_prompts(ROOT / "config" / "prompts" / "judge")
 
 
-def _judge(model, retries: int = 1) -> LlmJudge:  # noqa: ANN001
+def _judge(model, retries: int = 1) -> LlmJudge:
     return LlmJudge(default_rubric(), PROMPTS, model, retries=retries)
 
 

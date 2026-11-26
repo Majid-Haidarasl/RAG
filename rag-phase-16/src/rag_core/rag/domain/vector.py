@@ -7,9 +7,9 @@ so cosine is a plain dot product.
 
 from __future__ import annotations
 
-from array import array
 import math
-from typing import Iterable
+from array import array
+from collections.abc import Iterable
 
 from rag_core.shared_kernel.errors import InvariantError
 

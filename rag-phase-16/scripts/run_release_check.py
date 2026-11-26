@@ -22,11 +22,11 @@ and writes results/phase-16/release-check-<UTC>.json and .md.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
@@ -37,10 +37,10 @@ _scripts = Path(__file__).resolve().parent
 if str(_scripts) not in sys.path:
     sys.path.insert(0, str(_scripts))
 
-from run_project_check import parse_prior, rel  # noqa: E402
+from run_project_check import parse_prior, rel
 
-from rag_core import __version__  # noqa: E402
-from rag_core.quality.application.services import (  # noqa: E402
+from rag_core import __version__
+from rag_core.quality.application.services import (
     choice_checks,
     load_eval_result,
     newest_eval_result,
@@ -51,8 +51,8 @@ from rag_core.quality.domain.checklist import (
     checklist_problems,
     phase_status,
     status_counts,
-)  # noqa: E402
-from rag_core.quality.domain.release import (  # noqa: E402
+)
+from rag_core.quality.domain.release import (
     DocRequirement,
     changelog_problems,
     changelog_versions,
@@ -62,21 +62,21 @@ from rag_core.quality.domain.release import (  # noqa: E402
     slide_count,
     version_problems,
 )
-from rag_core.quality.infrastructure.checklist_yaml import load_deliverables  # noqa: E402
+from rag_core.quality.infrastructure.checklist_yaml import load_deliverables
 from rag_core.quality.infrastructure.release_config import (
     ReleaseCheckSettings,
     load_release_settings,
-)  # noqa: E402
-from rag_core.quality.infrastructure.release_files import (  # noqa: E402
+)
+from rag_core.quality.infrastructure.release_files import (
     evidence_matches,
     kit_texts,
     read_text,
     version_in,
     zip_names,
 )
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
-from rag_core.tuning.domain.variants import selection_problems  # noqa: E402
-from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings  # noqa: E402
+from rag_core.shared_kernel.errors import DomainError
+from rag_core.tuning.domain.variants import selection_problems
+from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings
 
 KIT = f"rag-core {__version__} (phase 16 release: documents, presentation, training, final checks)"
 SEPARATOR_START = "======== PHASE 16 SUMMARY ========"
@@ -175,7 +175,7 @@ def report_markdown(payload: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:  # noqa: C901 - one linear check script, like the earlier phases
+def main() -> int:
     parser = argparse.ArgumentParser(description="Phase 16 release check.")
     parser.add_argument("--root", type=Path, default=None)
     parser.add_argument("--config", type=Path, default=None, help="config/release.yaml")
@@ -210,7 +210,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     )
     out_dir = args.out or root / "results" / "phase-16"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"release-check-{stamp}.json"
     out_md = out_dir / f"release-check-{stamp}.md"
     t0 = time.perf_counter()
@@ -323,7 +323,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
 
     payload: dict[str, Any] = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,

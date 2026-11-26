@@ -9,9 +9,9 @@ so the id variants are compared on exactly the texts that failed there.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
-import json
 from pathlib import Path
 from typing import Any
 

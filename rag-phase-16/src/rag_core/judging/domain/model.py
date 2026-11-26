@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from enum import StrEnum
-import json
 from typing import Any, Protocol
 
 from rag_core.shared_kernel.errors import DomainError, InvariantError

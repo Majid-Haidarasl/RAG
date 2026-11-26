@@ -7,9 +7,9 @@ so a key fact counts the same way as in the Phase 8 metrics.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
 import unicodedata
+from dataclasses import dataclass
 
 from rag_core.shared_kernel.numerals import normalize_digits
 from rag_core.shared_kernel.persian import normalize_yeh_kaf

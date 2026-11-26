@@ -18,7 +18,7 @@ def document_texts(
             or getattr(r, "status", "active") != "active"
         ):
             continue
-        doc = str(getattr(r, "document_id"))
+        doc = str(r.document_id)
         if versions is not None and versions.get(doc) not in (
             None,
             str(getattr(r, "version", "")),

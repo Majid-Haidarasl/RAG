@@ -1,9 +1,9 @@
 """scripts/run_release_check.py end to end, with Phase 14 and Phase 15 results in a temp folder."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 

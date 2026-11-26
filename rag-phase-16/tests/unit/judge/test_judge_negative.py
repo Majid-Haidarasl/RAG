@@ -38,7 +38,7 @@ def _judge() -> RuleBasedJudge:
     return RuleBasedJudge(default_rubric(), CitedFactValidator())
 
 
-def _summary(language: str):  # noqa: ANN202
+def _summary(language: str):
     issue = sample_issue()
     graph = IkeService().build(issue, sample_referrals())
     facts = facts_lines(digest(issue, graph), NAMES)
@@ -58,7 +58,7 @@ def _summary(language: str):  # noqa: ANN202
     )
 
 
-def _hr_case():  # noqa: ANN202
+def _hr_case():
     return qa_fa(
         "سقف مرخصی ساعتی ۴ ساعت در روز و ۱۶ ساعت در ماه است [AR-HR-005 §5].",
         case_id="T-HR",

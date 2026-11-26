@@ -9,8 +9,8 @@ short reminder (``retry_note``). A reply that still cannot be read is an
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
 import time
+from collections.abc import Callable, Mapping
 
 from rag_core.judging.domain.cases import JudgeCase
 from rag_core.judging.domain.model import JudgeParseError
@@ -132,7 +132,7 @@ def judge_all(
             consecutive = 0
         except InvariantError:
             raise
-        except Exception as exc:  # noqa: BLE001 - transport / model failures are reported per case
+        except Exception as exc:
             consecutive += 1
             if policy is None or consecutive > max_consecutive_errors:
                 raise

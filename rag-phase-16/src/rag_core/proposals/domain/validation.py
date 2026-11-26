@@ -15,8 +15,8 @@ from rag_core.projects.domain.validation import Problem
 from rag_core.proposals.domain.model import ProposalRegistry
 from rag_core.rfp.domain.blueprint import Blueprint
 
-SCORE_MIN = Decimal("0")
-SCORE_MAX = Decimal("100")
+SCORE_MIN = Decimal(0)
+SCORE_MAX = Decimal(100)
 
 
 class ProposalValidator:

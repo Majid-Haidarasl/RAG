@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import ClassVar
 
 import pytest
 
 from rag_core.ingestion.domain.errors import (
+    POPPLER_INSTALL,
     GarbledTextError,
     ParseFailedError,
-    POPPLER_INSTALL,
 )
 from rag_core.ingestion.domain.model import BlockKind, ContentBlock
 from rag_core.ingestion.domain.text_quality import TextQuality
@@ -146,8 +147,8 @@ def test_extract_text_page_error_becomes_parse_failed(
     path = write_text_pdf(tmp_path / "AR-SW-022-sla.pdf")
 
     class BadPage:
-        images: list = []
-        chars: list = list(range(20))
+        images: ClassVar[list] = []
+        chars: ClassVar[list] = list(range(20))
 
         def extract_text(self) -> str:
             raise ValueError("bad page text")
@@ -156,7 +157,7 @@ def test_extract_text_page_error_becomes_parse_failed(
             return []
 
     class BadPdf:
-        pages = [BadPage()]
+        pages: ClassVar[list] = [BadPage()]
 
         def __enter__(self):
             return self
@@ -237,8 +238,8 @@ def test_full_pipeline_appends_table_not_in_page_text(
     path = write_text_pdf(tmp_path / "AR-SW-022-sla.pdf")
 
     class TablePage:
-        images: list = []
-        chars: list = list(range(20))
+        images: ClassVar[list] = []
+        chars: ClassVar[list] = list(range(20))
 
         def extract_text(self) -> str:
             return "Body paragraph about SLA."
@@ -247,7 +248,7 @@ def test_full_pipeline_appends_table_not_in_page_text(
             return [[["Metric", "Value"], ["P1", "30 minutes"]]]
 
     class TablePdf:
-        pages = [TablePage()]
+        pages: ClassVar[list] = [TablePage()]
 
         def __enter__(self):
             return self

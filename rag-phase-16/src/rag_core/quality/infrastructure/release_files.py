@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
-from pathlib import Path
 import re
 import tomllib
 import zipfile
+from collections.abc import Iterator, Sequence
+from pathlib import Path
 
 import yaml
 

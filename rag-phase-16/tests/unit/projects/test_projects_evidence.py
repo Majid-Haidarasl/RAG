@@ -17,12 +17,12 @@ pytestmark = [pytest.mark.projects]
 
 TEXTS = {
     ("AR-FIN-008", "en"): [
-        "The Azarpakhsh warehouse system has a remaining billable value of 1,240 million toman "
-        "and physical progress of 62 percent; the contract price is 2,180 million toman."
+        ("The Azarpakhsh warehouse system has a remaining billable value of 1,240 million toman "
+        "and physical progress of 62 percent; the contract price is 2,180 million toman.")
     ],
     ("AR-FIN-008", "fa"): [
-        "سامانه انبار آذرپخش مانده ۱٬۲۴۰ میلیون تومان و پیشرفت فیزیکی ۶۲ درصد دارد؛ "
-        "مبلغ قرارداد ۲٬۱۸۰ میلیون تومان است."
+        ("سامانه انبار آذرپخش مانده ۱٬۲۴۰ میلیون تومان و پیشرفت فیزیکی ۶۲ درصد دارد؛ "
+        "مبلغ قرارداد ۲٬۱۸۰ میلیون تومان است.")
     ],
     ("AR-TRN-026", "en"): [
         "This cycle's achievement is an explicit issue-knowledge-executor path for AR-ISS-024."

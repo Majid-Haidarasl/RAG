@@ -7,9 +7,9 @@ Persian vs Latin digits, Arabic vs Persian yeh/kaf) as identical text.
 
 from __future__ import annotations
 
-from hashlib import blake2b, sha256
 import random
 import unicodedata
+from hashlib import blake2b, sha256
 
 from rag_core.shared_kernel.numerals import normalize_digits
 from rag_core.shared_kernel.persian import normalize_yeh_kaf

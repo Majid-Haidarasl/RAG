@@ -1,9 +1,9 @@
 """scripts/run_ike_check.py: offline checks always, live step only with Ollama."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import yaml

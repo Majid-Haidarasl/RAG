@@ -14,10 +14,10 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass, field, replace
 import time
-from typing import Callable, Iterable
+from collections import defaultdict
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field, replace
 
 from rag_core.ingestion.domain.catalog import lookup
 from rag_core.ingestion.domain.model import IngestedDocument, TextChunk
@@ -144,7 +144,7 @@ class IndexBuilder:
 
     def __init__(
         self, store, embedder: EmbeddingPort, model: str, batch_size: int = 16
-    ) -> None:  # noqa: ANN001
+    ) -> None:
         self.store = store
         self.embedder = embedder
         self.model = model

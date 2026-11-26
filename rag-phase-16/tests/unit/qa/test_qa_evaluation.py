@@ -37,10 +37,10 @@ def result(*docs: str, outside: tuple[str, ...] = ()) -> RetrievalResult:
     )
 
 
-def sample(**kw) -> SampleQuestion:  # noqa: ANN003
-    base = dict(
-        id="Q", node="N-CEO", language="en", question="q", expected_status="answered"
-    )
+def sample(**kw) -> SampleQuestion:
+    base = {
+        "id": "Q", "node": "N-CEO", "language": "en", "question": "q", "expected_status": "answered"
+    }
     return SampleQuestion(**(base | kw))
 
 

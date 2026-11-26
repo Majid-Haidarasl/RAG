@@ -1,9 +1,9 @@
 """scripts/run_transfer_check.py: offline cycle always, AI suggestions only with (fake) Ollama."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import yaml
@@ -90,7 +90,7 @@ def test_failed_prior_step_fails_the_kit(tmp_path: Path) -> None:
 
 def _fake_reply(messages: list[dict]) -> str:
     system = messages[0]["content"] if messages else ""
-    if system.startswith("You advise") or system.startswith("تو به مدیران"):
+    if system.startswith(("You advise", "تو به مدیران")):
         return json.dumps(
             {
                 "summary": "The package lists the open work.",

@@ -15,12 +15,12 @@ from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
 
+from rag_core.hierarchy.domain.transfer import TransferRequirement
 from rag_core.shared_kernel.confidentiality import Confidentiality
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.events import DomainEvent
 from rag_core.shared_kernel.identifiers import NodeIdentifier
 from rag_core.shared_kernel.layer import LayerIndex
-from rag_core.hierarchy.domain.transfer import TransferRequirement
 
 # Technologies are capability tags, never node names (AR-ORG-002 s.6).
 FORBIDDEN_CAPABILITY_NAMES = frozenset(
@@ -76,7 +76,7 @@ class LayerSkipExemption:
     parent_layer: int
     reason: str = ""
 
-    def allows(self, parent: "Node", child: "Node") -> bool:
+    def allows(self, parent: Node, child: Node) -> bool:
         return (
             child.node_type == self.child_type
             and child.layer.value == self.child_layer

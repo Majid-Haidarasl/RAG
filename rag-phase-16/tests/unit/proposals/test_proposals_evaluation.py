@@ -11,7 +11,7 @@ from tests.fixtures.rfp.samples import raw_registry, shipped_blueprint, shipped_
 pytestmark = [pytest.mark.proposals]
 
 
-def ev(raw: dict | None = None):  # noqa: ANN201
+def ev(raw: dict | None = None):
     reg = registry_from_dict(raw) if raw is not None else shipped_registry()
     return evaluate(shipped_blueprint(), reg)
 
@@ -45,7 +45,7 @@ def test_ranking_winner_and_gaps() -> None:
     assert e.winner.proposal_id == "PRP-A" and e.runner_up.proposal_id == "PRP-B"  # type: ignore[union-attr]
     assert e.margin == Decimal("3.6")
     assert e.cheapest.proposal_id == "PRP-B" and e.fastest.proposal_id == "PRP-B"  # type: ignore[union-attr]
-    assert e.price_gap == Decimal("45") and e.duration_gap == 2
+    assert e.price_gap == Decimal(45) and e.duration_gap == 2
     assert e.decision_consistent
 
 

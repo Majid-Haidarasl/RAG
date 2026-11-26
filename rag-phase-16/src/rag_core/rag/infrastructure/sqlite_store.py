@@ -8,10 +8,11 @@ only embeds new or edited chunks.
 
 from __future__ import annotations
 
-from array import array
 import json
-from pathlib import Path
 import sqlite3
+from array import array
+from pathlib import Path
+from typing import Self
 
 from rag_core.rag.domain.records import ChunkRecord
 from rag_core.rag.domain.vector import InMemoryVectorIndex
@@ -35,7 +36,7 @@ class SqliteIndexStore:
     def close(self) -> None:
         self._db.close()
 
-    def __enter__(self) -> SqliteIndexStore:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *exc: object) -> None:

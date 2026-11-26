@@ -13,9 +13,9 @@ judges are used — the brief passes them (Phase 10 combined rule).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
 import re
+from dataclasses import dataclass, field
 from typing import Any
 
 from rag_core.prioritization.domain.brief import KeyIssueBrief

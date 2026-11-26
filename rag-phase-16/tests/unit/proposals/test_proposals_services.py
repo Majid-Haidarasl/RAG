@@ -96,7 +96,7 @@ def _feedback(d: dict) -> None:
         (_feedback, "ungrounded_statement"),
     ],
 )
-def test_negative_controls_are_rejected_for_the_right_reason(change, code: str) -> None:  # noqa: ANN001
+def test_negative_controls_are_rejected_for_the_right_reason(change, code: str) -> None:
     raw = raw_registry()
     change(raw)
     audit = service().audit(registry_from_dict(raw))

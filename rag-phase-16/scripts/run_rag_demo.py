@@ -23,39 +23,39 @@ Prints the ``PHASE 8 SUMMARY`` block and writes
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
-from rag_core.qa.application.evaluation import (  # noqa: E402
+from rag_core import __version__
+from rag_core.qa.application.evaluation import (
     facts_found,
     load_samples,
     qa_metrics,
     retrieval_metrics,
 )
-from rag_core.qa.application.service import NodeScopedQaService, QaConfig  # noqa: E402
-from rag_core.qa.domain.model import QaRequest  # noqa: E402
-from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import IndexBuilder, build_retriever  # noqa: E402
-from rag_core.rag.domain.context import ContextAssembler  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
-from rag_core.rag.infrastructure.ollama import (  # noqa: E402
+from rag_core.qa.application.service import NodeScopedQaService, QaConfig
+from rag_core.qa.domain.model import QaRequest
+from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import IndexBuilder, build_retriever
+from rag_core.rag.domain.context import ContextAssembler
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
+from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaEmbedder,
     OllamaError,
 )
-from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
+from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore
 
 KIT = f"rag-core {__version__} (phase 8 rag + qa)"
 SEPARATOR_START = "======== PHASE 8 SUMMARY ========"
@@ -82,7 +82,7 @@ def parse_prior(text: str) -> dict[str, str]:
     return out
 
 
-def offline_check(root: Path, settings: RagSettings, samples) -> dict:  # noqa: ANN001
+def offline_check(root: Path, settings: RagSettings, samples) -> dict:
     corpus = build_corpus_records(root)
     records = corpus.records
     retriever = build_retriever(records, scope=corpus.scope, config=settings.retrieval)
@@ -187,7 +187,7 @@ def live_step(
     corpus,
     client: OllamaClient,
     rebuild: bool,
-) -> dict:  # noqa: ANN001
+) -> dict:
     prompts = load_qa_prompts(root / settings.qa.prompt_dir, settings.qa.prompt_id)
     embedder = OllamaEmbedder(
         client,
@@ -310,7 +310,7 @@ def main() -> int:
     )
     out_dir = args.out or root / "results" / "phase-08"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"rag-demo-{stamp}.json"
 
     t0 = time.perf_counter()
@@ -351,7 +351,7 @@ def main() -> int:
 
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "python": args.python_version,

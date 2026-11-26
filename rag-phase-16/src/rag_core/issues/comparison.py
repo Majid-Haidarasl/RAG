@@ -3,7 +3,7 @@
 The implementation lives in the domain layer: ``rag_core.issues.domain.comparison``.
 """
 
-from rag_core.issues.domain.comparison import *  # noqa: F401,F403
+from rag_core.issues.domain.comparison import *
 from rag_core.issues.domain.comparison import (  # noqa: F401
     DUPLICATE_MIN_TEXT,
     DUPLICATE_SCORE,

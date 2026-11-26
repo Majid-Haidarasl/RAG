@@ -31,45 +31,45 @@ Prints the ``PHASE 9 SUMMARY`` block and writes
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
-from rag_core.executors.application.services import (  # noqa: E402
+from rag_core import __version__
+from rag_core.executors.application.services import (
     ExecutorMatchingService,
     load_executor_registry,
     role_counts,
 )
-from rag_core.executors.domain.matching import ReferralPlan, ReferralRole  # noqa: E402
-from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory  # noqa: E402
-from rag_core.executors.infrastructure.issues_acl import referral_requests  # noqa: E402
-from rag_core.ike.application.services import IkeService, IkeSummaryService  # noqa: E402
-from rag_core.ike.domain.model import IkeGraph, RelationType  # noqa: E402
-from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item  # noqa: E402
-from rag_core.ike.infrastructure.issues_acl import issue_view  # noqa: E402
-from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import IndexBuilder, build_retriever  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
-from rag_core.rag.infrastructure.ollama import (  # noqa: E402
+from rag_core.executors.domain.matching import ReferralPlan
+from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory
+from rag_core.executors.infrastructure.issues_acl import referral_requests
+from rag_core.ike.application.services import IkeService, IkeSummaryService
+from rag_core.ike.domain.model import IkeGraph, RelationType
+from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item
+from rag_core.ike.infrastructure.issues_acl import issue_view
+from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.qa.domain.fact_check import CitedFactValidator
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import IndexBuilder, build_retriever
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
+from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaEmbedder,
     OllamaError,
 )
-from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
+from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore
 
 KIT = f"rag-core {__version__} (phase 9 executors + ike)"
 SEPARATOR_START = "======== PHASE 9 SUMMARY ========"
@@ -137,7 +137,7 @@ def mean(values: list[float]) -> float | None:
     return round(sum(values) / len(values), 4) if values else None
 
 
-def comparison_metrics(comparisons: dict) -> dict:  # noqa: ANN001
+def comparison_metrics(comparisons: dict) -> dict:
     rows = list(comparisons.values())
     recalls = [c.cited_recall for c in rows if c.cited_recall is not None]
     return {
@@ -194,7 +194,7 @@ def probe_ollama(settings: RagSettings) -> tuple[OllamaClient | None, str, dict]
     return client, "", info
 
 
-def main() -> int:  # noqa: C901 - one linear report
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 9 executor analysis + IKE check."
     )
@@ -212,7 +212,7 @@ def main() -> int:  # noqa: C901 - one linear report
     settings = load_settings(args.config or root / "config" / "rag.yaml")
     out_dir = args.out or root / "results" / "phase-09"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"ike-check-{stamp}.json"
     t0 = time.perf_counter()
 
@@ -378,7 +378,7 @@ def main() -> int:  # noqa: C901 - one linear report
     ]
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "python": args.python_version,
@@ -582,10 +582,10 @@ def live_step(
     corpus,
     client: OllamaClient,
     view,
-    referrals,  # noqa: ANN001
+    referrals,
     names,
     validator,
-) -> dict:  # noqa: ANN001
+) -> dict:
     embedder = OllamaEmbedder(
         client,
         settings.embedding.model,

@@ -14,29 +14,29 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
+from collections import Counter
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
-from rag_core.hierarchy.application.workflows import (  # noqa: E402
+from rag_core import __version__
+from rag_core.hierarchy.application.workflows import (
     HierarchyWorkflowService,
     catalog_index,
     coverage,
     load_and_validate,
     scope_sizes,
 )
-from rag_core.hierarchy.domain.model import Node, NodeType  # noqa: E402
-from rag_core.hierarchy.domain.scope import route_question  # noqa: E402
-from rag_core.shared_kernel.identifiers import NodeIdentifier  # noqa: E402
-from rag_core.shared_kernel.layer import LayerIndex  # noqa: E402
+from rag_core.hierarchy.domain.model import Node, NodeType
+from rag_core.hierarchy.domain.scope import route_question
+from rag_core.shared_kernel.identifiers import NodeIdentifier
+from rag_core.shared_kernel.layer import LayerIndex
 
 KIT = f"rag-core {__version__} (phase 6 hierarchy)"
 SEPARATOR_START = "======== PHASE 6 SUMMARY ========"
@@ -123,7 +123,7 @@ def main() -> int:
     report = loaded.report
     payload: dict[str, object] = {
         "kit": KIT,
-        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "registry_dir": str(registry_dir),
         "validation": {
             "errors": [str(i) for i in report.errors],
@@ -191,7 +191,7 @@ def main() -> int:
 
     out_dir = args.out or (root / "results" / "phase-06")
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"hierarchy-{stamp}.json"
     out_json.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"

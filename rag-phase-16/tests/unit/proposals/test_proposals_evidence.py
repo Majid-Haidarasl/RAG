@@ -13,7 +13,7 @@ V = CitedFactValidator()
 TEXTS = registry_texts(shipped_registry())
 
 
-def ground(raw: dict, languages=("fa", "en")):  # noqa: ANN001, ANN201
+def ground(raw: dict, languages=("fa", "en")):
     return ground_registry(registry_from_dict(raw), TEXTS, V, source_numbers, languages)
 
 

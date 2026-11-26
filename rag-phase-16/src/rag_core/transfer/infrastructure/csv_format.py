@@ -15,7 +15,6 @@ from rag_core.transfer.domain.model import (
     TransferPackage,
 )
 
-
 FIELD_ORDER = (
     "risks",
     "decisions_requested",

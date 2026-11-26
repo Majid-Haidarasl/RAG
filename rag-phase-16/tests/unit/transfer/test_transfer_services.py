@@ -80,7 +80,7 @@ def test_suggestion_service_reports_errors() -> None:
     assert bad.status == "error" and "JSON" in bad.error
 
     class Broken:
-        def generate(self, system, user):  # noqa: ANN001, ANN201
+        def generate(self, system, user):
             raise ConnectionError("down")
 
     down = SuggestionService(Broken(), CitedFactValidator()).suggest(d, "en")

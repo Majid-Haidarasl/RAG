@@ -18,31 +18,31 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import copy
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
+from collections import Counter
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.domain.comparison import (  # noqa: E402
+from rag_core import __version__
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.domain.comparison import (
     DUPLICATE_MIN_TEXT,
     DUPLICATE_SCORE,
     RELATED_SCORE,
     IssueComparator,
 )
-from rag_core.issues.domain.decomposition import RuleBasedDecomposer  # noqa: E402
-from rag_core.issues.domain.status import IssueStatus  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.issues.infrastructure.registry_json import issue_from_sample  # noqa: E402
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
+from rag_core.issues.domain.decomposition import RuleBasedDecomposer
+from rag_core.issues.domain.status import IssueStatus
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.issues.infrastructure.registry_json import issue_from_sample
+from rag_core.shared_kernel.errors import DomainError
 
 KIT = f"rag-core {__version__} (phase 7 issues)"
 SEPARATOR_START = "======== PHASE 7 SUMMARY ========"
@@ -216,7 +216,7 @@ def main() -> int:
 
     payload = {
         "kit": KIT,
-        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "status": status,
         "checks": checks,
         "prior_steps": prior,
@@ -244,7 +244,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     out_json = (
         out_dir
-        / f"issue-check-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+        / f"issue-check-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}.json"
     )
     out_json.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"

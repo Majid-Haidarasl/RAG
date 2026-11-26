@@ -19,7 +19,7 @@ def validator() -> RegistryValidator:
     return RegistryValidator(NODES, DOCS, ISSUES)
 
 
-def codes(reg) -> list[str]:  # noqa: ANN001
+def codes(reg) -> list[str]:
     return [p.code for p in validator().validate(reg)]
 
 

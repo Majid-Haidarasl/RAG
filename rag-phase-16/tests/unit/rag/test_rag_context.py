@@ -11,7 +11,7 @@ from tests.fixtures.rag.fakes import rec
 pytestmark = [pytest.mark.rag, pytest.mark.retrieval]
 
 
-def hits(*records):  # noqa: ANN002, ANN201
+def hits(*records):
     return [Hit(r, i + 1, 1.0 / (i + 1)) for i, r in enumerate(records)]
 
 

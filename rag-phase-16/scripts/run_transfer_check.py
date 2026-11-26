@@ -32,83 +32,83 @@ Prints the ``PHASE 11 SUMMARY`` block and writes
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import tempfile
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
+from rag_core import __version__
 from rag_core.executors.application.services import (
     ExecutorMatchingService,
     load_executor_registry,
-)  # noqa: E402
-from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory  # noqa: E402
-from rag_core.executors.infrastructure.issues_acl import referral_requests  # noqa: E402
-from rag_core.hierarchy.application.workflows import load_and_validate  # noqa: E402
-from rag_core.ike.application.services import IkeService  # noqa: E402
-from rag_core.ike.domain.summary import digest  # noqa: E402
-from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item  # noqa: E402
-from rag_core.ike.infrastructure.issues_acl import issue_view  # noqa: E402
-from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.judging.application.services import LlmJudge, judge_all  # noqa: E402
-from rag_core.judging.domain.metrics import acceptance  # noqa: E402
-from rag_core.judging.domain.rule_judge import RuleBasedJudge  # noqa: E402
-from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings  # noqa: E402
-from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric  # noqa: E402
-from rag_core.processing.application.services import CycleProcessor, CycleRun  # noqa: E402
-from rag_core.processing.domain.cycle import ProcessingCycle  # noqa: E402
+)
+from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory
+from rag_core.executors.infrastructure.issues_acl import referral_requests
+from rag_core.hierarchy.application.workflows import load_and_validate
+from rag_core.ike.application.services import IkeService
+from rag_core.ike.domain.summary import digest
+from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item
+from rag_core.ike.infrastructure.issues_acl import issue_view
+from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.judging.application.services import LlmJudge, judge_all
+from rag_core.judging.domain.metrics import acceptance
+from rag_core.judging.domain.rule_judge import RuleBasedJudge
+from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings
+from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric
+from rag_core.processing.application.services import CycleProcessor, CycleRun
+from rag_core.processing.domain.cycle import ProcessingCycle
 from rag_core.processing.domain.plan import (
     REPOSITORY_REASON,
     ROOT_REASON,
     ProcessingPlan,
     build_plan,
-)  # noqa: E402
-from rag_core.processing.infrastructure.hierarchy_acl import tree_nodes  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import build_retriever  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
+)
+from rag_core.processing.infrastructure.hierarchy_acl import tree_nodes
+from rag_core.qa.domain.fact_check import CitedFactValidator
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import build_retriever
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
 from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaError,
-)  # noqa: E402
-from rag_core.transfer.application.services import SuggestionService, TransferService  # noqa: E402
-from rag_core.transfer.domain.builder import TransferPackageBuilder  # noqa: E402
-from rag_core.transfer.domain.levels import RuleBook  # noqa: E402
-from rag_core.transfer.domain.review import BuiltPackage, PackageReviewer  # noqa: E402
+)
+from rag_core.transfer.application.services import SuggestionService, TransferService
+from rag_core.transfer.domain.builder import TransferPackageBuilder
+from rag_core.transfer.domain.levels import RuleBook
+from rag_core.transfer.domain.review import BuiltPackage, PackageReviewer
 from rag_core.transfer.infrastructure.config import (
     TransferSettings,
     load_transfer_settings,
-)  # noqa: E402
+)
 from rag_core.transfer.infrastructure.csv_export import (
     export_latest,
     round_trip_problems,
-)  # noqa: E402
-from rag_core.transfer.infrastructure.ike_acl import leads_and_lacks  # noqa: E402
-from rag_core.transfer.infrastructure.judging_acl import (  # noqa: E402
+)
+from rag_core.transfer.infrastructure.ike_acl import leads_and_lacks
+from rag_core.transfer.infrastructure.judging_acl import (
     CaseJudgeAdapter,
     CombinedPackageJudge,
     package_case,
 )
-from rag_core.transfer.infrastructure.sources_acl import (  # noqa: E402
+from rag_core.transfer.infrastructure.sources_acl import (
     build_knowledge,
     document_versions,
     layer_rules_from_registry,
     sender_level_mismatches,
     with_item_status,
 )
-from rag_core.transfer.infrastructure.sqlite_store import SqliteTransferStore  # noqa: E402
+from rag_core.transfer.infrastructure.sqlite_store import SqliteTransferStore
 
 KIT = f"rag-core {__version__} (phase 11 cyclic processing + transfer)"
 SEPARATOR_START = "======== PHASE 11 SUMMARY ========"
@@ -149,7 +149,7 @@ def rel(root: Path, path: Path) -> str:
         return str(path)
 
 
-def ike_leads(root: Path, settings: RagSettings, corpus, org, case_id: str):  # noqa: ANN001, ANN201
+def ike_leads(root: Path, settings: RagSettings, corpus, org, case_id: str):
     """Phase 9 offline IKE graph of the case → leads, knowledge lacks and executor list."""
     teams = HierarchyTeamDirectory(org)
     loaded = load_executor_registry(root / "data" / "executors", teams)
@@ -200,7 +200,7 @@ def mean(values: list[float]) -> float | None:
     return round(sum(values) / len(values), 3) if values else None
 
 
-def negative_cases(packages: list[BuiltPackage]) -> list:  # noqa: ANN201
+def negative_cases(packages: list[BuiltPackage]) -> list:
     """Broken copies of every package text: invented number, invented id, all item lines removed."""
     cases = []
     for p in packages:
@@ -237,7 +237,7 @@ def package_line(p: BuiltPackage) -> str:
     )
 
 
-def main() -> int:  # noqa: C901 - one linear report
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 11 cyclic node processing and upward transfer."
     )
@@ -283,7 +283,7 @@ def main() -> int:  # noqa: C901 - one linear report
     )
     out_dir = args.out or root / "results" / "phase-11"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"transfer-check-{stamp}.json"
     db_path = args.db or root / tset.storage.db
     csv_dir = args.exports or root / tset.storage.csv_dir
@@ -521,7 +521,7 @@ def main() -> int:  # noqa: C901 - one linear report
 
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,
@@ -732,7 +732,7 @@ def live_step(
     jset: JudgeSettings,
     client: OllamaClient,
     rubric,
-    root: Path,  # noqa: ANN001
+    root: Path,
     rule_judge: RuleBasedJudge,
     validator: CitedFactValidator,
     packages: list[BuiltPackage],
@@ -809,7 +809,7 @@ def live_step(
             )
             saved[outcome.action] = saved.get(outcome.action, 0) + 1
 
-    def verdict(s, prefix: str) -> dict | None:  # noqa: ANN001
+    def verdict(s, prefix: str) -> dict | None:
         return next((v for v in s.verdicts if str(v["judge"]).startswith(prefix)), None)
 
     rows = []

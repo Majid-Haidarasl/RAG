@@ -17,7 +17,7 @@ from enum import StrEnum
 
 from rag_core.shared_kernel.errors import InvariantError
 
-WEIGHT_TOTAL = Decimal("1")
+WEIGHT_TOTAL = Decimal(1)
 
 
 class Section(StrEnum):

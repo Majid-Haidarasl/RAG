@@ -106,13 +106,13 @@ def _valid_kwargs() -> dict:
     msgs = {
         k: {"fa": "x", "en": "y"} for k in ("not_found", "insufficient", "out_of_scope")
     }
-    return dict(
-        prompt_id="p",
-        version="1",
-        system="${answer_language} ${refusal_token}",
-        user="${context} ${question}",
-        messages=msgs,
-    )
+    return {
+        "prompt_id": "p",
+        "version": "1",
+        "system": "${answer_language} ${refusal_token}",
+        "user": "${context} ${question}",
+        "messages": msgs,
+    }
 
 
 def test_prompt_set_validation() -> None:

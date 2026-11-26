@@ -37,7 +37,7 @@ pytestmark = [pytest.mark.tuning, pytest.mark.judging]
 
 
 @pytest.fixture(scope="module")
-def derived():  # noqa: ANN201
+def derived():
     return derive_calibration(shipped_items())
 
 
@@ -125,7 +125,7 @@ def test_mutate_each_kind() -> None:
         mutate(en, "shout", fa)
 
 
-def test_derived_size_and_ids(derived) -> None:  # noqa: ANN001
+def test_derived_size_and_ids(derived) -> None:
     assert len(derived) == 28
     ok = [d for d in derived if not d.mutation]
     bad = [d for d in derived if d.mutation]
@@ -140,12 +140,12 @@ def test_derived_size_and_ids(derived) -> None:  # noqa: ANN001
     )
 
 
-def test_every_mutation_kind_is_used(derived) -> None:  # noqa: ANN001
+def test_every_mutation_kind_is_used(derived) -> None:
     counts = Counter(d.mutation for d in derived if d.mutation)
     assert set(counts) == set(MUTATIONS) and min(counts.values()) >= 2
 
 
-def test_languages_alternate_within_a_pair(derived) -> None:  # noqa: ANN001
+def test_languages_alternate_within_a_pair(derived) -> None:
     by_pair: dict[str, set[str]] = {}
     for d in derived:
         by_pair.setdefault(d.case.case_id.split("-")[1], set()).add(d.case.language)
@@ -156,20 +156,20 @@ def test_languages_alternate_within_a_pair(derived) -> None:  # noqa: ANN001
     assert ok_langs == Counter({"fa": 7, "en": 7})
 
 
-def test_refusal_pairs_are_not_used(derived) -> None:  # noqa: ANN001
+def test_refusal_pairs_are_not_used(derived) -> None:
     assert not any(
         d.case.case_id.startswith(("CAL14-P09", "CAL14-P10")) for d in derived
     )
 
 
-def test_rule_judge_accepts_every_reference_answer(derived, rule_judge) -> None:  # noqa: ANN001
+def test_rule_judge_accepts_every_reference_answer(derived, rule_judge) -> None:
     results = judge_all(rule_judge, [d.case for d in derived if not d.mutation])
     assert all(r.accepted for r in results), [
         (r.case_id, r.total, r.notes) for r in results if not r.accepted
     ]
 
 
-def test_rule_judge_rejects_every_broken_answer(derived, rule_judge) -> None:  # noqa: ANN001
+def test_rule_judge_rejects_every_broken_answer(derived, rule_judge) -> None:
     results = judge_all(rule_judge, [d.case for d in derived if d.mutation])
     assert not any(r.accepted for r in results), [
         r.case_id for r in results if r.accepted

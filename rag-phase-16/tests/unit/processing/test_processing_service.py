@@ -29,7 +29,7 @@ class FakeTransfer:
     fail: set[str] = field(default_factory=set)
     calls: list[tuple[str, list[str], int]] = field(default_factory=list)
 
-    def transfer(self, cycle_id, step, received, expected_children):  # noqa: ANN001, ANN201
+    def transfer(self, cycle_id, step, received, expected_children):
         self.calls.append(
             (step.source_node, [p.source_node for p in received], expected_children)
         )
@@ -43,7 +43,7 @@ class FakeTransfer:
 class FakeStore:
     saved: list[str] = field(default_factory=list)
 
-    def save(self, package):  # noqa: ANN001, ANN201
+    def save(self, package):
         self.saved.append(package.source_node)
 
         @dataclass
@@ -54,7 +54,7 @@ class FakeStore:
         return Outcome()
 
 
-def plan():  # noqa: ANN201
+def plan():
     return build_plan(
         [
             TreeNode("N-BRD", 0, None),

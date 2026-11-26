@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import jsonschema
 import pytest
 
 from rag_core.ingestion.application.metadata import load_schema, validate_metadata
@@ -37,7 +38,7 @@ def test_pipeline_normalizes_ids_and_arabic_letters(tmp_path: Path) -> None:
 def test_schema_rejects_persian_digits_in_id() -> None:
     schema = load_schema(REPO)
     assert schema["properties"]["id"]["pattern"].startswith("^AR-")
-    with pytest.raises(Exception):
+    with pytest.raises(jsonschema.ValidationError):
         validate_metadata(
             {
                 "id": "AR-FIN-۰۰۸",

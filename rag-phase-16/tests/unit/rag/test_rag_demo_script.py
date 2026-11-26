@@ -1,9 +1,9 @@
 """scripts/run_rag_demo.py: offline check always, live step only with Ollama."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import yaml

@@ -152,8 +152,8 @@ def _item_fact(i: TransferItem) -> str:
 
 def _capacity_fact(c: CapacitySummary) -> list[str]:
     lines = [
-        f"capacity: executors {c.executors} | published {c.published} | hours per week {c.hours_per_week} | "
-        f"unit planning {len(c.unit_planning)}: {_join(list(c.unit_planning))}"
+        (f"capacity: executors {c.executors} | published {c.published} | hours per week {c.hours_per_week} | "
+        f"unit planning {len(c.unit_planning)}: {_join(list(c.unit_planning))}")
     ]
     for p in c.people:
         hours = (
@@ -168,12 +168,12 @@ def _capacity_fact(c: CapacitySummary) -> list[str]:
 def facts_for(inp: RenderInput) -> list[str]:
     n = inp.counts
     lines = [
-        f"package {inp.cycle_id}: from {inp.source_node} to {inp.target_node} | receiving layer L{inp.target_layer} | "
-        f"detail level {inp.rule.level.value}",
+        (f"package {inp.cycle_id}: from {inp.source_node} to {inp.target_node} | receiving layer L{inp.target_layer} | "
+        f"detail level {inp.rule.level.value}"),
         f"sender {inp.source_node}: {inp.source_name_en} | name_fa {inp.source_name_fa or NONE}",
-        f"counts: issues {n['groups']} | items {n['items']} | open {n['open']} | blocked {n['blocked']} | "
+        (f"counts: issues {n['groups']} | items {n['items']} | open {n['open']} | blocked {n['blocked']} | "
         f"reserved decisions {n['reserved']} | knowledge gaps {n['gaps']} | omitted {n['omitted']} | "
-        f"documents {n['documents']} | received packages {inp.received} of {inp.expected_children}",
+        f"documents {n['documents']} | received packages {inp.received} of {inp.expected_children}"),
     ]
     contexts_done: set[str] = set()
     for g in inp.groups:

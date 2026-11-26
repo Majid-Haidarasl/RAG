@@ -114,7 +114,7 @@ def test_lowest_sorts_by_pct_then_missed() -> None:
         "src/rag_core/a.py",
         "src/rag_core/b.py",
     ]
-    assert [m.path for m in r.lowest(n=10, min_statements=0)][0] == "src/rag_core/c.py"
+    assert next(m.path for m in r.lowest(n=10, min_statements=0)) == "src/rag_core/c.py"
     with pytest.raises(InvariantError):
         r.lowest(n=-1)
 

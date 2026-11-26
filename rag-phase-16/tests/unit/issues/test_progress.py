@@ -1,11 +1,12 @@
-import pytest
 from decimal import Decimal
+
+import pytest
 
 from rag_core.issues.domain.model import (
     Issue,
     IssueStatus,
-    ProgressPercentage,
     PriorityScore,
+    ProgressPercentage,
     SubIssue,
     rank_issues,
 )

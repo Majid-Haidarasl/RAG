@@ -14,9 +14,9 @@ packages are still stored, so the reason stays visible.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
 import json
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from rag_core.shared_kernel.fact_ports import FactValidator, FactVerdict

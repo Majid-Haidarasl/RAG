@@ -204,7 +204,7 @@ class RegistryValidator:
         ]
 
     @staticmethod
-    def _research(r) -> list[Problem]:  # noqa: ANN001
+    def _research(r) -> list[Problem]:
         out: list[Problem] = []
         if r.validated_result or r.state is ClaimState.RECORDED:
             out.append(

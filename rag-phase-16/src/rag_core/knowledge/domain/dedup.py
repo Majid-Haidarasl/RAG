@@ -17,10 +17,10 @@ Rules (see docs/phase-05/versioning-and-dedup.md):
 
 from __future__ import annotations
 
+import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import combinations
-import time
 
 from rag_core.knowledge.domain.fingerprint import (
     MinHasher,

@@ -86,7 +86,7 @@ def test_chat_sends_phase2_defaults_and_strips_think() -> None:
     ) as srv:
         chat = OllamaChatModel(OllamaClient(srv.url, timeout_s=5))
         res = chat.generate("system", "user")
-        body = [b for p, b in srv.requests if p == "/api/chat"][0]
+        body = next(b for p, b in srv.requests if p == "/api/chat")
     assert res.text == "جواب [AR-HR-005 §1]" and res.think_used
     assert (
         body["think"] is False

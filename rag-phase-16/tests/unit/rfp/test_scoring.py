@@ -1,17 +1,17 @@
-import pytest
 from decimal import Decimal
+
+import pytest
 
 from rag_core.rfp.domain.model import (
     AR_RFP_025_NOVIN_SCORES,
     AR_RFP_025_SHAFAGH_SCORES,
     AR_RFP_025_WEIGHTS,
-    CriterionWeight,
+    Proposal,
     Rfp,
     compute_weighted_score,
 )
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.identifiers import NodeIdentifier, RfpId
-from rag_core.rfp.domain.model import Proposal
 
 pytestmark = pytest.mark.rfp
 

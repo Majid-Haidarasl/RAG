@@ -26,13 +26,13 @@ from tests.fixtures.rfp.samples import (
 pytestmark = [pytest.mark.rfp_gen]
 
 
-def candidates():  # noqa: ANN201
+def candidates():
     return select_candidates(
         key_views(), [shipped_blueprint()], ("procurement",), TARGETS
     )
 
 
-def draft(language: str = "en", **kw):  # noqa: ANN003, ANN201
+def draft(language: str = "en", **kw):
     key = {k.issue_id: k for k in key_views()}
     return build_rfp(
         shipped_blueprint(),

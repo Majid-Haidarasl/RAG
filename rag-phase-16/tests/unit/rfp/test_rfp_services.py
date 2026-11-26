@@ -15,7 +15,7 @@ from tests.fixtures.rfp.samples import (
 pytestmark = [pytest.mark.rfp_gen]
 
 
-def service(**kw) -> RfpService:  # noqa: ANN003
+def service(**kw) -> RfpService:
     args = {"categories": ("procurement",), "targets": TARGETS, **kw}
     return RfpService([shipped_blueprint()], **args)  # type: ignore[arg-type]
 

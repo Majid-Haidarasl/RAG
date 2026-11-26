@@ -23,7 +23,7 @@ REQUEST = ReferralRequest(
 )
 
 
-def _role(executor) -> ReferralRole:  # noqa: ANN001
+def _role(executor) -> ReferralRole:
     return ExecutorMatcher().evaluate(executor, REQUEST).role
 
 

@@ -129,7 +129,7 @@ class FakeScope:
     def owner_of(self, document_id: str) -> str | None:
         return self.owners.get(document_id)
 
-    def route(self, asking: str, evidence_owners: list[str]):  # noqa: ANN201
+    def route(self, asking: str, evidence_owners: list[str]):
         from rag_core.rag.domain.ports import EscalationRoute
 
         return EscalationRoute("escalate", self.target, "common ancestor")

@@ -138,7 +138,7 @@ def test_render_listed_puts_the_checklist_in_the_prompt() -> None:
 
 def test_render_baseline_uses_the_phase13_prompt() -> None:
     job = IdJob("feedback", "PRP-02", "en", ("g1",), ("PRP-02",), ("AR-ISS-024/WEB",))
-    system, user = render_job(job, "baseline", baseline(), listed())
+    _system, user = render_job(job, "baseline", baseline(), listed())
     assert (
         "PRP-02, AR-ISS-024/WEB" in user
         and "{items}" not in user
