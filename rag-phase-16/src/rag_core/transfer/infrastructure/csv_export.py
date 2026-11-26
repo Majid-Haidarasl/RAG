@@ -27,6 +27,7 @@ from rag_core.transfer.domain.model import (
 from rag_core.transfer.infrastructure.csv_format import package_from_csv, package_to_csv
 
 INDEX_FILE = "latest-packages.csv"
+DELIVERIES_FILE = "deliveries.csv"
 INDEX_COLUMNS = (
     "cycle_id",
     "source_node",
@@ -41,6 +42,14 @@ INDEX_COLUMNS = (
     "content_hash",
     "created_at",
     "file",
+)
+DELIVERY_COLUMNS = (
+    "requester",
+    "source_node",
+    "cycle_id",
+    "revision",
+    "warning",
+    "delivered_at",
 )
 
 
@@ -68,7 +77,7 @@ def export_latest(
     """Write one CSV per latest package plus the index; stale package files of this cycle are removed."""
     folder = Path(out_dir) / cycle_id
     folder.mkdir(parents=True, exist_ok=True)
-    keep = {f"{r['source_node']}.csv" for r in rows} | {INDEX_FILE}
+    keep = {f"{r['source_node']}.csv" for r in rows} | {INDEX_FILE, DELIVERIES_FILE}
     for old in folder.glob("*.csv"):
         if old.name not in keep:
             old.unlink()
@@ -89,6 +98,47 @@ def export_latest(
     index.write_text(buffer.getvalue(), encoding="utf-8")
     written.append(index)
     return written
+
+
+def append_delivery(
+    out_dir: Path,
+    cycle_id: str,
+    *,
+    requester: str,
+    source_node: str,
+    revision: int,
+    warning: str = "",
+    delivered_at: str,
+) -> Path:
+    """Append one delivery audit row to ``deliveries.csv`` for the cycle."""
+    folder = Path(out_dir) / cycle_id
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / DELIVERIES_FILE
+    write_header = not path.is_file()
+    with path.open("a", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh)
+        if write_header:
+            writer.writerow(DELIVERY_COLUMNS)
+        writer.writerow(
+            [requester, source_node, cycle_id, revision, warning, delivered_at]
+        )
+    return path
+
+
+def export_deliveries(
+    rows: list[dict[str, Any]], out_dir: Path, cycle_id: str
+) -> Path:
+    """Rewrite ``deliveries.csv`` from the store's delivery log."""
+    folder = Path(out_dir) / cycle_id
+    folder.mkdir(parents=True, exist_ok=True)
+    buffer = StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(DELIVERY_COLUMNS)
+    for r in rows:
+        writer.writerow([str(r.get(c, "")) for c in DELIVERY_COLUMNS])
+    path = folder / DELIVERIES_FILE
+    path.write_text(buffer.getvalue(), encoding="utf-8")
+    return path
 
 
 def round_trip_problems(

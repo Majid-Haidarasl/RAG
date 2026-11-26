@@ -138,6 +138,8 @@ class KnowledgeVersion:
     effective_from: date | None = None
     effective_to: date | None = None
     supersedes: VersionTag | None = None
+    change_reason: str = ""
+    diff_summary: str = ""
 
     def chunk_by_id(self, chunk_id: str) -> KnowledgeChunk:
         for chunk in self.chunks:
@@ -290,6 +292,8 @@ class KnowledgeItem:
         chunks: list[KnowledgeChunk],
         *,
         file_sha256: str = "",
+        change_reason: str = "",
+        diff_summary: str = "",
     ) -> KnowledgeVersion:
         self._assert_chunks(chunks)
         if any(v.tag == version and v.language == language for v in self.versions):
@@ -307,6 +311,8 @@ class KnowledgeItem:
             chunks=[c.with_status(ChunkStatus.ACTIVE) for c in chunks],
             file_sha256=file_sha256,
             supersedes=active.tag if active else latest,
+            change_reason=change_reason,
+            diff_summary=diff_summary,
         )
         self.versions.append(draft)
         self.events.append(self._event("KnowledgeVersionDrafted", draft))

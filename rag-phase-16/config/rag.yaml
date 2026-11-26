@@ -48,6 +48,21 @@ qa:
   evidence_min_vector: 0.45          # bge-m3 cosine below this is treated as "no evidence"
   evidence_min_lexical: 3.0          # BM25 floor used when no embedder is configured
   escalate_margin: 0.02              # outside evidence must beat inside evidence by this margin
+  # promote_min_judge_total: null    # optional override; default = judge rubric accept_total
+
+knowledge:
+  embedding_dedup:
+    same_threshold: 0.92             # cosine >= this → same (near-duplicate)
+    borderline_low: 0.75             # cosine in [borderline_low, same_threshold) → LLM decide
 
 index:
   path: .rag-index/phase-08.sqlite   # local cache, not committed
+
+ingestion:
+  lvm:
+    enabled: false                   # scanned / visual_layout pages; needs optional extra "lvm"
+    dpi: 150                         # pdfplumber page.to_image resolution
+    prompt_dir: config/prompts/lvm
+    prompt_id: lvm.page_text
+    model_id: lvm-qwen2.5vl-3b
+    keep_alive: "0"                  # unload vision model after each call (12 GB GPU)

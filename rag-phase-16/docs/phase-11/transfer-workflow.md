@@ -16,7 +16,7 @@ Issue #11 names `src/processing/` and `src/transfer/`. As in earlier phases the 
 | TransferPackage generation | `transfer/domain/items.py` (items, issue groups, capacity, `NodeKnowledge`), `transfer/domain/render.py` (facts and texts), `transfer/domain/builder.py` (`TransferPackageBuilder`), `transfer/application/services.py` (`TransferService`) |
 | detail levels | `transfer/domain/levels.py` (`DetailLevelRule`, `DEFAULT_RULES`, `RuleBook`) |
 | quality gate | `transfer/domain/review.py` (fact check + judge), `transfer/infrastructure/judging_acl.py` (package → Phase 10 judge case) |
-| AI transfer suggestions | `transfer/domain/suggestions.py`, `SuggestionService` |
+| AI transfer suggestions | `transfer/domain/suggestions.py`, `SuggestionService`; prompts in `config/prompts/transfer/suggestions.yaml` |
 | CSV / DB storage of latest packages | `transfer/infrastructure/sqlite_store.py`, `transfer/infrastructure/csv_export.py` (uses the Phase 3 `csv_format.py`) |
 | inputs from other contexts | `transfer/infrastructure/sources_acl.py` (hierarchy, lifecycle versions, issues, executors), `transfer/infrastructure/ike_acl.py` (Phase 9 leads and knowledge lacks) |
 | settings | `config/transfer.yaml`, `transfer/infrastructure/config.py` |
@@ -145,3 +145,28 @@ Test system: Ubuntu 24.04.5 LTS, Python 3.12.3; project at `~/Desktop/RAG`. Olla
 * Leads and knowledge gaps come from the Phase 9 IKE analysis of AR-ISS-024 only; the other issues show `lead none`.
 * The rule judge checks ids, numbers, item coverage, lead pairing and language, not meaning; the live LLM judge is the same model family as the writer (see Phase 10 on self-judging bias).
 * A rejected child package is not forwarded; the parent then reports `received packages k of n`, so the gap is visible upstream.
+
+## 11. Deliver latest accepted package (UC-09)
+
+`DeliverLatestPackage` lets the **parent** pull the newest accepted package of a
+child for a cycle (`SqliteTransferStore.latest_accepted` /
+`accepted_for_delivery`). Non-parents are rejected. If the newest revision is
+rejected, the previous accepted revision is returned with warning
+`latest_rejected_fallback`. Every delivery is written to
+`transfer_deliveries` and to `deliveries.csv`.
+
+**Score:** the response includes the rubric total out of 20 from the package's
+stored review. When several verdicts exist, the **final accepted** verdict's
+`total` is used (not a min or first-verdict rule).
+
+<div dir="rtl">
+
+## تحویل آخرین بستهٔ پذیرفته‌شده
+
+والد می‌تواند آخرین بستهٔ پذیرفته‌شدهٔ فرزند را برای یک چرخه بگیرد. اگر
+جدیدترین بازنگری رد شده باشد، بازنگری پذیرفتهٔ قبلی با هشدار
+`latest_rejected_fallback` برمی‌گردد. امتیاز همان مجموع داوری ذخیره‌شده
+(از ۲۰) است؛ اگر چند رأی باشد، مجموع آخرین رأی پذیرفته‌شده ملاک است. هر تحویل
+در جدول `transfer_deliveries` و فایل `deliveries.csv` ثبت می‌شود.
+
+</div>

@@ -5,18 +5,23 @@
   node, bottom-up).
 * ``SuggestionService`` — optional AI transfer suggestions through a chat port
   (qwen3:8b via Ollama in production, a fake in tests).
+* ``DeliverLatestPackage`` — UC-09: parent pulls the latest accepted package.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import time
+from collections.abc import Mapping
+from pathlib import Path
 from typing import Any, Protocol
 
+from rag_core.hierarchy.domain.model import Organization
 from rag_core.models.domain.ports import LlmResult
-from rag_core.shared_kernel.errors import InvariantError
+from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.fact_ports import FactValidator
+from rag_core.shared_kernel.identifiers import NodeIdentifier
 from rag_core.transfer.domain.builder import PackageDraft, TransferPackageBuilder
+from rag_core.transfer.domain.delivery import DeliveryResult, score_from_payload
 from rag_core.transfer.domain.items import NodeKnowledge
 from rag_core.transfer.domain.levels import RuleBook
 from rag_core.transfer.domain.review import (
@@ -31,6 +36,8 @@ from rag_core.transfer.domain.suggestions import (
     parse_suggestion,
     suggestion_prompt,
 )
+from rag_core.transfer.infrastructure.csv_export import append_delivery
+from rag_core.transfer.infrastructure.sqlite_store import SqliteTransferStore
 
 
 class StepLike(Protocol):
@@ -136,3 +143,58 @@ class SuggestionService:
             accepted = accepted and all(v.accepted for v in verdicts)
         out.status = "accepted" if accepted else "rejected"
         return out
+
+
+class DeliverLatestPackage:
+    """UC-09: deliver the latest accepted package of ``source_node`` to its parent."""
+
+    def __init__(
+        self,
+        store: SqliteTransferStore,
+        organization: Organization,
+        *,
+        csv_dir: Path | str | None = None,
+    ) -> None:
+        self.store = store
+        self.organization = organization
+        self.csv_dir = None if csv_dir is None else Path(csv_dir)
+
+    def deliver(
+        self, requesting_node: str, source_node: str, cycle_id: str
+    ) -> DeliveryResult:
+        source = self.organization.get(NodeIdentifier(source_node))
+        parent = source.parent_id
+        if parent is None or str(parent) != requesting_node:
+            raise InvariantError(
+                f"{requesting_node} is not the parent of {source_node}"
+            )
+        row, warning = self.store.accepted_for_delivery(cycle_id, source_node)
+        if row is None:
+            raise NotFoundError(
+                f"no accepted package for {source_node} in cycle {cycle_id}"
+            )
+        logged = self.store.log_delivery(
+            requester=requesting_node,
+            source_node=source_node,
+            cycle_id=cycle_id,
+            revision=int(row["revision"]),
+            warning=warning or "",
+        )
+        if self.csv_dir is not None:
+            append_delivery(
+                self.csv_dir,
+                cycle_id,
+                requester=requesting_node,
+                source_node=source_node,
+                revision=int(row["revision"]),
+                warning=warning or "",
+                delivered_at=logged["delivered_at"],
+            )
+        return DeliveryResult(
+            source_node=source_node,
+            revision=int(row["revision"]),
+            content_hash=str(row["content_hash"]),
+            score=score_from_payload(row.get("payload")),
+            warning=warning,
+            payload=row.get("payload"),
+        )

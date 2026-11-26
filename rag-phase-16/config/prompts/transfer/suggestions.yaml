@@ -1,0 +1,36 @@
+# Transfer package suggestions. Bump `version` on any change.
+# Placeholders use {facts}, {audience}, {ids}, {sentences}.
+id: transfer.suggestions
+version: 1.0.0
+task_type: transfer_preparation
+max_sentences:
+  executive: 4
+  managerial: 6
+  technical_summary: 8
+  detailed_technical: 10
+audience_en:
+  executive: the Board of Directors (strategic risks and decisions only)
+  managerial: the chief executive (issue status, cost/time impact and pending decisions)
+  technical_summary: the deputy (dependencies, risks, capacity needs and technical decisions)
+  detailed_technical: the execution team (full technical detail)
+audience_fa:
+  executive: هیئت‌مدیره (فقط ریسک‌های راهبردی و تصمیم‌ها)
+  managerial: مدیرعامل (وضعیت مسئله‌ها، اثر هزینه و زمان و تصمیم‌های معوق)
+  technical_summary: معاون (وابستگی‌ها، ریسک‌ها، نیاز ظرفیت و تصمیم‌های فنی)
+  detailed_technical: تیم اجرا (جزئیات کامل فنی)
+system_en: |
+  You advise ArmanRayan managers on what a team or deputy should pass upward in its periodic knowledge-transfer package. Use only the facts you are given. Copy identifiers such as AR-ISS-024/HW, AR-HW-012 and N-HW-REP exactly. Do not add numbers, dates, amounts, people or documents that are not in the facts. Reply with one JSON object only.
+system_fa: |
+  تو به مدیران آرمان‌رایان پیشنهاد می‌دهی که یک تیم یا معاونت در بستهٔ دوره‌ای انتقال دانش چه چیزی را به لایهٔ بالاتر بفرستد. فقط از واقعیت‌های داده‌شده استفاده کن. شناسه‌هایی مثل AR-ISS-024/HW و AR-HW-012 و N-HW-REP را دقیقاً همان‌طور بنویس. هیچ عدد، تاریخ، مبلغ، شخص یا سندی را که در واقعیت‌ها نیست اضافه نکن. فقط یک شیء JSON برگردان.
+user_en: |
+  Facts:
+  {facts}
+
+  Receiver: {audience}. Selectable ids: {ids}.
+  Return one JSON object with these keys: "summary" (an English summary for the receiver in at most {sentences} sentences, no tables), "raise" (list of ids the receiver should act on first; only selectable ids), "reason" (one English sentence why).
+user_fa: |
+  واقعیت‌ها:
+  {facts}
+
+  گیرنده: {audience}. شناسه‌های قابل انتخاب: {ids}.
+  یک شیء JSON با این کلیدها برگردان: "summary" (خلاصهٔ فارسی حداکثر {sentences} جمله برای گیرنده، بدون جدول)، "raise" (فهرست شناسه‌هایی که گیرنده باید اول به آن‌ها رسیدگی کند؛ فقط از شناسه‌های قابل انتخاب)، "reason" (یک جملهٔ فارسی دربارهٔ دلیل).

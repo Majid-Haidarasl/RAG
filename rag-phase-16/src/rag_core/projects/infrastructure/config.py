@@ -8,7 +8,10 @@ from typing import Any
 
 import yaml
 
+from rag_core.judging.domain.rubric import default_rubric
+from rag_core.judging.infrastructure.prompt_yaml import load_rubric
 from rag_core.prioritization.domain.model import Caps, Weights
+from rag_core.research_gaps.domain.model import GapThresholds
 from rag_core.research_gaps.domain.rules import (
     DEFAULT_SEVERITY,
     RULE_ORDER,
@@ -100,6 +103,7 @@ class ProjectSettings:
             c: RuleSetting(True, DEFAULT_SEVERITY[c]) for c in RULE_ORDER
         }
     )
+    gap_thresholds: GapThresholds = field(default_factory=GapThresholds)
     prioritization: PrioritySettings = field(default_factory=PrioritySettings)
     model: ModelSettings = field(default_factory=ModelSettings)
     live: LiveSettings = field(default_factory=LiveSettings)
@@ -112,6 +116,7 @@ TOP_KEYS = frozenset(
         "cycle",
         "storage",
         "gap_rules",
+        "gap_thresholds",
         "prioritization",
         "model",
         "live",
@@ -192,7 +197,33 @@ def _priority(data: Any) -> PrioritySettings:
     )
 
 
-def project_settings_from_dict(data: dict[str, Any]) -> ProjectSettings:
+def _gap_thresholds(
+    data: Any, *, rubric_path: Path | None = None
+) -> GapThresholds:
+    data = dict(data or {})
+    allowed = {"outdated_days", "confidence_min", "judge_min_total", "judge_out_of"}
+    unknown = sorted(set(data) - allowed)
+    if unknown:
+        raise InvariantError(
+            f"unknown keys in projects config 'gap_thresholds': {', '.join(unknown)}"
+        )
+    if rubric_path is not None and rubric_path.is_file():
+        rubric = load_rubric(rubric_path)
+    else:
+        rubric = default_rubric()
+    judge_min = data.get("judge_min_total")
+    judge_out = data.get("judge_out_of")
+    return GapThresholds(
+        outdated_days=int(data.get("outdated_days", 365)),
+        confidence_min=float(data.get("confidence_min", 0.45)),
+        judge_min_total=int(judge_min) if judge_min is not None else rubric.accept_total,
+        judge_out_of=int(judge_out) if judge_out is not None else rubric.out_of,
+    )
+
+
+def project_settings_from_dict(
+    data: dict[str, Any], *, rubric_path: Path | None = None
+) -> ProjectSettings:
     unknown = sorted(set(data) - TOP_KEYS)
     if unknown:
         raise InvariantError(f"unknown projects config sections: {', '.join(unknown)}")
@@ -202,13 +233,19 @@ def project_settings_from_dict(data: dict[str, Any]) -> ProjectSettings:
         cycle=_plain(CycleSettings, data.get("cycle"), "cycle"),
         storage=_plain(StorageSettings, data.get("storage"), "storage"),
         gap_rules=_gap_rules(data.get("gap_rules")),
+        gap_thresholds=_gap_thresholds(data.get("gap_thresholds"), rubric_path=rubric_path),
         prioritization=_priority(data.get("prioritization")),
         model=_plain(ModelSettings, data.get("model"), "model"),
         live=_plain(LiveSettings, data.get("live"), "live"),
     )
 
 
-def load_project_settings(path: Path) -> ProjectSettings:
+def load_project_settings(path: Path, *, rubric_path: Path | None = None) -> ProjectSettings:
     with Path(path).open(encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
-    return project_settings_from_dict(data)
+    if rubric_path is None:
+        root = Path(path).resolve().parent.parent
+        candidate = root / "config" / "prompts" / "judge" / "rubric.yaml"
+        if candidate.is_file():
+            rubric_path = candidate
+    return project_settings_from_dict(data, rubric_path=rubric_path)

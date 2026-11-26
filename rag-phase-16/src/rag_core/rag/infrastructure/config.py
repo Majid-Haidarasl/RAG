@@ -58,11 +58,40 @@ class QaSettings:
     evidence_min_vector: float = 0.45
     evidence_min_lexical: float = 3.0
     escalate_margin: float = 0.02
+    promote_min_judge_total: int | None = None  # None → judge rubric accept_total
+
+
+@dataclass(frozen=True)
+class EmbeddingDedupSettings:
+    same_threshold: float = 0.92
+    borderline_low: float = 0.75
+
+
+@dataclass(frozen=True)
+class KnowledgeSettings:
+    embedding_dedup: EmbeddingDedupSettings = field(
+        default_factory=EmbeddingDedupSettings
+    )
 
 
 @dataclass(frozen=True)
 class IndexSettings:
     path: str = ".rag-index/phase-08.sqlite"
+
+
+@dataclass(frozen=True)
+class LvmIngestionSettings:
+    enabled: bool = False
+    dpi: int = 150
+    prompt_dir: str = "config/prompts/lvm"
+    prompt_id: str = "lvm.page_text"
+    model_id: str = "lvm-qwen2.5vl-3b"
+    keep_alive: str = "0"
+
+
+@dataclass(frozen=True)
+class IngestionSettings:
+    lvm: LvmIngestionSettings = field(default_factory=LvmIngestionSettings)
 
 
 @dataclass(frozen=True)
@@ -74,7 +103,9 @@ class RagSettings:
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
     context: ContextSettings = field(default_factory=ContextSettings)
     qa: QaSettings = field(default_factory=QaSettings)
+    knowledge: KnowledgeSettings = field(default_factory=KnowledgeSettings)
     index: IndexSettings = field(default_factory=IndexSettings)
+    ingestion: IngestionSettings = field(default_factory=IngestionSettings)
 
 
 def _build(cls: type, data: dict[str, Any] | None, section: str) -> Any:
@@ -90,6 +121,32 @@ def _build(cls: type, data: dict[str, Any] | None, section: str) -> Any:
     return cls(**data)
 
 
+def _build_ingestion(data: dict[str, Any] | None) -> IngestionSettings:
+    if data is None:
+        return IngestionSettings()
+    if not isinstance(data, dict):
+        raise InvariantError("config section 'ingestion' must be a mapping")
+    unknown = sorted(set(data) - {"lvm"})
+    if unknown:
+        raise InvariantError(f"unknown keys in 'ingestion': {', '.join(unknown)}")
+    return IngestionSettings(lvm=_build(LvmIngestionSettings, data.get("lvm"), "ingestion.lvm"))
+
+
+def _build_knowledge(data: dict[str, Any] | None) -> KnowledgeSettings:
+    if data is None:
+        return KnowledgeSettings()
+    if not isinstance(data, dict):
+        raise InvariantError("config section 'knowledge' must be a mapping")
+    unknown = sorted(set(data) - {"embedding_dedup"})
+    if unknown:
+        raise InvariantError(f"unknown keys in 'knowledge': {', '.join(unknown)}")
+    return KnowledgeSettings(
+        embedding_dedup=_build(
+            EmbeddingDedupSettings, data.get("embedding_dedup"), "knowledge.embedding_dedup"
+        )
+    )
+
+
 def settings_from_dict(data: dict[str, Any]) -> RagSettings:
     if not isinstance(data, dict):
         raise InvariantError("config/rag.yaml must be a mapping of sections")
@@ -102,11 +159,18 @@ def settings_from_dict(data: dict[str, Any]) -> RagSettings:
         "qa": QaSettings,
         "index": IndexSettings,
     }
-    unknown = sorted(set(data) - set(sections) - {"config_version"})
+    unknown = sorted(
+        set(data) - set(sections) - {"config_version", "ingestion", "knowledge"}
+    )
     if unknown:
         raise InvariantError(f"unknown config sections: {', '.join(unknown)}")
     built = {name: _build(cls, data.get(name), name) for name, cls in sections.items()}
-    return RagSettings(config_version=str(data.get("config_version", "0.8.0")), **built)
+    return RagSettings(
+        config_version=str(data.get("config_version", "0.8.0")),
+        ingestion=_build_ingestion(data.get("ingestion")),
+        knowledge=_build_knowledge(data.get("knowledge")),
+        **built,
+    )
 
 
 def load_settings(path: Path) -> RagSettings:

@@ -79,3 +79,27 @@ whitespace-insensitive **character 5-grams** of the normalized text, comparing
 all document pairs exactly (59 documents). It matches all 7 renditions,
 including the 3 Persian PDFs (J = 0.86, 0.97, 0.96). See
 `versioning-and-dedup.md` §5.
+
+## Optional LVM page text (scanned / visual layout)
+
+When `ingestion.lvm.enabled` is true in `config/rag.yaml`, scanned pages
+(`is_scanned`) or documents flagged `visual_layout` in metadata are rendered
+with `pdfplumber` `page.to_image` at `ingestion.lvm.dpi` (default `150`) and
+read through `LvmPort` (`lvm-qwen2.5vl-3b` / `qwen2.5vl:3b`, `keep_alive: 0`).
+Resulting chunks are stored separately with `extraction="lvm"` (never merged
+silently into text-layer chunks). Prompt: `config/prompts/lvm/page_text.yaml`.
+
+Rendering needs optional extra `rag-core[lvm]` (`Pillow`, `pypdfium2`). If those
+libraries are missing or a page cannot be rendered, the pipeline keeps the
+existing deferred-LVM warning and does not invent OCR text.
+
+<div dir="rtl">
+
+## استخراج اختیاری با مدل بینایی
+
+اگر `ingestion.lvm.enabled` روشن باشد، صفحه‌های اسکن‌شده یا سندهای دارای
+`visual_layout` به تصویر تبدیل می‌شوند و متنشان با مدل بینایی خوانده می‌شود.
+تکه‌های حاصل با برچسب `extraction="lvm"` جدا می‌مانند. بدون بستهٔ اختیاری
+`rag-core[lvm]` همان هشدار قبلی «استخراج به‌تعویق‌افتاده» می‌ماند.
+
+</div>

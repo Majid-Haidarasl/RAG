@@ -9,12 +9,12 @@ AI suggestions are kept in their own table with the same rule.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sqlite3
-from typing import Any
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Self
 
 from rag_core.transfer.domain.review import PackageRecord, content_hash
 
@@ -51,6 +51,16 @@ CREATE TABLE IF NOT EXISTS transfer_suggestions (
     payload TEXT NOT NULL,
     PRIMARY KEY (cycle_id, source_node, language, revision)
 );
+CREATE TABLE IF NOT EXISTS transfer_deliveries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    requester TEXT NOT NULL,
+    source_node TEXT NOT NULL,
+    cycle_id TEXT NOT NULL,
+    revision INTEGER NOT NULL,
+    warning TEXT NOT NULL,
+    delivered_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_deliveries_cycle ON transfer_deliveries (cycle_id);
 """
 
 
@@ -62,7 +72,7 @@ class SaveOutcome:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class SqliteTransferStore:
@@ -82,7 +92,7 @@ class SqliteTransferStore:
     def close(self) -> None:
         self.conn.close()
 
-    def __enter__(self) -> SqliteTransferStore:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -138,6 +148,36 @@ class SqliteTransferStore:
         ).fetchone()
         return self._row(row) if row is not None else None
 
+    def latest_accepted(self, cycle_id: str, source_node: str) -> dict[str, Any] | None:
+        """Newest revision with status ``accepted`` (may be older than ``is_latest``)."""
+        row = self.conn.execute(
+            "SELECT * FROM transfer_packages WHERE cycle_id=? AND source_node=? "
+            "AND status='accepted' ORDER BY revision DESC LIMIT 1",
+            (cycle_id, source_node),
+        ).fetchone()
+        return self._row(row) if row is not None else None
+
+    def accepted_for_delivery(
+        self, cycle_id: str, source_node: str
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """Return the package to deliver plus an optional fallback warning.
+
+        If the newest row is rejected (or otherwise not accepted) but an older
+        accepted revision exists, that accepted row is returned with
+        ``latest_rejected_fallback``.
+        """
+        accepted = self.latest_accepted(cycle_id, source_node)
+        if accepted is None:
+            return None, None
+        latest = self.latest(cycle_id, source_node)
+        if (
+            latest is not None
+            and latest["status"] != "accepted"
+            and int(latest["revision"]) > int(accepted["revision"])
+        ):
+            return accepted, "latest_rejected_fallback"
+        return accepted, None
+
     def latest_all(self, cycle_id: str) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             "SELECT * FROM transfer_packages WHERE cycle_id=? AND is_latest=1 "
@@ -151,6 +191,42 @@ class SqliteTransferStore:
             "SELECT revision, is_latest, status, content_hash, created_at FROM transfer_packages "
             "WHERE cycle_id=? AND source_node=? ORDER BY revision",
             (cycle_id, source_node),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def log_delivery(
+        self,
+        *,
+        requester: str,
+        source_node: str,
+        cycle_id: str,
+        revision: int,
+        warning: str = "",
+        delivered_at: str | None = None,
+    ) -> dict[str, Any]:
+        when = delivered_at or _now()
+        with self.conn:
+            cur = self.conn.execute(
+                "INSERT INTO transfer_deliveries "
+                "(requester, source_node, cycle_id, revision, warning, delivered_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (requester, source_node, cycle_id, revision, warning, when),
+            )
+        return {
+            "id": int(cur.lastrowid),
+            "requester": requester,
+            "source_node": source_node,
+            "cycle_id": cycle_id,
+            "revision": revision,
+            "warning": warning,
+            "delivered_at": when,
+        }
+
+    def list_deliveries(self, cycle_id: str) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            "SELECT requester, source_node, cycle_id, revision, warning, delivered_at "
+            "FROM transfer_deliveries WHERE cycle_id=? ORDER BY id",
+            (cycle_id,),
         ).fetchall()
         return [dict(r) for r in rows]
 

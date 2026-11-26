@@ -2,18 +2,32 @@
 
 import pytest
 
-from rag_core.research_gaps.domain.model import Gap, GapKind, IssueStateView, Severity
+from rag_core.research_gaps.domain.model import (
+    ConfidenceView,
+    ConflictView,
+    Gap,
+    GapKind,
+    GapThresholds,
+    IssueStateView,
+    JudgeScoreView,
+    KnowledgeAgeView,
+    Severity,
+)
 from rag_core.research_gaps.domain.rules import (
     RULE_NAMES,
     RULE_ORDER,
     GapRuleBook,
     RuleSetting,
     blocked_dependency,
+    judge_below_threshold,
     knowledge_lack,
+    knowledge_outdated,
+    low_confidence,
     missing_executor,
     research_open,
     scorecard_open,
     sort_gaps,
+    sources_conflict,
     stale_unsolved,
     unevidenced_record,
     unlinked_challenge,
@@ -31,10 +45,24 @@ def ids(gaps: list[Gap]) -> list[str]:
 
 
 def test_rule_table_is_complete() -> None:
-    assert RULE_ORDER == ("RG", "KL", "EX", "DEP", "CH", "SC", "ST", "EV")
+    assert RULE_ORDER == (
+        "RG",
+        "KL",
+        "EX",
+        "DEP",
+        "CH",
+        "SC",
+        "ST",
+        "EV",
+        "OD",
+        "CF",
+        "JT",
+        "LC",
+    )
     assert (
         RULE_NAMES["KL"] == "knowledge_lack"
         and RULE_NAMES["DEP"] == "blocked_dependency"
+        and RULE_NAMES["JT"] == "judge_below_threshold"
     )
 
 
@@ -181,3 +209,62 @@ def test_gap_value_object() -> None:
         == "EV:Y"
     )
     assert IssueStateView("AR-ISS-034", "closed").active is False
+
+
+def test_knowledge_outdated_fires_when_age_exceeds_limit() -> None:
+    inputs = gap_inputs(
+        knowledge_ages=(
+            KnowledgeAgeView("AR-HW-012", 400, issue_id="AR-ISS-024"),
+            KnowledgeAgeView("AR-HW-015", 10),
+        ),
+        thresholds=GapThresholds(outdated_days=365, judge_min_total=18),
+    )
+    gaps = knowledge_outdated(inputs, M)
+    assert ids(gaps) == ["OD:AR-HW-012"]
+    assert gaps[0].kind is GapKind.OUTDATED
+
+
+def test_sources_conflict_fires_for_flagged_pair() -> None:
+    inputs = gap_inputs(
+        conflicts=(
+            ConflictView(
+                "AR-ISS-024",
+                ("AR-HW-012", "AR-HW-015"),
+                issue_id="AR-ISS-024",
+                detail="contradicting RAM limits",
+            ),
+        )
+    )
+    gaps = sources_conflict(inputs, Severity.HIGH)
+    assert ids(gaps) == ["CF:AR-ISS-024"]
+    assert gaps[0].kind is GapKind.CONFLICT and gaps[0].documents == (
+        "AR-HW-012",
+        "AR-HW-015",
+    )
+
+
+def test_judge_below_threshold_uses_rubric_accept_total() -> None:
+    thresholds = GapThresholds(judge_min_total=18, judge_out_of=20)
+    inputs = gap_inputs(
+        judge_scores=(
+            JudgeScoreView("qa:good", 19),
+            JudgeScoreView("qa:weak", 17, issue_id="AR-ISS-024"),
+        ),
+        thresholds=thresholds,
+    )
+    gaps = judge_below_threshold(inputs, Severity.HIGH)
+    assert ids(gaps) == ["JT:qa:weak"]
+    assert gaps[0].kind is GapKind.JUDGE and "17" in gaps[0].detail
+
+
+def test_low_confidence_fires_below_floor() -> None:
+    inputs = gap_inputs(
+        confidences=(
+            ConfidenceView("qa:strong", 0.80),
+            ConfidenceView("qa:weak", 0.30, issue_id="AR-ISS-024"),
+        ),
+        thresholds=GapThresholds(confidence_min=0.45, judge_min_total=18),
+    )
+    gaps = low_confidence(inputs, M)
+    assert ids(gaps) == ["LC:qa:weak"]
+    assert gaps[0].kind is GapKind.CONFIDENCE

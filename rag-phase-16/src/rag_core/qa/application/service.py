@@ -17,8 +17,8 @@ Decision flow for a question asked from node X:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 
 from rag_core.qa.domain.citations import cited_blocks, parse_citations, verify_citations
 from rag_core.qa.domain.fact_check import CitedFactValidator
@@ -35,12 +35,30 @@ from rag_core.rag.domain.retriever import (
 )
 from rag_core.shared_kernel.identifiers import DocumentId
 
+RELATED_MAX = 10
+
+
+def related_document_ids(result: RetrievalResult, *, limit: int = RELATED_MAX) -> list[str]:
+    """Unique document ids from retrieval hits, preserving rank order."""
+    out: list[str] = []
+    seen: set[str] = set()
+    for hit in result.hits:
+        doc_id = hit.record.document_id
+        if doc_id in seen:
+            continue
+        seen.add(doc_id)
+        out.append(doc_id)
+        if len(out) >= limit:
+            break
+    return out
+
 
 @dataclass(frozen=True)
 class QaConfig:
     evidence_min_vector: float = 0.45
     evidence_min_lexical: float = 3.0
     escalate_margin: float = 0.02
+    promote_min_judge_total: int | None = None  # None → judge rubric accept_total
 
 
 class NodeScopedQaService:
@@ -112,10 +130,13 @@ class NodeScopedQaService:
             QaStatus.NOT_FOUND_IN_SCOPE,
             "",
             retrieved=[h.key for h in result.hits],
+            related=related_document_ids(result),
             prompt_version=self.prompts.version,
             model=self.model_name,
             timings_s=timings,
         )
+        if result.best_vector is not None:
+            answer.confidence = float(result.best_vector)
         inside = self.inside_strength(result)
         has_evidence = (
             bool(result.hits) and inside is not None and inside >= self._threshold()

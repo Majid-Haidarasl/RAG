@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from rag_core.ingestion.domain.catalog import lookup
@@ -45,10 +45,8 @@ def bilingual_pair_name(path: Path, language: LanguageCode | None) -> str | None
     parent = path.parent
     if parent.name == "fa":
         other = parent.parent / "en"
-        target_lang = "en"
     elif parent.name == "en":
         other = parent.parent / "fa"
-        target_lang = "fa"
     else:
         return None
     if not other.is_dir():
@@ -80,6 +78,15 @@ def build_metadata(
     is_scanned: bool,
     chunk_count: int,
     char_count: int,
+    visual_layout: bool = False,
+    subject_domain: str | None = None,
+    project_id: str | None = None,
+    related_issues: list[str] | None = None,
+    related_executors: list[str] | None = None,
+    related_rfps: list[str] | None = None,
+    tags: list[str] | None = None,
+    reliability: float | None = None,
+    source_answer_id: str | None = None,
     repo_root: Path | None = None,
 ) -> dict:
     entry = lookup(document_id)
@@ -109,10 +116,21 @@ def build_metadata(
         "char_count": char_count,
         "chunk_count": chunk_count,
         "is_scanned": is_scanned,
+        "visual_layout": visual_layout,
         "bilingual_pair": None
         if not pair
         else {"language": other_lang, "file_name": pair},
-        "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ingested_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "subject_domain": subject_domain
+        if subject_domain is not None
+        else (entry.doc_type if entry else "unknown"),
+        "project_id": project_id,
+        "related_issues": list(related_issues or []),
+        "related_executors": list(related_executors or []),
+        "related_rfps": list(related_rfps or []),
+        "tags": list(tags or []),
+        "reliability": reliability,
+        "source_answer_id": source_answer_id,
     }
     # Drop null optional fields that the schema marks as optional? Keep them;
     # schema will use type ["string", "null"] where needed.

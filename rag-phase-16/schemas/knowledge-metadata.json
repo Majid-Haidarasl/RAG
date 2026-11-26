@@ -78,7 +78,11 @@
     "chunk_count": { "type": "integer", "minimum": 0 },
     "is_scanned": {
       "type": "boolean",
-      "description": "True when one or more PDF pages look image-only. OCR/LVM is deferred."
+      "description": "True when one or more PDF pages look image-only. OCR/LVM is deferred unless ingestion.lvm.enabled."
+    },
+    "visual_layout": {
+      "type": "boolean",
+      "description": "True when the document needs LVM page reading (tables/figures/layout) even if a text layer exists."
     },
     "bilingual_pair": {
       "type": ["object", "null"],
@@ -92,6 +96,41 @@
     "ingested_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "subject_domain": {
+      "type": "string",
+      "description": "Subject domain of the knowledge item (glossary MetadataRecord)."
+    },
+    "project_id": {
+      "type": ["string", "null"],
+      "pattern": "^PRJ-[A-Z0-9]+(?:-[A-Z0-9]+)*$",
+      "description": "Optional linked project id."
+    },
+    "related_issues": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^AR-ISS-[0-9]{3}(?:/[A-Z0-9]+)?$" }
+    },
+    "related_executors": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^EX-[A-Z0-9]+(?:-[A-Z0-9]+)*$" }
+    },
+    "related_rfps": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^AR-RFP-[0-9]{4}-[0-9]{2}$" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "reliability": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Optional reliability score in [0, 1]."
+    },
+    "source_answer_id": {
+      "type": ["string", "null"],
+      "description": "Provenance link when the item was promoted from a QaAnswer."
     }
   }
 }

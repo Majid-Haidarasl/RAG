@@ -8,19 +8,18 @@ appended instead, and any ``<think>…</think>`` text is stripped from replies.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
 import re
-import socket
 import time
+from dataclasses import dataclass, field
 from typing import Any
 from urllib import error, request
 from urllib.parse import urlparse
 
-from rag_core.models.domain.ports import LlmResult
+from rag_core.models.domain.ports import LlmResult, LvmResult
 
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
-_THINK_RE = re.compile(r"<think>.*?</think>", re.S | re.I)
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
 
 
 class OllamaError(RuntimeError):
@@ -78,18 +77,13 @@ class OllamaClient:
             )
             try:
                 self.calls += 1
-                with request.urlopen(req, timeout=timeout or self.timeout_s) as resp:  # noqa: S310 (local only)
+                with request.urlopen(req, timeout=timeout or self.timeout_s) as resp:
                     body = resp.read().decode("utf-8")
                 return json.loads(body) if body.strip() else {}
             except error.HTTPError as exc:
                 detail = exc.read().decode("utf-8", "replace")[:300]
                 raise OllamaError(f"HTTP {exc.code} {path}: {detail}") from None
-            except (
-                error.URLError,
-                socket.timeout,
-                TimeoutError,
-                ConnectionError,
-            ) as exc:
+            except (error.URLError, TimeoutError, ConnectionError) as exc:
                 last = exc
                 if attempt < self.retries:
                     time.sleep(1.0 + attempt)
@@ -150,7 +144,7 @@ class OllamaClient:
     def chat(
         self,
         model: str,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         *,
         options: dict[str, Any] | None = None,
         think: bool = False,
@@ -175,7 +169,9 @@ class OllamaClient:
                 raise
             payload.pop("think")
             msgs = [dict(m) for m in messages]
-            msgs[-1]["content"] += "\n/think" if think else "\n/no_think"
+            msgs[-1]["content"] = str(msgs[-1].get("content", "")) + (
+                "\n/think" if think else "\n/no_think"
+            )
             payload["messages"] = msgs
             return self._call("POST", "/api/chat", payload, timeout=timeout)
 
@@ -245,4 +241,32 @@ class OllamaChatModel:
             prompt_tokens=int(res.get("prompt_eval_count") or 0),
             completion_tokens=int(res.get("eval_count") or 0),
             think_used=bool(message.get("thinking")) or "<think>" in raw,
+        )
+
+
+@dataclass
+class OllamaLvmAdapter:
+    """``LvmPort`` for qwen2.5vl:3b. Load on demand and unload (``keep_alive: 0``)."""
+
+    client: OllamaClient
+    model: str = "qwen2.5vl:3b"
+    keep_alive: str = "0"
+    timeout_s: float = 240.0
+
+    def read(self, image: bytes, task_prompt: str) -> LvmResult:
+        import base64
+
+        b64 = base64.b64encode(image).decode("ascii")
+        res = self.client.chat(
+            self.model,
+            [{"role": "user", "content": task_prompt, "images": [b64]}],
+            think=False,
+            keep_alive=self.keep_alive,
+            timeout=self.timeout_s,
+        )
+        message = res.get("message") or {}
+        raw = message.get("content", "")
+        return LvmResult(
+            text=strip_think(raw),
+            prompt_tokens=int(res.get("prompt_eval_count") or 0),
         )

@@ -15,9 +15,10 @@ when a judge is used — the summary passes the judge.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
 import re
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from rag_core.shared_kernel.errors import InvariantError
@@ -25,39 +26,37 @@ from rag_core.shared_kernel.fact_ports import FactValidator
 from rag_core.shared_kernel.numerals import normalize_digits
 from rag_core.transfer.domain.builder import PackageDraft
 from rag_core.transfer.domain.review import GroundingCheck, ground
+from rag_core.transfer.infrastructure.prompt_yaml import (
+    TransferPromptSet,
+    load_transfer_prompts,
+)
 
 _ID_RE = re.compile(r"AR-ISS-\d{3}(?:/[A-Z0-9]+)?")
 _FENCE_RE = re.compile(r"^```[a-zA-Z]*\s*|\s*```$")
-MAX_SENTENCES = {
-    "executive": 4,
-    "managerial": 6,
-    "technical_summary": 8,
-    "detailed_technical": 10,
-}
+_PROMPTS_DIR = Path(__file__).resolve().parents[4] / "config" / "prompts" / "transfer"
+_DEFAULT_PROMPTS: TransferPromptSet | None = None
 
-SYSTEM_EN = (
-    "You advise ArmanRayan managers on what a team or deputy should pass upward in its periodic knowledge-transfer "
-    "package. Use only the facts you are given. Copy identifiers such as AR-ISS-024/HW, AR-HW-012 and N-HW-REP "
-    "exactly. Do not add numbers, dates, amounts, people or documents that are not in the facts. "
-    "Reply with one JSON object only."
-)
-SYSTEM_FA = (
-    "تو به مدیران آرمان‌رایان پیشنهاد می‌دهی که یک تیم یا معاونت در بستهٔ دوره‌ای انتقال دانش چه چیزی را به لایهٔ بالاتر "
-    "بفرستد. فقط از واقعیت‌های داده‌شده استفاده کن. شناسه‌هایی مثل AR-ISS-024/HW و AR-HW-012 و N-HW-REP را دقیقاً "
-    "همان‌طور بنویس. هیچ عدد، تاریخ، مبلغ، شخص یا سندی را که در واقعیت‌ها نیست اضافه نکن. فقط یک شیء JSON برگردان."
-)
-AUDIENCE_EN = {
-    "executive": "the Board of Directors (strategic risks and decisions only)",
-    "managerial": "the chief executive (issue status, cost/time impact and pending decisions)",
-    "technical_summary": "the deputy (dependencies, risks, capacity needs and technical decisions)",
-    "detailed_technical": "the execution team (full technical detail)",
-}
-AUDIENCE_FA = {
-    "executive": "هیئت‌مدیره (فقط ریسک‌های راهبردی و تصمیم‌ها)",
-    "managerial": "مدیرعامل (وضعیت مسئله‌ها، اثر هزینه و زمان و تصمیم‌های معوق)",
-    "technical_summary": "معاون (وابستگی‌ها، ریسک‌ها، نیاز ظرفیت و تصمیم‌های فنی)",
-    "detailed_technical": "تیم اجرا (جزئیات کامل فنی)",
-}
+
+def default_transfer_prompts() -> TransferPromptSet:
+    global _DEFAULT_PROMPTS
+    if _DEFAULT_PROMPTS is None:
+        _DEFAULT_PROMPTS = load_transfer_prompts(_PROMPTS_DIR)
+    return _DEFAULT_PROMPTS
+
+
+def __getattr__(name: str) -> Any:
+    """Expose YAML-backed constants (SYSTEM_EN, AUDIENCE_*, MAX_SENTENCES)."""
+    prompts = default_transfer_prompts()
+    mapping = {
+        "SYSTEM_EN": prompts.system_en,
+        "SYSTEM_FA": prompts.system_fa,
+        "MAX_SENTENCES": prompts.max_sentences,
+        "AUDIENCE_EN": prompts.audience_en,
+        "AUDIENCE_FA": prompts.audience_fa,
+    }
+    if name in mapping:
+        return mapping[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 class SuggestionParseError(InvariantError):
@@ -69,28 +68,20 @@ def candidate_ids(draft: PackageDraft) -> tuple[str, ...]:
     return tuple(dict.fromkeys([*(i.item_id for i in draft.items), *draft.omitted]))
 
 
-def suggestion_prompt(draft: PackageDraft, language: str) -> tuple[str, str]:
-    block = "\n".join(draft.facts)
-    ids = ", ".join(candidate_ids(draft)) or "none"
+def suggestion_prompt(
+    draft: PackageDraft,
+    language: str,
+    prompts: TransferPromptSet | None = None,
+) -> tuple[str, str]:
+    prompts = prompts or default_transfer_prompts()
     level = draft.detail_level
-    sentences = MAX_SENTENCES.get(level, 6)
-    if language == "fa":
-        user = (
-            f"واقعیت‌ها:\n{block}\n\n"
-            f"گیرنده: {AUDIENCE_FA.get(level, level)}. شناسه‌های قابل انتخاب: {ids}.\n"
-            f'یک شیء JSON با این کلیدها برگردان: "summary" (خلاصهٔ فارسی حداکثر {sentences} جمله برای گیرنده، '
-            'بدون جدول)، "raise" (فهرست شناسه‌هایی که گیرنده باید اول به آن‌ها رسیدگی کند؛ فقط از شناسه‌های '
-            'قابل انتخاب)، "reason" (یک جملهٔ فارسی دربارهٔ دلیل).'
-        )
-        return SYSTEM_FA, user
-    user = (
-        f"Facts:\n{block}\n\n"
-        f"Receiver: {AUDIENCE_EN.get(level, level)}. Selectable ids: {ids}.\n"
-        f'Return one JSON object with these keys: "summary" (an English summary for the receiver in at most '
-        f'{sentences} sentences, no tables), "raise" (list of ids the receiver should act on first; only selectable '
-        'ids), "reason" (one English sentence why).'
+    return prompts.render(
+        language,
+        facts="\n".join(draft.facts),
+        audience=prompts.audience(language, level),
+        ids=", ".join(candidate_ids(draft)) or "none",
+        sentences=prompts.sentences(level),
     )
-    return SYSTEM_EN, user
 
 
 @dataclass(frozen=True)

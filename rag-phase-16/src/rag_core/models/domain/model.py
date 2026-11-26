@@ -46,6 +46,8 @@ class ModelRegistryEntry:
     task_types: tuple[TaskType, ...]
     embedding_dim: int | None = None
     status: str = "selected-baseline"
+    limits: dict[str, object] | None = None
+    notes: str = ""
 
     def __post_init__(self) -> None:
         if not self.model_id or not self.ollama_name:
@@ -126,6 +128,8 @@ PHASE2_BASELINE = (
         ollama_name="bge-m3:latest",
         task_types=(TaskType.KNOWLEDGE_INDEXING,),
         embedding_dim=1024,
+        limits={"max_input_tokens": 8192, "num_ctx": 8192},
+        notes="Dense vectors only via Ollama /api/embed.",
     ),
     ModelRegistryEntry(
         model_id="llm-qwen3-8b",
@@ -136,11 +140,15 @@ PHASE2_BASELINE = (
             TaskType.ISSUE_DECOMPOSITION,
             TaskType.LLM_AS_JUDGE,
         ),
+        limits={"num_ctx": 8192, "num_predict": 1024},
+        notes="Think off by default; JSON format for structured tasks.",
     ),
     ModelRegistryEntry(
         model_id="lvm-qwen2.5vl-3b",
         role=ModelRole.LVM,
         ollama_name="qwen2.5vl:3b",
         task_types=(TaskType.VISUAL_LAYOUT,),
+        limits={"keep_alive": "0"},
+        notes="On-demand visual ingestion; unload after each call on 12 GB GPU.",
     ),
 )

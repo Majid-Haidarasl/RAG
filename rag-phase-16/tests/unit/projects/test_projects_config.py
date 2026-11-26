@@ -46,10 +46,27 @@ def test_shipped_priority_settings() -> None:
 
 
 def test_shipped_gap_rules() -> None:
-    rules = load_project_settings(CONFIG).gap_rules
-    assert list(rules) == ["RG", "KL", "EX", "DEP", "CH", "SC", "ST", "EV"]
+    s = load_project_settings(CONFIG)
+    rules = s.gap_rules
+    assert list(rules) == [
+        "RG",
+        "KL",
+        "EX",
+        "DEP",
+        "CH",
+        "SC",
+        "ST",
+        "EV",
+        "OD",
+        "CF",
+        "JT",
+        "LC",
+    ]
     assert all(r.enabled for r in rules.values())
     assert rules["DEP"].severity == "high" and rules["ST"].severity == "low"
+    assert s.gap_thresholds.outdated_days == 365
+    assert s.gap_thresholds.confidence_min == pytest.approx(0.45)
+    assert s.gap_thresholds.judge_min_total == 18  # from judge rubric accept_total
 
 
 def test_defaults_when_empty() -> None:
@@ -57,8 +74,9 @@ def test_defaults_when_empty() -> None:
     assert (
         s.cycle.id == "1403-Q2"
         and s.prioritization.key_count == 3
-        and len(s.gap_rules) == 8
+        and len(s.gap_rules) == 12
     )
+    assert s.gap_thresholds.judge_min_total == 18
 
 
 @pytest.mark.parametrize(

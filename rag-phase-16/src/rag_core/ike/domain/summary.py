@@ -16,10 +16,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 from rag_core.ike.domain.builder import NOTE_CITED
 from rag_core.ike.domain.model import IkeGraph, RelationType
 from rag_core.ike.domain.views import IssueView
+from rag_core.ike.infrastructure.prompt_yaml import (
+    IkeSummaryPromptSet,
+    load_ike_summary_prompts,
+)
 from rag_core.shared_kernel.fact_ports import FactValidator, FactVerdict
 from rag_core.shared_kernel.numerals import normalize_digits
 
@@ -33,16 +39,24 @@ STATUS_FA = {
     "reopened": "بازگشایی‌شده",
 }
 
-SYSTEM_EN = (
-    "You write short management summaries of organizational issues for ArmanRayan. "
-    "Use only the facts you are given. Copy identifiers such as AR-ISS-024/HW, AR-HW-012 and N-HW-REP exactly. "
-    "Do not add numbers, dates, amounts, people or documents that are not in the facts. Plain text, no tables."
-)
-SYSTEM_FA = (
-    "تو خلاصهٔ مدیریتی کوتاه برای مسئله‌های سازمانی آرمان‌رایان می‌نویسی. "
-    "فقط از واقعیت‌های داده‌شده استفاده کن. شناسه‌هایی مثل AR-ISS-024/HW و AR-HW-012 و N-HW-REP را دقیقاً همان‌طور بنویس. "
-    "هیچ عدد، تاریخ، مبلغ، شخص یا سندی را که در واقعیت‌ها نیست اضافه نکن. متن ساده، بدون جدول."
-)
+_PROMPTS_DIR = Path(__file__).resolve().parents[4] / "config" / "prompts" / "ike"
+_DEFAULT_PROMPTS: IkeSummaryPromptSet | None = None
+
+
+def default_ike_summary_prompts() -> IkeSummaryPromptSet:
+    global _DEFAULT_PROMPTS
+    if _DEFAULT_PROMPTS is None:
+        _DEFAULT_PROMPTS = load_ike_summary_prompts(_PROMPTS_DIR)
+    return _DEFAULT_PROMPTS
+
+
+def __getattr__(name: str) -> Any:
+    prompts = default_ike_summary_prompts()
+    if name == "SYSTEM_EN":
+        return prompts.system_en
+    if name == "SYSTEM_FA":
+        return prompts.system_fa
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 @dataclass(frozen=True)
@@ -164,8 +178,10 @@ def template_summary(
     i = d.issue
     if language == "fa":
         out = [
-            f"خلاصهٔ مسئله {i.issue_id}: {i.title_fa or i.title}. مالک {i.owner_node}، وضعیت "
-            f"{STATUS_FA.get(i.status, i.status)}، پیشرفت {i.progress_percent}٪."
+            (
+                f"خلاصهٔ مسئله {i.issue_id}: {i.title_fa or i.title}. مالک {i.owner_node}، وضعیت "
+                f"{STATUS_FA.get(i.status, i.status)}، پیشرفت {i.progress_percent}٪."
+            )
         ]
         for it in d.items:
             collab = _join(
@@ -207,21 +223,13 @@ def template_summary(
     return "\n".join(out)
 
 
-def summary_prompt(facts: list[str], language: str) -> tuple[str, str]:
-    block = "\n".join(facts)
-    if language == "fa":
-        user = (
-            f"واقعیت‌ها:\n{block}\n\n"
-            "خلاصه‌ای فارسی در حداکثر هشت جمله بنویس: مسئله و وضعیتش، هر زیرمسئله با گره مالک و مجری اصلی، "
-            "و کمبودهای دانش. شناسهٔ همهٔ زیرمسئله‌ها را بیاور."
-        )
-        return SYSTEM_FA, user
-    user = (
-        f"Facts:\n{block}\n\n"
-        "Write an English summary in at most eight sentences: the issue and its status, each sub-issue with its "
-        "owner node and lead executor, and the knowledge gaps. Mention every sub-issue id."
-    )
-    return SYSTEM_EN, user
+def summary_prompt(
+    facts: list[str],
+    language: str,
+    prompts: IkeSummaryPromptSet | None = None,
+) -> tuple[str, str]:
+    prompts = prompts or default_ike_summary_prompts()
+    return prompts.render(language, facts="\n".join(facts))
 
 
 @dataclass(frozen=True)

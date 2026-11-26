@@ -8,9 +8,12 @@ Pure standard library; no new dependencies.
 | Lifecycle (aggregate) | `src/rag_core/knowledge/domain/model.py` |
 | Fingerprints (normalize, word/char shingles, MinHash, LSH) | `src/rag_core/knowledge/domain/fingerprint.py` |
 | Duplicate / near-duplicate / overlap rules | `src/rag_core/knowledge/domain/dedup.py` |
+| Embedding near-dedup (cosine + LLM band) | `src/rag_core/knowledge/domain/embedding_dedup.py`; thresholds in `config/rag.yaml` → `knowledge.embedding_dedup` |
 | Ingestion → lifecycle mapping | `src/rag_core/knowledge/application/lifecycle.py` |
 | Corpus run + PHASE 5 SUMMARY | `scripts/run_corpus_dedup.py` |
-| Tests | `tests/unit/knowledge/test_version_lifecycle.py`, `test_chunk_lifecycle.py`, `test_fingerprint.py`, `test_dedup.py`, `test_lifecycle_service.py` |
+| Tests | `tests/unit/knowledge/test_version_lifecycle.py`, `test_chunk_lifecycle.py`, `test_fingerprint.py`, `test_dedup.py`, `test_embedding_dedup.py`, `test_lifecycle_service.py` |
+
+`KnowledgeVersion` also carries optional `change_reason` and `diff_summary` (set when staging a draft, e.g. answer promotion).
 
 ## 1. Version lifecycle
 
@@ -24,7 +27,8 @@ Pure standard library; no new dependencies.
 * `KnowledgeItem` is the aggregate root, **one per document id** (e.g. `AR-HW-012`).
   FA and EN are *language versions of the same item*, each with an independent lifecycle.
 * `KnowledgeVersion` carries `tag` (`major.minor`), `language`, `status`,
-  `file_sha256`, `effective_from`, `effective_to`, `supersedes`.
+  `file_sha256`, `effective_from`, `effective_to`, `supersedes`,
+  `change_reason`, `diff_summary`.
 * Compatibility with Phase 3: `VersionStatus.INACTIVE` is an enum alias of
   `SUPERSEDED`; `add_version()` still creates **and activates** in one step
   (it is `stage_draft()` + `activate()`).
