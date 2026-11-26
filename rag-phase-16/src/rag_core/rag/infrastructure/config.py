@@ -66,6 +66,21 @@ class IndexSettings:
 
 
 @dataclass(frozen=True)
+class LvmIngestionSettings:
+    enabled: bool = False
+    dpi: int = 150
+    prompt_dir: str = "config/prompts/lvm"
+    prompt_id: str = "lvm.page_text"
+    model_id: str = "lvm-qwen2.5vl-3b"
+    keep_alive: str = "0"
+
+
+@dataclass(frozen=True)
+class IngestionSettings:
+    lvm: LvmIngestionSettings = field(default_factory=LvmIngestionSettings)
+
+
+@dataclass(frozen=True)
 class RagSettings:
     config_version: str = "0.8.0"
     ollama: OllamaSettings = field(default_factory=OllamaSettings)
@@ -75,6 +90,7 @@ class RagSettings:
     context: ContextSettings = field(default_factory=ContextSettings)
     qa: QaSettings = field(default_factory=QaSettings)
     index: IndexSettings = field(default_factory=IndexSettings)
+    ingestion: IngestionSettings = field(default_factory=IngestionSettings)
 
 
 def _build(cls: type, data: dict[str, Any] | None, section: str) -> Any:
@@ -90,6 +106,17 @@ def _build(cls: type, data: dict[str, Any] | None, section: str) -> Any:
     return cls(**data)
 
 
+def _build_ingestion(data: dict[str, Any] | None) -> IngestionSettings:
+    if data is None:
+        return IngestionSettings()
+    if not isinstance(data, dict):
+        raise InvariantError("config section 'ingestion' must be a mapping")
+    unknown = sorted(set(data) - {"lvm"})
+    if unknown:
+        raise InvariantError(f"unknown keys in 'ingestion': {', '.join(unknown)}")
+    return IngestionSettings(lvm=_build(LvmIngestionSettings, data.get("lvm"), "ingestion.lvm"))
+
+
 def settings_from_dict(data: dict[str, Any]) -> RagSettings:
     if not isinstance(data, dict):
         raise InvariantError("config/rag.yaml must be a mapping of sections")
@@ -102,11 +129,15 @@ def settings_from_dict(data: dict[str, Any]) -> RagSettings:
         "qa": QaSettings,
         "index": IndexSettings,
     }
-    unknown = sorted(set(data) - set(sections) - {"config_version"})
+    unknown = sorted(set(data) - set(sections) - {"config_version", "ingestion"})
     if unknown:
         raise InvariantError(f"unknown config sections: {', '.join(unknown)}")
     built = {name: _build(cls, data.get(name), name) for name, cls in sections.items()}
-    return RagSettings(config_version=str(data.get("config_version", "0.8.0")), **built)
+    return RagSettings(
+        config_version=str(data.get("config_version", "0.8.0")),
+        ingestion=_build_ingestion(data.get("ingestion")),
+        **built,
+    )
 
 
 def load_settings(path: Path) -> RagSettings:

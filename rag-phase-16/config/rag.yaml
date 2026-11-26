@@ -51,3 +51,12 @@ qa:
 
 index:
   path: .rag-index/phase-08.sqlite   # local cache, not committed
+
+ingestion:
+  lvm:
+    enabled: false                   # scanned / visual_layout pages; needs optional extra "lvm"
+    dpi: 150                         # pdfplumber page.to_image resolution
+    prompt_dir: config/prompts/lvm
+    prompt_id: lvm.page_text
+    model_id: lvm-qwen2.5vl-3b
+    keep_alive: "0"                  # unload vision model after each call (12 GB GPU)

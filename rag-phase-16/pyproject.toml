@@ -23,6 +23,10 @@ dev = [
     "pytest-cov>=5.0",
     "coverage>=7.6",
 ]
+lvm = [
+    "Pillow>=10.0",
+    "pypdfium2>=4.0",
+]
 
 [tool.setuptools.package-dir]
 "" = "src"

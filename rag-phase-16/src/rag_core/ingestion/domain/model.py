@@ -103,9 +103,11 @@ class TextChunk:
     heading_path: str
     anchors: tuple[SourceAnchor, ...]
     kind: str = "prose"
+    extraction: str = ""
+    version: str = ""
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        data: dict[str, object] = {
             "chunk_id": self.chunk_id,
             "order": self.order,
             "text": self.text,
@@ -114,6 +116,11 @@ class TextChunk:
             "anchors": [a.to_dict() for a in self.anchors],
             "char_count": len(self.text),
         }
+        if self.extraction:
+            data["extraction"] = self.extraction
+        if self.version:
+            data["version"] = self.version
+        return data
 
 
 @dataclass

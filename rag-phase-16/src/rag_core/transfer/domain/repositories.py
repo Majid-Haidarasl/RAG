@@ -3,15 +3,16 @@ from __future__ import annotations
 from typing import Protocol
 
 from rag_core.shared_kernel.identifiers import NodeIdentifier
-from rag_core.transfer.domain.model import TransferPackage, TransferRuleSet
 from rag_core.shared_kernel.layer import LayerIndex
+from rag_core.transfer.domain.model import TransferPackage, TransferRuleSet
 
 
 class TransferPackageRepository(Protocol):
     def save(self, package: TransferPackage) -> None: ...
+
     def latest_accepted(
-        self, source_node: NodeIdentifier, target_node: NodeIdentifier
-    ) -> TransferPackage | None: ...
+        self, cycle_id: str, source_node: NodeIdentifier | str
+    ) -> TransferPackage | dict | None: ...
 
 
 class TransferRuleSetRepository(Protocol):

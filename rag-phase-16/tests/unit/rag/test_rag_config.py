@@ -27,11 +27,16 @@ def test_shipped_config_matches_phase2_decisions() -> None:
     assert s.ollama.generate_timeout_s >= 120 and s.ollama.connect_timeout_s <= 5
     assert s.index.path.startswith(".rag-index/")
     assert (ROOT / s.qa.prompt_dir / "answer.yaml").is_file()
+    assert s.ingestion.lvm.enabled is False
+    assert s.ingestion.lvm.dpi == 150
+    assert s.ingestion.lvm.model_id == "lvm-qwen2.5vl-3b"
+    assert (ROOT / s.ingestion.lvm.prompt_dir / "page_text.yaml").is_file()
 
 
 def test_defaults_when_sections_missing() -> None:
     s = settings_from_dict({})
     assert s.generation.model == "qwen3:8b" and s.context.budget_tokens == 3500
+    assert s.ingestion.lvm.enabled is False and s.ingestion.lvm.dpi == 150
 
 
 def test_unknown_keys_rejected() -> None:

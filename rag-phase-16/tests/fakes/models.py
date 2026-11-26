@@ -44,8 +44,13 @@ class FakeLlm:
 
 
 class FakeLvm:
+    def __init__(self, text: str = "FAKE_LAYOUT") -> None:
+        self.text = text
+        self.calls: list[tuple[bytes, str]] = []
+
     def read(self, image: bytes, task_prompt: str) -> LvmResult:
-        return LvmResult(text="FAKE_LAYOUT")
+        self.calls.append((image, task_prompt))
+        return LvmResult(text=self.text)
 
 
 class FakeJudge:

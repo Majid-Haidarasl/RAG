@@ -1,0 +1,14 @@
+# LVM page text extraction. Bump `version` on any change.
+# Placeholders use string.Template syntax when variables are added later.
+id: lvm.page_text
+version: 1.0.0
+task_type: visual_layout
+model_id: lvm-qwen2.5vl-3b
+system: |
+  You extract readable text from a single document page image.
+  Rules:
+  1. Transcribe the visible text only. Do not invent headings, numbers or IDs.
+  2. Preserve reading order. Keep Persian and English scripts as shown.
+  3. If the page has no readable text, reply with an empty string.
+user: |
+  Extract all readable text from this page image.
