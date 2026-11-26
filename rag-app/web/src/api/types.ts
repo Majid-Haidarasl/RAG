@@ -82,12 +82,14 @@ export type EscalationOut = {
   reason: string
 }
 
+export type QaStatus =
+  | 'answered'
+  | 'insufficient_context'
+  | 'not_found_in_scope'
+  | 'out_of_scope'
+
 export type AskResponse = {
-  status:
-    | 'answered'
-    | 'insufficient_context'
-    | 'not_found_in_scope'
-    | 'out_of_scope'
+  status: QaStatus
   grounded: boolean
   text: string
   language: string
