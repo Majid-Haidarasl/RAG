@@ -6,8 +6,9 @@ here rather than redefined.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Protocol
+from typing import Protocol
 
 from rag_core.models.domain.ports import EmbeddingPort
 from rag_core.rag.domain.records import ChunkRecord

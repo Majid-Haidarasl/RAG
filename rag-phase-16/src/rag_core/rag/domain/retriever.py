@@ -21,8 +21,8 @@ Q&A service can suggest an escalation without leaking content.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import time
+from dataclasses import dataclass, field
 
 from rag_core.knowledge.domain.dedup import DedupConfig
 from rag_core.knowledge.domain.fingerprint import jaccard, shingles

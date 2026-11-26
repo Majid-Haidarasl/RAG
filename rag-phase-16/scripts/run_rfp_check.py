@@ -34,13 +34,13 @@ from __future__ import annotations
 
 import argparse
 import copy
-from dataclasses import replace
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from dataclasses import replace
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
@@ -50,84 +50,84 @@ _scripts = Path(__file__).resolve().parent
 if str(_scripts) not in sys.path:
     sys.path.insert(0, str(_scripts))
 
-from run_project_check import ike_digest, mean, parse_prior, probe_ollama, rel  # noqa: E402
+from run_project_check import ike_digest, mean, parse_prior, probe_ollama, rel
 
-from rag_core import __version__  # noqa: E402
-from rag_core.hierarchy.application.workflows import load_and_validate  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.judging.application.services import LlmJudge, judge_all  # noqa: E402
-from rag_core.judging.domain.rule_judge import RuleBasedJudge  # noqa: E402
-from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings  # noqa: E402
-from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric  # noqa: E402
-from rag_core.prioritization.application.services import PrioritizationService  # noqa: E402
-from rag_core.prioritization.domain.scoring import PriorityScorer  # noqa: E402
-from rag_core.prioritization.infrastructure.judging_acl import verdict_dict  # noqa: E402
+from rag_core import __version__
+from rag_core.hierarchy.application.workflows import load_and_validate
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.judging.application.services import LlmJudge, judge_all
+from rag_core.judging.domain.rule_judge import RuleBasedJudge
+from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings
+from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric
+from rag_core.prioritization.application.services import PrioritizationService
+from rag_core.prioritization.domain.scoring import PriorityScorer
+from rag_core.prioritization.infrastructure.judging_acl import verdict_dict
 from rag_core.prioritization.infrastructure.signals_acl import (
     exposure_by_issue,
     issue_signals,
     sub_tasks,
-)  # noqa: E402
+)
 from rag_core.projects.infrastructure.config import (
     ProjectSettings,
     load_project_settings,
-)  # noqa: E402
-from rag_core.projects.infrastructure.corpus_acl import document_texts  # noqa: E402
+)
+from rag_core.projects.infrastructure.corpus_acl import document_texts
 from rag_core.projects.infrastructure.registry_json import (
     read_registry_dict as read_project_dict,
-)  # noqa: E402
+)
 from rag_core.projects.infrastructure.registry_json import (
     registry_from_dict as project_registry_from_dict,
-)  # noqa: E402
-from rag_core.proposals.application.services import ProposalService  # noqa: E402
+)
+from rag_core.proposals.application.services import ProposalService
 from rag_core.proposals.infrastructure.csv_export import (
     export_tables,
     round_trip_problems,
-)  # noqa: E402
+)
 from rag_core.proposals.infrastructure.registry_json import (
     read_registry_dict,
     registry_from_dict,
-)  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator, source_numbers  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
+)
+from rag_core.qa.domain.fact_check import CitedFactValidator, source_numbers
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
 from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaError,
-)  # noqa: E402
-from rag_core.research_gaps.application.services import GapReport, GapService  # noqa: E402
-from rag_core.research_gaps.domain.rules import GapRuleBook  # noqa: E402
-from rag_core.research_gaps.infrastructure.inputs_acl import build_inputs, ike_items  # noqa: E402
-from rag_core.rfp.application.services import RfpRun, RfpService  # noqa: E402
+)
+from rag_core.research_gaps.application.services import GapReport, GapService
+from rag_core.research_gaps.domain.rules import GapRuleBook
+from rag_core.research_gaps.infrastructure.inputs_acl import build_inputs, ike_items
+from rag_core.rfp.application.services import RfpRun, RfpService
 from rag_core.rfp.domain.advice import (
     AiReply,
     ReplyParseError,
     check_reply,
     parse_reply,
-)  # noqa: E402
-from rag_core.rfp.domain.evidence import ground_blueprint  # noqa: E402
-from rag_core.rfp.domain.validation import BlueprintValidator  # noqa: E402
+)
+from rag_core.rfp.domain.evidence import ground_blueprint
+from rag_core.rfp.domain.validation import BlueprintValidator
 from rag_core.rfp.infrastructure.blueprint_json import (
     blueprints_from_dict,
     read_blueprint_dict,
-)  # noqa: E402
-from rag_core.rfp.infrastructure.config import RfpSettings, load_rfp_settings  # noqa: E402
+)
+from rag_core.rfp.infrastructure.config import RfpSettings, load_rfp_settings
 from rag_core.rfp.infrastructure.inputs_acl import (
     executor_nodes,
     gap_views,
     item_views,
     key_issue_views,
-)  # noqa: E402
+)
 from rag_core.rfp.infrastructure.judging_acl import (
     feedback_task,
     negative_cases,
     rfp_task,
     summary_case,
-)  # noqa: E402
-from rag_core.rfp.infrastructure.prompts_yaml import RfpPrompts, load_rfp_prompts  # noqa: E402
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
-from rag_core.transfer.infrastructure.sources_acl import document_versions  # noqa: E402
+)
+from rag_core.rfp.infrastructure.prompts_yaml import RfpPrompts, load_rfp_prompts
+from rag_core.shared_kernel.errors import DomainError
+from rag_core.transfer.infrastructure.sources_acl import document_versions
 
 KIT = f"rag-core {__version__} (phase 13 rfp generation, proposal management)"
 SEPARATOR_START = "======== PHASE 13 SUMMARY ========"
@@ -289,7 +289,7 @@ def proposal_mutations(raw: dict) -> list[tuple[str, str, dict]]:
 
 def blueprint_rejects(
     data: dict, validator: BlueprintValidator, texts, fact_validator
-) -> list[str]:  # noqa: ANN001
+) -> list[str]:
     try:
         bps = blueprints_from_dict(data)
     except LOAD_ERRORS as exc:
@@ -319,7 +319,7 @@ def control_row(kind: str, expected: str, codes: list[str]) -> dict:
     }
 
 
-def main() -> int:  # noqa: C901 - one linear check script, like the earlier phases
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 13 RFP generation and proposal management."
     )
@@ -363,7 +363,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     )
     out_dir = args.out or root / "results" / "phase-13"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"rfp-check-{stamp}.json"
     csv_dir = args.exports or root / rset.storage.csv_dir
     cycle_id = rset.cycle.id
@@ -772,7 +772,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
 
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,
@@ -998,7 +998,7 @@ def live_step(
     jset: JudgeSettings,
     client: OllamaClient,
     rubric,
-    root: Path,  # noqa: ANN001
+    root: Path,
     rule_judge: RuleBasedJudge,
     validator: CitedFactValidator,
     prompts: RfpPrompts,

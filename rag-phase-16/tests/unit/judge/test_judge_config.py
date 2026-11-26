@@ -89,7 +89,7 @@ def test_every_output_kind_has_exactly_one_prompt() -> None:
     ],
     ids=["answer-fa", "answer-en", "refusal"],
 )
-def test_qa_prompt_renders_without_leftover_placeholders(case) -> None:  # noqa: ANN001
+def test_qa_prompt_renders_without_leftover_placeholders(case) -> None:
     rubric = load_rubric(PROMPT_DIR / "rubric.yaml")
     system, user = load_judge_prompts(PROMPT_DIR)[case.kind.value].render(case, rubric)
     assert "${" not in system + user

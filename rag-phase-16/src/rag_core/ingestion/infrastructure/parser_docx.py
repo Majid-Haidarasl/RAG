@@ -72,7 +72,7 @@ def _format_table(rows: tuple[tuple[str, ...], ...]) -> str:
 def parse_docx(path: Path) -> list[ContentBlock]:
     try:
         document = Document(path)
-    except Exception as exc:  # noqa: BLE001 — surface any parse failure clearly
+    except Exception as exc:
         raise ParseFailedError(str(path), str(exc)) from exc
 
     blocks: list[ContentBlock] = []

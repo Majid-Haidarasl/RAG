@@ -17,18 +17,19 @@ normalized gap histogram, so the rule adapts to font and size.
 
 from __future__ import annotations
 
-from collections import Counter
-from dataclasses import dataclass
 import html
-from pathlib import Path
+import itertools
 import re
 import shutil
 import statistics
 import subprocess
+from collections import Counter
+from dataclasses import dataclass
+from pathlib import Path
 
 _WORD_RE = re.compile(
     r'<word xMin="([-\d.]+)" yMin="([-\d.]+)" xMax="([-\d.]+)" yMax="([-\d.]+)">(.*?)</word>',
-    re.S,
+    re.DOTALL,
 )
 _ARABIC_LETTER = re.compile(r"[\u0620-\u064a\u066e-\u06d3\u06fa-\u06ff]")
 _LTR_CHAR = re.compile(r"[A-Za-z0-9\u06f0-\u06f9\u0660-\u0669]")
@@ -153,7 +154,7 @@ def estimate_join_gap(pages: list[list[Box]]) -> tuple[float, float | None]:
             if not _is_rtl(line):
                 continue
             ordered = _visual_rtl(line)
-            for a, b in zip(ordered, ordered[1:]):
+            for a, b in itertools.pairwise(ordered):
                 if a.arabic and b.arabic:
                     g = round(_gap(a, b, True), 2)
                     if MODE_RANGE[0] <= g <= MODE_RANGE[1]:
@@ -242,7 +243,7 @@ def page_paragraphs(boxes: list[Box], join_gap: float) -> tuple[str, ...]:
     if not lines:
         return ()
     centers = [statistics.fmean(b.center for b in line) for line in lines]
-    steps = [b - a for a, b in zip(centers, centers[1:])]
+    steps = [b - a for a, b in itertools.pairwise(centers)]
     typical = statistics.median(steps) if steps else 0.0
     paragraphs: list[list[str]] = [[]]
     for idx, line in enumerate(lines):

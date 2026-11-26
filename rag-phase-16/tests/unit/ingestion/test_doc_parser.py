@@ -31,7 +31,6 @@ def test_missing_soffice_message_tells_the_user_how_to_install(
 )
 def test_legacy_doc_converts_and_preserves_order(tmp_path: Path) -> None:
     from rag_core.ingestion.infrastructure.parser_doc import (
-        convert_doc_to_docx,
         find_soffice,
     )
 

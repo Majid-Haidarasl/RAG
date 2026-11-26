@@ -14,16 +14,16 @@ L = LayerIndex
 
 
 def _req(**kw) -> TransferRequirement:
-    base = dict(
-        layer=L(3),
-        direction=TransferDirection.UP,
-        target=L(2),
-        must_hand_over="Executor package",
-        min_artefacts=("TransferPackage CSV", "technical summary"),
-        approvals=("team lead",),
-        required_feedback="VP returns priorities",
-        sources=("AR-TRN-026",),
-    )
+    base = {
+        "layer": L(3),
+        "direction": TransferDirection.UP,
+        "target": L(2),
+        "must_hand_over": "Executor package",
+        "min_artefacts": ("TransferPackage CSV", "technical summary"),
+        "approvals": ("team lead",),
+        "required_feedback": "VP returns priorities",
+        "sources": ("AR-TRN-026",),
+    }
     base.update(kw)
     return TransferRequirement(**base)
 

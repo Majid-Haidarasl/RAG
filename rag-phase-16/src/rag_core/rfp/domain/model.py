@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError
 from rag_core.shared_kernel.events import DomainEvent
 from rag_core.shared_kernel.identifiers import NodeIdentifier, RfpId
-
 
 TWOPLACES = Decimal("0.1")  # one decimal, as published 78.8 / 75.2
 
@@ -116,5 +115,5 @@ AR_RFP_025_WEIGHTS = (
     CriterionWeight("technical", Decimal("0.6")),
     CriterionWeight("financial", Decimal("0.4")),
 )
-AR_RFP_025_SHAFAGH_SCORES = {"technical": Decimal("82"), "financial": Decimal("74")}
-AR_RFP_025_NOVIN_SCORES = {"technical": Decimal("68"), "financial": Decimal("86")}
+AR_RFP_025_SHAFAGH_SCORES = {"technical": Decimal(82), "financial": Decimal(74)}
+AR_RFP_025_NOVIN_SCORES = {"technical": Decimal(68), "financial": Decimal(86)}

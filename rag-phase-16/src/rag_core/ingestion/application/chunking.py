@@ -145,7 +145,7 @@ def chunk_blocks(
                     if block.cells
                     else [tuple(line.split(" | ")) for line in block.text.splitlines()]
                 )
-                header = rows[0] if rows else tuple()
+                header = rows[0] if rows else ()
                 current: list[tuple[str, ...]] = []
 
                 def rows_text(rs: list[tuple[str, ...]]) -> str:

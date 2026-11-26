@@ -1,0 +1,468 @@
+Ruff lint cleanup report — rag-phase-16
+=======================================
+Branch:  chore/ruff-cleanup
+Date:    2026-11-26 (UTC)
+Ruff:    0.17.6 (pinned)
+Status:  ruff check . passes; tests green; NOT committed (awaiting "approved")
+
+Goal
+----
+Make `ruff check .` pass under Ruff's DEFAULT rules with no loosening.
+No public API / logic changes. Commit only after reply "approved"
+with message: fix lint findings
+
+Config changes (pyproject.toml)
+-------------------------------
+[project.optional-dependencies] dev += "ruff==0.17.6"
+
+[tool.ruff]
+target-version = "py312"
+
+No select / ignore / per-file-ignores / line-length / blanket "# noqa".
+
+
+1. Findings before (ruff check . --statistics)
+----------------------------------------------
+389  RUF100   unused-noqa
+ 76  I001     unsorted-imports
+ 27  UP017    datetime-timezone-utc
+ 26  FURB157  verbose-decimal-constructor
+ 15  C408     unnecessary-collection-call
+ 13  EXE001   shebang-not-executable
+  7  UP035    deprecated-import
+  7  ISC004   implicit-string-concatenation-in-collection-literal
+  7  RUF012   mutable-class-default
+  5  FURB167  regex-flag-alias
+  5  SIM905   split-static-string
+  5  F401     unused-import
+  4  RUF046   unnecessary-cast-to-int
+  3  B009     get-attr-with-constant
+  3  RUF015   unnecessary-iterable-allocation-for-first-element
+  3  RUF059   unused-unpacked-variable
+  2  B023     function-uses-loop-variable
+  2  SIM103   needless-bool
+  2  PYI034   non-self-return-type
+  2  UP037    quoted-annotation
+  2  F841     unused-variable
+  2  RUF007   zip-instead-of-pairwise
+  1  B017     assert-raises-exception
+  1  PLC0206  dict-index-missing-items
+  1  F541     f-string-missing-placeholders
+  1  PIE810   multiple-starts-ends-with
+  1  S110     try-except-pass
+  1  TRY004   type-check-without-type-error
+
+Total before: 613
+Safe autofixable (*): 546
+Unsafe fixes available: 41
+
+
+2. After safe `ruff check . --fix` (no --unsafe-fixes)
+-------------------------------------------------------
+Fixed:     578
+Remaining: 67
+git diff --stat at that point: 132 files, +571 / -597
+
+Then EXE001 cleared by chmod +x on 13 scripts → 54 remaining for hand work.
+
+
+3. Findings after
+-----------------
+Total after: 0  (ruff check . → All checks passed!)
+
+
+4. Final diff size
+------------------
+144 files changed, 770 insertions(+), 799 deletions(-)
+13 scripts mode 100644 → 100755 (EXE001)
+
+
+5. Process summary
+------------------
+1) Pin ruff==0.17.6 + target-version = "py312"
+2) Record --statistics
+3) ruff check . --fix  (safe only)
+4) Show git diff --stat
+5) chmod +x scripts with shebang
+6) Apply verified-equivalent unsafe fixes by rule (listed below)
+7) Hand-fix remainder (B023, PLC0206, S110, B017, RUF012, TRY004 noqa)
+8) Verify ruff + pytest
+
+
+6. Unsafe-equivalent fixes (file:line + reason)
+-----------------------------------------------
+Line numbers are as of the finding before the fix was applied.
+
+scripts/run_eval_check.py:245
+  RUF059 — prefix unused unpack target with _; same unpacking
+
+scripts/run_judge_check.py:238
+  RUF046 — drop redundant int(round(...)); round already returns int
+
+src/rag_core/ingestion/application/chunking.py:148
+  C408 — tuple() → (); same empty tuple
+
+src/rag_core/ingestion/domain/text_quality.py:137
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+src/rag_core/ingestion/infrastructure/pdf_poppler.py:156
+  RUF007 — zip(xs, xs[1:]) → itertools.pairwise(xs); same successive pairs
+
+src/rag_core/ingestion/infrastructure/pdf_poppler.py:245
+  RUF007 — zip(xs, xs[1:]) → itertools.pairwise(xs); same successive pairs
+
+src/rag_core/judging/domain/parser.py:152
+  RUF046 — drop redundant int(math.floor(...)); math.floor already returns int
+
+src/rag_core/qa/application/evaluation.py:123
+  RUF046 — drop redundant int(round(...)); round already returns int
+
+src/rag_core/qa/domain/citations.py:97
+  SIM103 — final if/return False/return True → equivalent boolean expression
+
+src/rag_core/rag/domain/records.py:154
+  SIM103 — final if/return False/return True → equivalent boolean expression
+
+src/rag_core/rag/infrastructure/sqlite_store.py:38
+  PYI034 — __enter__ annotation ClassName → Self; runtime still returns self
+
+src/rag_core/transfer/domain/render.py:155
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+src/rag_core/transfer/domain/render.py:171
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+src/rag_core/transfer/domain/render.py:174
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+src/rag_core/tuning/domain/metrics.py:37
+  RUF046 — drop redundant int(math.ceil(...)); math.ceil already returns int
+
+tests/fixtures/ingestion/builders.py:79
+  F841 — remove unused local binding; assignment was unused
+
+tests/fixtures/ingestion/builders.py:103
+  F841 — remove unused local binding; assignment was unused
+
+tests/fixtures/judge/samples.py:57
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/judge/samples.py:73
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:51
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:72
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:127
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:255
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:272
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/projects/samples.py:285
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/rag/fakes.py:341
+  PYI034 — __enter__ annotation ClassName → Self; runtime still returns self
+
+tests/fixtures/transfer/samples.py:59
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/transfer/samples.py:74
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/fixtures/transfer/samples.py:92
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/unit/hierarchy/test_hierarchy_transfer.py:17
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/unit/ingestion/test_pdf_poppler.py:103
+  RUF059 — prefix unused unpack target with _; same unpacking
+
+tests/unit/judge/test_judge_check_script.py:21
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+tests/unit/projects/test_projects_evidence.py:20
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+tests/unit/projects/test_projects_evidence.py:24
+  ISC004 — parenthesize adjacent string literals in collection; same concatenated string
+
+tests/unit/qa/test_qa_evaluation.py:41
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/unit/qa/test_qa_language_prompts.py:109
+  C408 — dict(k=v) → {"k": v}; same mapping
+
+tests/unit/quality/test_quality_coverage.py:117
+  RUF015 — seq[0] → next(...); same first element
+
+tests/unit/rag/test_rag_ollama_adapter.py:89
+  RUF015 — seq[0] → next(...); same first element
+
+tests/unit/transfer/test_transfer_check_script.py:93
+  PIE810 — startswith(a) or startswith(b) → startswith((a, b)); same predicate
+
+tests/unit/transfer/test_transfer_sources_acl.py:110
+  RUF015 — seq[0] → next(...); same first element
+
+tests/unit/tuning/test_tuning_ids_acl.py:141
+  RUF059 — prefix unused unpack target with _; same unpacking
+
+
+7. Other hand fixes (not via --unsafe-fixes)
+--------------------------------------------
+EXE001 — chmod +x on 13 scripts/run_*.py (shebang present; mode-only)
+
+B023 — src/rag_core/executors/domain/validation.py
+  Replace loop lambdas with nested def err/warn binding ident via default arg;
+  same synchronous call semantics
+
+PLC0206 — src/rag_core/hierarchy/domain/validation.py
+  for nid in by_id → for nid, row in by_id.items(); same cycle walk
+
+S110 — scripts/run_judge_check.py
+  try/except/pass → contextlib.suppress(Exception); same fallthrough to corpus
+
+B017 — tests/unit/ingestion/test_pipeline_and_schema.py
+  pytest.raises(Exception) → pytest.raises(jsonschema.ValidationError);
+  same rejection, specific type
+
+RUF012 — tests/test_parser_pdf_extra.py and
+         tests/unit/transfer/test_transfer_sources_acl.py
+  Annotate mutable class attributes with ClassVar; shared mutable stays intentional
+
+
+8. Remaining specific # noqa (with reasons)
+-------------------------------------------
+TRY004 (new)
+  scripts/run_eval_check.py:294
+  Keep raise ValueError for non-mapping YAML; TypeError would change exception type
+
+F401
+  src/rag_core/ingestion/infrastructure/pdf_render.py:20
+  Side-effect import: Pillow required by page.to_image
+
+F401
+  src/rag_core/issues/comparison.py:7
+  Re-export public names for the compatibility entry point
+
+BLE001 (×33) — catch-all Exception so paths report failure instead of crashing;
+narrowing would change control flow:
+
+  scripts/run_corpus_dedup.py:276
+  scripts/run_corpus_ingest.py:89
+  scripts/run_eval_check.py:992          # live step never breaks kit status
+  scripts/run_ike_check.py:292           # reported as a failed check
+  scripts/run_ike_check.py:332           # live step never breaks kit status
+  scripts/run_judge_check.py:304         # reported as a failed check
+  scripts/run_judge_check.py:334         # reported as a failed check
+  scripts/run_judge_check.py:428         # live step never breaks kit status
+  scripts/run_project_check.py:354       # reported as a failed check
+  scripts/run_project_check.py:361       # reported as a failed check
+  scripts/run_project_check.py:492       # reported as a failed check
+  scripts/run_project_check.py:527       # live step never breaks kit status
+  scripts/run_rag_demo.py:338            # live step never breaks kit status
+  scripts/run_rfp_check.py:398           # reported as a failed check
+  scripts/run_rfp_check.py:405
+  scripts/run_rfp_check.py:440
+  scripts/run_rfp_check.py:445
+  scripts/run_rfp_check.py:494
+  scripts/run_rfp_check.py:642
+  scripts/run_rfp_check.py:693           # live step never breaks kit status
+  scripts/run_transfer_check.py:310      # reported as a failed check
+  scripts/run_transfer_check.py:335      # reported as a failed check
+  scripts/run_transfer_check.py:362      # reported as a failed check
+  scripts/run_transfer_check.py:407      # reported as a failed check
+  scripts/run_transfer_check.py:485      # live step never breaks kit status
+  src/rag_core/ingestion/application/pipeline.py:300
+                                         # batch must report each failure
+  src/rag_core/ingestion/infrastructure/parser_pdf.py:55
+  src/rag_core/ingestion/infrastructure/parser_pdf.py:156
+  src/rag_core/processing/application/services.py:58
+                                         # one failing node must not stop the cycle
+  src/rag_core/rag/application/corpus.py:64
+                                         # reported, never hidden
+  src/rag_core/rag/infrastructure/scope_acl.py:35
+                                         # invalid id format means "does not exist"
+  src/rag_core/rag/infrastructure/scope_acl.py:41
+  src/rag_core/transfer/application/services.py:125
+                                         # failed model call is a reported error, not a crash
+
+Dead E402 / ANN* / C901 / E731 noqas were removed by safe --fix (RUF100).
+
+
+9. Verification
+---------------
+ruff check .                         → All checks passed!
+pytest rag-phase-16                  → 1780 collected; 1779 passed, 1 skipped, 0 failed
+pytest rag-app/api                   → 27 passed
+
+
+10. Files changed (144)
+-----------------------
+rag-phase-16/pyproject.toml
+rag-phase-16/scripts/run_corpus_dedup.py
+rag-phase-16/scripts/run_corpus_ingest.py
+rag-phase-16/scripts/run_eval_check.py
+rag-phase-16/scripts/run_hierarchy_check.py
+rag-phase-16/scripts/run_ike_check.py
+rag-phase-16/scripts/run_issue_check.py
+rag-phase-16/scripts/run_judge_check.py
+rag-phase-16/scripts/run_project_check.py
+rag-phase-16/scripts/run_quality_check.py
+rag-phase-16/scripts/run_rag_demo.py
+rag-phase-16/scripts/run_release_check.py
+rag-phase-16/scripts/run_rfp_check.py
+rag-phase-16/scripts/run_transfer_check.py
+rag-phase-16/src/rag_core/executors/domain/expertise.py
+rag-phase-16/src/rag_core/executors/domain/validation.py
+rag-phase-16/src/rag_core/hierarchy/domain/model.py
+rag-phase-16/src/rag_core/hierarchy/domain/validation.py
+rag-phase-16/src/rag_core/ike/application/services.py
+rag-phase-16/src/rag_core/ingestion/application/chunking.py
+rag-phase-16/src/rag_core/ingestion/domain/text_quality.py
+rag-phase-16/src/rag_core/ingestion/infrastructure/dispatcher.py
+rag-phase-16/src/rag_core/ingestion/infrastructure/files.py
+rag-phase-16/src/rag_core/ingestion/infrastructure/parser_docx.py
+rag-phase-16/src/rag_core/ingestion/infrastructure/parser_pdf.py
+rag-phase-16/src/rag_core/ingestion/infrastructure/pdf_poppler.py
+rag-phase-16/src/rag_core/issues/comparison.py
+rag-phase-16/src/rag_core/issues/domain/comparison.py
+rag-phase-16/src/rag_core/judging/application/services.py
+rag-phase-16/src/rag_core/judging/domain/model.py
+rag-phase-16/src/rag_core/judging/domain/negative.py
+rag-phase-16/src/rag_core/judging/domain/parser.py
+rag-phase-16/src/rag_core/judging/domain/rubric.py
+rag-phase-16/src/rag_core/judging/domain/rule_judge.py
+rag-phase-16/src/rag_core/judging/domain/text.py
+rag-phase-16/src/rag_core/knowledge/domain/dedup.py
+rag-phase-16/src/rag_core/knowledge/domain/fingerprint.py
+rag-phase-16/src/rag_core/prioritization/application/services.py
+rag-phase-16/src/rag_core/prioritization/domain/advice.py
+rag-phase-16/src/rag_core/processing/domain/cycle.py
+rag-phase-16/src/rag_core/projects/domain/validation.py
+rag-phase-16/src/rag_core/projects/infrastructure/corpus_acl.py
+rag-phase-16/src/rag_core/proposals/domain/validation.py
+rag-phase-16/src/rag_core/qa/application/evaluation.py
+rag-phase-16/src/rag_core/qa/domain/citations.py
+rag-phase-16/src/rag_core/qa/domain/fact_check.py
+rag-phase-16/src/rag_core/quality/application/services.py
+rag-phase-16/src/rag_core/quality/domain/release.py
+rag-phase-16/src/rag_core/quality/infrastructure/release_files.py
+rag-phase-16/src/rag_core/rag/application/corpus.py
+rag-phase-16/src/rag_core/rag/application/indexing.py
+rag-phase-16/src/rag_core/rag/domain/lexical.py
+rag-phase-16/src/rag_core/rag/domain/ports.py
+rag-phase-16/src/rag_core/rag/domain/records.py
+rag-phase-16/src/rag_core/rag/domain/retriever.py
+rag-phase-16/src/rag_core/rag/domain/vector.py
+rag-phase-16/src/rag_core/rag/infrastructure/memory.py
+rag-phase-16/src/rag_core/rag/infrastructure/sqlite_store.py
+rag-phase-16/src/rag_core/rfp/domain/advice.py
+rag-phase-16/src/rag_core/rfp/domain/blueprint.py
+rag-phase-16/src/rag_core/rfp/domain/model.py
+rag-phase-16/src/rag_core/shared_kernel/__init__.py
+rag-phase-16/src/rag_core/shared_kernel/events.py
+rag-phase-16/src/rag_core/shared_kernel/identifiers.py
+rag-phase-16/src/rag_core/shared_kernel/numerals.py
+rag-phase-16/src/rag_core/transfer/domain/render.py
+rag-phase-16/src/rag_core/transfer/domain/review.py
+rag-phase-16/src/rag_core/transfer/infrastructure/csv_format.py
+rag-phase-16/src/rag_core/transfer/infrastructure/sources_acl.py
+rag-phase-16/src/rag_core/tuning/application/services.py
+rag-phase-16/src/rag_core/tuning/domain/gold.py
+rag-phase-16/src/rag_core/tuning/domain/metrics.py
+rag-phase-16/src/rag_core/tuning/infrastructure/gold_jsonl.py
+rag-phase-16/src/rag_core/tuning/infrastructure/ids_acl.py
+rag-phase-16/src/rag_core/tuning/infrastructure/judging_acl.py
+rag-phase-16/src/rag_core/tuning/infrastructure/rag_acl.py
+rag-phase-16/tests/fixtures/ingestion/builders.py
+rag-phase-16/tests/fixtures/judge/samples.py
+rag-phase-16/tests/fixtures/projects/samples.py
+rag-phase-16/tests/fixtures/rag/fakes.py
+rag-phase-16/tests/fixtures/transfer/samples.py
+rag-phase-16/tests/fixtures/tuning/samples.py
+rag-phase-16/tests/test_parser_doc_extra.py
+rag-phase-16/tests/test_parser_pdf_extra.py
+rag-phase-16/tests/unit/executors/test_executor_case_matching.py
+rag-phase-16/tests/unit/executors/test_executor_matching_rules.py
+rag-phase-16/tests/unit/executors/test_executor_registry.py
+rag-phase-16/tests/unit/hardening/test_hardening_numerals.py
+rag-phase-16/tests/unit/hierarchy/test_hierarchy_transfer.py
+rag-phase-16/tests/unit/ike/test_ike_check_script.py
+rag-phase-16/tests/unit/ike/test_ike_summary.py
+rag-phase-16/tests/unit/ingestion/test_doc_parser.py
+rag-phase-16/tests/unit/ingestion/test_pdf_poppler.py
+rag-phase-16/tests/unit/ingestion/test_pipeline_and_schema.py
+rag-phase-16/tests/unit/issues/test_progress.py
+rag-phase-16/tests/unit/judge/test_judge_check_script.py
+rag-phase-16/tests/unit/judge/test_judge_config.py
+rag-phase-16/tests/unit/judge/test_judge_llm_service.py
+rag-phase-16/tests/unit/judge/test_judge_negative.py
+rag-phase-16/tests/unit/judge/test_judge_rule.py
+rag-phase-16/tests/unit/processing/test_processing_hierarchy_acl.py
+rag-phase-16/tests/unit/processing/test_processing_service.py
+rag-phase-16/tests/unit/projects/test_projects_evidence.py
+rag-phase-16/tests/unit/projects/test_projects_registry_json.py
+rag-phase-16/tests/unit/projects/test_projects_validation.py
+rag-phase-16/tests/unit/proposals/test_proposals_csv_export.py
+rag-phase-16/tests/unit/proposals/test_proposals_evaluation.py
+rag-phase-16/tests/unit/proposals/test_proposals_evidence.py
+rag-phase-16/tests/unit/proposals/test_proposals_feedback.py
+rag-phase-16/tests/unit/proposals/test_proposals_knowledge.py
+rag-phase-16/tests/unit/proposals/test_proposals_model.py
+rag-phase-16/tests/unit/proposals/test_proposals_services.py
+rag-phase-16/tests/unit/qa/test_qa_citations.py
+rag-phase-16/tests/unit/qa/test_qa_evaluation.py
+rag-phase-16/tests/unit/qa/test_qa_fact_check.py
+rag-phase-16/tests/unit/qa/test_qa_language_prompts.py
+rag-phase-16/tests/unit/qa/test_qa_service.py
+rag-phase-16/tests/unit/quality/test_quality_coverage.py
+rag-phase-16/tests/unit/quality/test_quality_release.py
+rag-phase-16/tests/unit/rag/test_rag_context.py
+rag-phase-16/tests/unit/rag/test_rag_demo_script.py
+rag-phase-16/tests/unit/rag/test_rag_ollama_adapter.py
+rag-phase-16/tests/unit/rag/test_rag_retriever.py
+rag-phase-16/tests/unit/rag/test_rag_scope_corpus.py
+rag-phase-16/tests/unit/release/test_release_config.py
+rag-phase-16/tests/unit/release/test_release_kit.py
+rag-phase-16/tests/unit/release/test_release_script.py
+rag-phase-16/tests/unit/rfp/test_rfp_blueprint.py
+rag-phase-16/tests/unit/rfp/test_rfp_generator.py
+rag-phase-16/tests/unit/rfp/test_rfp_judging.py
+rag-phase-16/tests/unit/rfp/test_rfp_services.py
+rag-phase-16/tests/unit/rfp/test_rfp_validation.py
+rag-phase-16/tests/unit/rfp/test_scoring.py
+rag-phase-16/tests/unit/shared_kernel/test_numerals.py
+rag-phase-16/tests/unit/transfer/test_transfer_check_script.py
+rag-phase-16/tests/unit/transfer/test_transfer_render.py
+rag-phase-16/tests/unit/transfer/test_transfer_review.py
+rag-phase-16/tests/unit/transfer/test_transfer_services.py
+rag-phase-16/tests/unit/transfer/test_transfer_sources_acl.py
+rag-phase-16/tests/unit/transfer/test_transfer_suggestions.py
+rag-phase-16/tests/unit/tuning/test_tuning_calibration.py
+rag-phase-16/tests/unit/tuning/test_tuning_eval_script.py
+rag-phase-16/tests/unit/tuning/test_tuning_gold.py
+rag-phase-16/tests/unit/tuning/test_tuning_ids_acl.py
+
+Scripts chmod +x (EXE001):
+  run_corpus_dedup.py, run_corpus_ingest.py, run_eval_check.py,
+  run_hierarchy_check.py, run_ike_check.py, run_issue_check.py,
+  run_judge_check.py, run_project_check.py, run_quality_check.py,
+  run_rag_demo.py, run_release_check.py, run_rfp_check.py,
+  run_transfer_check.py
+
+
+11. Pending
+-----------
+Await reply "approved" then:
+  git commit -m "fix lint findings"
+  git push (chore/ruff-cleanup)

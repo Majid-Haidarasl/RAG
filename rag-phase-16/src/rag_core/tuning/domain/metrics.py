@@ -12,10 +12,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
 import math
 import re
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass, field
 
 SENTENCE_RE = re.compile(r"(?<=[.!?؟])\s+|\n+")
 DETAIL_MAX_SENTENCES = {"short": 3, "list": 6, "refusal": 2}
@@ -34,7 +34,7 @@ def p95(values: Iterable[float]) -> float | None:
     rows = sorted(values)
     if not rows:
         return None
-    return round(rows[min(len(rows) - 1, int(math.ceil(0.95 * len(rows))) - 1)], 3)
+    return round(rows[min(len(rows) - 1, math.ceil(0.95 * len(rows)) - 1)], 3)
 
 
 def unique(seq: Iterable[str]) -> tuple[str, ...]:

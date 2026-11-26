@@ -1,7 +1,7 @@
 """Poppler pdftotext adapter: RTL reconstruction (pure) and real binary (skip if missing)."""
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -100,7 +100,7 @@ def test_pdftotext_is_primary_engine_for_text_pdf(tmp_path: Path) -> None:
     blob = "\n".join(b.text for b in result.blocks)
     assert "30 minutes" in blob and "AR-SW-022" in blob
     assert result.quality.verdict == "ok"
-    blocks, scanned, pages = parse_pdf(path)
+    _blocks, scanned, pages = parse_pdf(path)
     assert pages == 1 and scanned == ()
 
 

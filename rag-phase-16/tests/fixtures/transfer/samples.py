@@ -56,50 +56,50 @@ ISSUE_031 = IssueContext(
 
 
 def item(item_id: str, origin: str, **changes: object) -> TransferItem:
-    base: dict[str, object] = dict(
-        item_id=item_id,
-        title_en=f"Work on {item_id}",
-        status="in_progress",
-        owner_node=origin,
-        origin_node=origin,
-        title_fa="کار فنی",
-        issue=ISSUE_024 if item_id.startswith("AR-ISS-024") else None,
-        priority="P1" if item_id.startswith("AR-ISS-024") else "P3",
-    )
+    base: dict[str, object] = {
+        "item_id": item_id,
+        "title_en": f"Work on {item_id}",
+        "status": "in_progress",
+        "owner_node": origin,
+        "origin_node": origin,
+        "title_fa": "کار فنی",
+        "issue": ISSUE_024 if item_id.startswith("AR-ISS-024") else None,
+        "priority": "P1" if item_id.startswith("AR-ISS-024") else "P3",
+    }
     base.update(changes)
     return TransferItem(**base)  # type: ignore[arg-type]
 
 
 def hw_item(origin: str = "N-HW-REP", **changes: object) -> TransferItem:
-    base: dict[str, object] = dict(
-        title_en="Hardware",
-        title_fa="سخت‌افزار",
-        lead="Saeed Akbari",
-        lead_fa="سعید اکبری",
-        collaborators=("Farzaneh Javadi",),
-        collaborators_fa=("فرزانه جوادی",),
-        documents=("AR-HW-012", "AR-HW-013"),
-        gaps=("AR-HW-013",),
-        risk=9,
-        owner_node="N-HW-REP",
-        role=ItemRole.OWNER if origin == "N-HW-REP" else ItemRole.SUPPORT,
-    )
+    base: dict[str, object] = {
+        "title_en": "Hardware",
+        "title_fa": "سخت‌افزار",
+        "lead": "Saeed Akbari",
+        "lead_fa": "سعید اکبری",
+        "collaborators": ("Farzaneh Javadi",),
+        "collaborators_fa": ("فرزانه جوادی",),
+        "documents": ("AR-HW-012", "AR-HW-013"),
+        "gaps": ("AR-HW-013",),
+        "risk": 9,
+        "owner_node": "N-HW-REP",
+        "role": ItemRole.OWNER if origin == "N-HW-REP" else ItemRole.SUPPORT,
+    }
     base.update(changes)
     return item("AR-ISS-024/HW", origin, **base)
 
 
 def win_item(**changes: object) -> TransferItem:
-    base: dict[str, object] = dict(
-        title_en="Windows client",
-        title_fa="کلاینت ویندوز",
-        status="blocked",
-        lead="Roozbeh Mohseni",
-        lead_fa="روزبه محسنی",
-        depends_on=("AR-ISS-024/HW",),
-        documents=("AR-SW-019",),
-        gaps=("AR-HW-015",),
-        risk=9,
-    )
+    base: dict[str, object] = {
+        "title_en": "Windows client",
+        "title_fa": "کلاینت ویندوز",
+        "status": "blocked",
+        "lead": "Roozbeh Mohseni",
+        "lead_fa": "روزبه محسنی",
+        "depends_on": ("AR-ISS-024/HW",),
+        "documents": ("AR-SW-019",),
+        "gaps": ("AR-HW-015",),
+        "risk": 9,
+    }
     base.update(changes)
     return item("AR-ISS-024/WIN", "N-SW-WIN", **base)
 

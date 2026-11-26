@@ -8,29 +8,18 @@ and a light plural strip keep scores focused on content words.
 
 from __future__ import annotations
 
-from collections import Counter
-from dataclasses import dataclass
 import math
-from typing import Iterable
+from collections import Counter
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 from rag_core.knowledge.domain.fingerprint import tokens as normalized_tokens
 
 STOPWORDS_FA = frozenset(
-    """
-    و در به از که این آن با را برای تا یا هر هم نیز اما اگر چه چون بر پس بی
-    است هست بود شد شود میشود می شده باشد کند کرد کرده کنند دارد داشت دارند
-    یک ها های ای اند ام ایم اید ی من تو او ما شما آنها ایشان خود چند چقدر چیست
-    کدام چگونه چطور کجا کی چرا آیا طبق مورد درباره بین روی زیر پیش بعد قبل
-    """.split()
+    ["و", "در", "به", "از", "که", "این", "آن", "با", "را", "برای", "تا", "یا", "هر", "هم", "نیز", "اما", "اگر", "چه", "چون", "بر", "پس", "بی", "است", "هست", "بود", "شد", "شود", "میشود", "می", "شده", "باشد", "کند", "کرد", "کرده", "کنند", "دارد", "داشت", "دارند", "یک", "ها", "های", "ای", "اند", "ام", "ایم", "اید", "ی", "من", "تو", "او", "ما", "شما", "آنها", "ایشان", "خود", "چند", "چقدر", "چیست", "کدام", "چگونه", "چطور", "کجا", "کی", "چرا", "آیا", "طبق", "مورد", "درباره", "بین", "روی", "زیر", "پیش", "بعد", "قبل"]
 )
 STOPWORDS_EN = frozenset(
-    """
-    a an the and or of in on at to for from by with as is are was were be been
-    being it its this that these those what which who whom how why when where
-    does do did can could should would will shall may might must has have had
-    not no than then there their they them we you your our i he she his her
-    about into under over per any all each such
-    """.split()
+    ["a", "an", "the", "and", "or", "of", "in", "on", "at", "to", "for", "from", "by", "with", "as", "is", "are", "was", "were", "be", "been", "being", "it", "its", "this", "that", "these", "those", "what", "which", "who", "whom", "how", "why", "when", "where", "does", "do", "did", "can", "could", "should", "would", "will", "shall", "may", "might", "must", "has", "have", "had", "not", "no", "than", "then", "there", "their", "they", "them", "we", "you", "your", "our", "i", "he", "she", "his", "her", "about", "into", "under", "over", "per", "any", "all", "each", "such"]
 )
 STOPWORDS = STOPWORDS_FA | STOPWORDS_EN
 

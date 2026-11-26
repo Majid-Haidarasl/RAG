@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
 from rag_core.shared_kernel.errors import InvariantError
 from rag_core.shared_kernel.numerals import normalize_digits

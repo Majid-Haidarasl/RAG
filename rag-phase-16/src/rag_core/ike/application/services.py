@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 
 from rag_core.ike.domain.builder import IkeGraphBuilder
 from rag_core.ike.domain.comparison import IssueKnowledgeComparison, compare_knowledge

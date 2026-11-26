@@ -25,7 +25,7 @@ from tests.fixtures.transfer.samples import (
 pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg]
 
 
-def board_draft():  # noqa: ANN201
+def board_draft():
     extra = [team_win(), team_mob()]
     sw = built(
         deputy("N-SW", "Software deputy"),

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-import re
 from typing import Any
 
 from rag_core.shared_kernel.errors import InvariantError

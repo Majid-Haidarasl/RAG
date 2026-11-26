@@ -38,12 +38,12 @@ Prints the ``PHASE 14 SUMMARY`` block and writes
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
@@ -54,42 +54,42 @@ _scripts = Path(__file__).resolve().parent
 if str(_scripts) not in sys.path:
     sys.path.insert(0, str(_scripts))
 
-from run_project_check import parse_prior, probe_ollama, rel  # noqa: E402
+from run_project_check import parse_prior, probe_ollama, rel
 
-from rag_core import __version__  # noqa: E402
-from rag_core.judging.application.services import LlmJudge, judge_all  # noqa: E402
-from rag_core.judging.domain.rule_judge import RuleBasedJudge  # noqa: E402
-from rag_core.judging.domain.text import language_matches  # noqa: E402
-from rag_core.judging.infrastructure.calibration_json import load_calibration  # noqa: E402
-from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings  # noqa: E402
-from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric  # noqa: E402
-from rag_core.judging.infrastructure.qa_acl import chunk_texts, phase8_cases  # noqa: E402
-from rag_core.qa.application.evaluation import facts_found, load_samples, status_ok  # noqa: E402
-from rag_core.qa.application.service import NodeScopedQaService, QaConfig  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator  # noqa: E402
-from rag_core.qa.domain.model import QaRequest, QaStatus  # noqa: E402
-from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import IndexBuilder, build_retriever  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
+from rag_core import __version__
+from rag_core.judging.application.services import LlmJudge, judge_all
+from rag_core.judging.domain.rule_judge import RuleBasedJudge
+from rag_core.judging.domain.text import language_matches
+from rag_core.judging.infrastructure.calibration_json import load_calibration
+from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings
+from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric
+from rag_core.judging.infrastructure.qa_acl import chunk_texts, phase8_cases
+from rag_core.qa.application.evaluation import facts_found, load_samples, status_ok
+from rag_core.qa.application.service import NodeScopedQaService, QaConfig
+from rag_core.qa.domain.fact_check import CitedFactValidator
+from rag_core.qa.domain.model import QaRequest, QaStatus
+from rag_core.qa.infrastructure.prompt_yaml import load_qa_prompts
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import IndexBuilder, build_retriever
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
 from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaEmbedder,
     OllamaError,
-)  # noqa: E402
-from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
-from rag_core.rfp.domain.advice import ReplyParseError, check_reply, parse_reply  # noqa: E402
-from rag_core.rfp.infrastructure.config import RfpSettings, load_rfp_settings  # noqa: E402
+)
+from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore
+from rag_core.rfp.domain.advice import ReplyParseError, check_reply, parse_reply
+from rag_core.rfp.infrastructure.config import RfpSettings, load_rfp_settings
 from rag_core.rfp.infrastructure.judging_acl import (
     feedback_task,
     rfp_task,
     summary_case,
-)  # noqa: E402
-from rag_core.rfp.infrastructure.prompts_yaml import load_rfp_prompts, prompt_set  # noqa: E402
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
-from rag_core.tuning.application.precheck import PrecheckedJudge  # noqa: E402
-from rag_core.tuning.application.services import (  # noqa: E402
+)
+from rag_core.rfp.infrastructure.prompts_yaml import load_rfp_prompts, prompt_set
+from rag_core.shared_kernel.errors import DomainError
+from rag_core.tuning.application.precheck import PrecheckedJudge
+from rag_core.tuning.application.services import (
     Generated,
     IdVariantRunner,
     answer_row,
@@ -101,8 +101,8 @@ from rag_core.tuning.application.services import (  # noqa: E402
     retrieval_candidates,
     summarize_prompt,
 )
-from rag_core.tuning.domain.gold import pairs, phase8_coverage, validate_gold  # noqa: E402
-from rag_core.tuning.domain.required_ids import (  # noqa: E402
+from rag_core.tuning.domain.gold import pairs, phase8_coverage, validate_gold
+from rag_core.tuning.domain.required_ids import (
     RETRY_VARIANTS,
     IdVariant,
     id_checklist,
@@ -110,16 +110,16 @@ from rag_core.tuning.domain.required_ids import (  # noqa: E402
     retry_note,
     summarize_id_runs,
 )
-from rag_core.tuning.domain.variants import Candidate, selection_problems  # noqa: E402
-from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings  # noqa: E402
-from rag_core.tuning.infrastructure.gold_jsonl import load_gold  # noqa: E402
-from rag_core.tuning.infrastructure.ids_acl import IdJob, load_jobs, render_job  # noqa: E402
-from rag_core.tuning.infrastructure.judging_acl import (  # noqa: E402
+from rag_core.tuning.domain.variants import Candidate, selection_problems
+from rag_core.tuning.infrastructure.config import EvalSettings, load_eval_settings
+from rag_core.tuning.infrastructure.gold_jsonl import load_gold
+from rag_core.tuning.infrastructure.ids_acl import IdJob, load_jobs, render_job
+from rag_core.tuning.infrastructure.judging_acl import (
     MUTATIONS,
     derive_calibration,
     load_strict_prompts,
 )
-from rag_core.tuning.infrastructure.rag_acl import (  # noqa: E402
+from rag_core.tuning.infrastructure.rag_acl import (
     CachingEmbedder,
     assembler,
     document_texts,
@@ -159,17 +159,17 @@ def fs(value: float | None) -> str:
 
 
 # ---- offline pieces ---------------------------------------------------------------------------------
-def lexical_rank(records, scope, settings: RagSettings, eset: EvalSettings, items):  # noqa: ANN001, ANN201
+def lexical_rank(records, scope, settings: RagSettings, eset: EvalSettings, items):
     """Variant id -> ranking rows with BM25 only (vector weights have no effect here)."""
 
-    def rank(variant_id: str):  # noqa: ANN202
+    def rank(variant_id: str):
         v = eset.variant(variant_id)
         retriever = build_retriever(
             records, scope=scope, config=retrieval_config(v, settings.retrieval)
         )
         asm = assembler(v, settings.context.max_block_tokens)
 
-        def one(item):  # noqa: ANN001, ANN202
+        def one(item):
             result = retriever.retrieve(item.question, item.node, probe_outside=False)
             return result, asm.assemble(result.hits).text
 
@@ -178,7 +178,7 @@ def lexical_rank(records, scope, settings: RagSettings, eset: EvalSettings, item
     return rank
 
 
-def q06_line(summaries: dict) -> str:  # noqa: ANN001
+def q06_line(summaries: dict) -> str:
     parts = []
     for vid, s in summaries.items():
         rows = {r.item_id: r for r in s.rows}
@@ -242,7 +242,7 @@ def ids_controls(root: Path, eset: EvalSettings, rset: RfpSettings) -> dict[str,
         rendered = 0
         for job in (job_fa, job_en):
             for v in eset.id_variants:
-                system, user = render_job(job, v, baseline, listed)  # type: ignore[arg-type]
+                _system, user = render_job(job, v, baseline, listed)  # type: ignore[arg-type]
                 rendered += 1
                 if "{" + "facts}" in user or "{" + "checklist}" in user:
                     out["problems"].append(f"placeholder_left:{job.task}:{v}")
@@ -291,7 +291,7 @@ def _yaml(path: Path) -> dict[str, Any]:
     with Path(path).open(encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
     if not isinstance(data, dict):
-        raise ValueError(f"{path.name} must be a mapping")
+        raise ValueError(f"{path.name} must be a mapping")  # noqa: TRY004 — keep ValueError for script callers
     return data
 
 
@@ -325,7 +325,7 @@ def chat_for(
     )
 
 
-def live_vectors(root: Path, settings: RagSettings, client: OllamaClient, records):  # noqa: ANN001, ANN201
+def live_vectors(root: Path, settings: RagSettings, client: OllamaClient, records):
     e = settings.embedding
     embedder = OllamaEmbedder(
         client,
@@ -351,8 +351,8 @@ def live_vectors(root: Path, settings: RagSettings, client: OllamaClient, record
 
 def live_retrieval(
     records, scope, vectors, embedder, settings: RagSettings, eset: EvalSettings, items
-):  # noqa: ANN001, ANN201
-    def rank(variant_id: str):  # noqa: ANN202
+):
+    def rank(variant_id: str):
         v = eset.variant(variant_id)
         retriever = build_retriever(
             records,
@@ -363,7 +363,7 @@ def live_retrieval(
         )
         asm = assembler(v, settings.context.max_block_tokens)
 
-        def one(item):  # noqa: ANN001, ANN202
+        def one(item):
             result = retriever.retrieve(item.question, item.node, probe_outside=False)
             return result, asm.assemble(result.hits).text
 
@@ -379,7 +379,7 @@ def live_qa(
     records,
     scope,
     vectors,
-    embedder,  # noqa: ANN001
+    embedder,
     eset: EvalSettings,
     items,
     rule_judge: RuleBasedJudge,
@@ -475,7 +475,7 @@ def live_judges(
     eset: EvalSettings,
     client: OllamaClient,
     rubric,
-    cases,  # noqa: ANN001
+    cases,
     budget: Budget,
 ) -> dict[str, Any]:
     jm = jset.model
@@ -545,7 +545,7 @@ def live_ids(
     rset: RfpSettings,
     client: OllamaClient,
     rubric,
-    jset: JudgeSettings,  # noqa: ANN001
+    jset: JudgeSettings,
     validator: CitedFactValidator,
     budget: Budget,
 ) -> dict[str, Any]:
@@ -741,7 +741,7 @@ def metrics_markdown(payload: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:  # noqa: C901 - one linear check script, like the earlier phases
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 14 prompt testing, model tuning and sample evaluation."
     )
@@ -782,7 +782,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
     )
     out_dir = args.out or root / eset.files.results_dir
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"phase-14-check-{stamp}.json"
     out_md = out_dir / f"updated-metrics-{stamp}.md"
     t0 = time.perf_counter()
@@ -1067,7 +1067,7 @@ def main() -> int:  # noqa: C901 - one linear check script, like the earlier pha
 
     payload: dict[str, Any] = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,

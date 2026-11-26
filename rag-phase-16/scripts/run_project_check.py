@@ -34,48 +34,48 @@ from __future__ import annotations
 
 import argparse
 import copy
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
+from rag_core import __version__
 from rag_core.executors.application.services import (
     ExecutorMatchingService,
     load_executor_registry,
-)  # noqa: E402
-from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory  # noqa: E402
-from rag_core.executors.infrastructure.issues_acl import referral_requests  # noqa: E402
-from rag_core.hierarchy.application.workflows import load_and_validate  # noqa: E402
-from rag_core.ike.application.services import IkeService  # noqa: E402
-from rag_core.ike.domain.summary import digest  # noqa: E402
-from rag_core.ike.infrastructure.executors_acl import referrals_by_item  # noqa: E402
-from rag_core.ike.infrastructure.issues_acl import issue_view  # noqa: E402
-from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.judging.application.services import LlmJudge, judge_all  # noqa: E402
-from rag_core.judging.domain.rule_judge import RuleBasedJudge  # noqa: E402
-from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings  # noqa: E402
-from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric  # noqa: E402
-from rag_core.prioritization.application.services import PrioritizationService, explain  # noqa: E402
-from rag_core.prioritization.domain.advice import (  # noqa: E402
+)
+from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory
+from rag_core.executors.infrastructure.issues_acl import referral_requests
+from rag_core.hierarchy.application.workflows import load_and_validate
+from rag_core.ike.application.services import IkeService
+from rag_core.ike.domain.summary import digest
+from rag_core.ike.infrastructure.executors_acl import referrals_by_item
+from rag_core.ike.infrastructure.issues_acl import issue_view
+from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.judging.application.services import LlmJudge, judge_all
+from rag_core.judging.domain.rule_judge import RuleBasedJudge
+from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings
+from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric
+from rag_core.prioritization.application.services import PrioritizationService, explain
+from rag_core.prioritization.domain.advice import (
     AdviceParseError,
     AiBrief,
     advice_prompt,
     check_advice,
     parse_advice,
 )
-from rag_core.prioritization.domain.brief import BriefGap, KeyIssueBrief, build_brief  # noqa: E402
-from rag_core.prioritization.domain.scoring import PriorityScorer  # noqa: E402
-from rag_core.prioritization.infrastructure.judging_acl import (  # noqa: E402
+from rag_core.prioritization.domain.brief import BriefGap, KeyIssueBrief, build_brief
+from rag_core.prioritization.domain.scoring import PriorityScorer
+from rag_core.prioritization.infrastructure.judging_acl import (
     BriefJudge,
     negative_brief_cases,
     verdict_dict,
@@ -84,39 +84,39 @@ from rag_core.prioritization.infrastructure.signals_acl import (
     exposure_by_issue,
     issue_signals,
     sub_tasks,
-)  # noqa: E402
-from rag_core.projects.application.services import ProjectTrackingService  # noqa: E402
-from rag_core.projects.domain.evidence import ground_registry  # noqa: E402
-from rag_core.projects.domain.model import RecordKind  # noqa: E402
-from rag_core.projects.domain.validation import RegistryValidator  # noqa: E402
+)
+from rag_core.projects.application.services import ProjectTrackingService
+from rag_core.projects.domain.evidence import ground_registry
+from rag_core.projects.domain.model import RecordKind
+from rag_core.projects.domain.validation import RegistryValidator
 from rag_core.projects.infrastructure.config import (
     ProjectSettings,
     load_project_settings,
-)  # noqa: E402
-from rag_core.projects.infrastructure.corpus_acl import document_texts  # noqa: E402
+)
+from rag_core.projects.infrastructure.corpus_acl import document_texts
 from rag_core.projects.infrastructure.csv_export import (
     export_tables,
     round_trip_problems,
-)  # noqa: E402
-from rag_core.projects.infrastructure.issues_acl import issue_facts  # noqa: E402
+)
+from rag_core.projects.infrastructure.issues_acl import issue_facts
 from rag_core.projects.infrastructure.registry_json import (
     read_registry_dict,
     registry_from_dict,
-)  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator, source_numbers  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import build_retriever  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
+)
+from rag_core.qa.domain.fact_check import CitedFactValidator, source_numbers
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import build_retriever
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
 from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaError,
-)  # noqa: E402
-from rag_core.research_gaps.application.services import GapReport, GapService  # noqa: E402
-from rag_core.research_gaps.domain.rules import GapRuleBook  # noqa: E402
-from rag_core.research_gaps.infrastructure.inputs_acl import build_inputs, ike_items  # noqa: E402
-from rag_core.shared_kernel.errors import DomainError  # noqa: E402
-from rag_core.transfer.infrastructure.sources_acl import document_versions  # noqa: E402
+)
+from rag_core.research_gaps.application.services import GapReport, GapService
+from rag_core.research_gaps.domain.rules import GapRuleBook
+from rag_core.research_gaps.infrastructure.inputs_acl import build_inputs, ike_items
+from rag_core.shared_kernel.errors import DomainError
+from rag_core.transfer.infrastructure.sources_acl import document_versions
 
 KIT = f"rag-core {__version__} (phase 12 projects, research gaps, prioritization)"
 SEPARATOR_START = "======== PHASE 12 SUMMARY ========"
@@ -158,7 +158,7 @@ def mean(values: list[float]) -> float | None:
     return round(sum(values) / len(values), 3) if values else None
 
 
-def ike_digest(root: Path, settings: RagSettings, corpus, org, issues, case_id: str):  # noqa: ANN001, ANN201
+def ike_digest(root: Path, settings: RagSettings, corpus, org, issues, case_id: str):
     """Phase 9 offline IKE graph of the case -> digest (leads and knowledge lacks per sub-issue)."""
     teams = HierarchyTeamDirectory(org)
     loaded = load_executor_registry(root / "data" / "executors", teams)
@@ -210,7 +210,7 @@ def registry_mutations(raw: dict) -> list[tuple[str, dict]]:
     """Broken copies of the shipped registry. Each one must be rejected."""
     out: list[tuple[str, dict]] = []
 
-    def mutate(kind: str, change) -> None:  # noqa: ANN001
+    def mutate(kind: str, change) -> None:
         data = copy.deepcopy(raw)
         try:
             change(data)
@@ -266,7 +266,7 @@ def registry_mutations(raw: dict) -> list[tuple[str, dict]]:
 
 def registry_rejects(
     data: dict, validator: RegistryValidator, texts, fact_validator
-) -> tuple[bool, str]:  # noqa: ANN001
+) -> tuple[bool, str]:
     try:
         registry = registry_from_dict(data)
     except (DomainError, ValueError, KeyError) as exc:
@@ -321,7 +321,7 @@ def main() -> int:
     )
     out_dir = args.out or root / "results" / "phase-12"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"project-check-{stamp}.json"
     csv_dir = args.exports or root / pset.storage.csv_dir
     cycle_id, cutoff = pset.cycle.id, pset.cycle.cutoff
@@ -590,7 +590,7 @@ def main() -> int:
     counts = registry.counts_by_kind() if registry is not None else {}
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "errors": errors,
@@ -781,7 +781,7 @@ def live_step(
     jset: JudgeSettings,
     client: OllamaClient,
     rubric,
-    root: Path,  # noqa: ANN001
+    root: Path,
     rule_judge: RuleBasedJudge,
     validator: CitedFactValidator,
     briefs: dict[str, KeyIssueBrief],

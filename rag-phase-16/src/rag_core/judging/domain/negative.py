@@ -15,8 +15,8 @@ A judge that accepts these is not discriminating. Each mutation returns a new
 
 from __future__ import annotations
 
-from enum import StrEnum
 import re
+from enum import StrEnum
 
 from rag_core.judging.domain.cases import JudgeCase
 from rag_core.judging.domain.rubric import OutputKind

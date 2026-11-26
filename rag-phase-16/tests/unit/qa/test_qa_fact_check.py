@@ -15,7 +15,7 @@ from rag_core.shared_kernel.identifiers import DocumentId
 pytestmark = [pytest.mark.qa]
 
 
-def verdicts(report):  # noqa: ANN001, ANN201
+def verdicts(report):
     return {r.claim.raw_text: r.verdict for r in report.results}
 
 

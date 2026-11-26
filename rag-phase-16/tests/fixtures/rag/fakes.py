@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import threading
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Self
 
 from rag_core.models.domain.ports import LlmResult
 from rag_core.rag.domain.lexical import lexical_tokens
@@ -292,7 +293,7 @@ class FakeOllamaServer:
                 self.end_headers()
                 self.wfile.write(data)
 
-            def do_GET(self) -> None:  # noqa: N802
+            def do_GET(self) -> None:
                 server.requests.append((self.path, {}))
                 if self.path == "/api/version":
                     self._send(200, {"version": "0.40.2-fake"})
@@ -301,7 +302,7 @@ class FakeOllamaServer:
                 else:
                     self._send(404, {"error": "not found"})
 
-            def do_POST(self) -> None:  # noqa: N802
+            def do_POST(self) -> None:
                 length = int(self.headers.get("Content-Length", "0"))
                 body = json.loads(self.rfile.read(length) or b"{}")
                 server.requests.append((self.path, body))
@@ -338,7 +339,7 @@ class FakeOllamaServer:
     def url(self) -> str:
         return f"http://127.0.0.1:{self.httpd.server_address[1]}"
 
-    def __enter__(self) -> FakeOllamaServer:
+    def __enter__(self) -> Self:
         self.thread.start()
         return self
 

@@ -229,9 +229,9 @@ class RegistryValidator:
                 else:
                     children[parent].append(nid)
 
-        for nid in by_id:  # cycle check (R2)
+        for nid, row in by_id.items():  # cycle check (R2)
             seen = {nid}
-            cursor = by_id[nid].get("parent_node_id", "").strip()
+            cursor = row.get("parent_node_id", "").strip()
             while cursor and cursor in by_id:
                 if cursor in seen:
                     self._err("N-CYCLE", nid, "parent chain contains a cycle (R2)")

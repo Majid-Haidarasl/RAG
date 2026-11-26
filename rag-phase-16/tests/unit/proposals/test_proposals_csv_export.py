@@ -47,7 +47,7 @@ TABLES_IN = {
 }
 
 
-def test_export_and_read_back(tmp_path) -> None:  # noqa: ANN001
+def test_export_and_read_back(tmp_path) -> None:
     files = export_tables(TABLES_IN, tmp_path, "AR-RFP-1403-07")
     assert [f.name for f in files] == [f"{n}.csv" for n in TABLES]
     assert (
@@ -58,7 +58,7 @@ def test_export_and_read_back(tmp_path) -> None:  # noqa: ANN001
     assert rows[0]["text"] == "نتیجه:\nامتیاز وزنی 75.2"
 
 
-def test_round_trip_detects_a_changed_cell(tmp_path) -> None:  # noqa: ANN001
+def test_round_trip_detects_a_changed_cell(tmp_path) -> None:
     export_tables(TABLES_IN, tmp_path, "AR-RFP-1403-07")
     changed = {
         **TABLES_IN,
@@ -69,7 +69,7 @@ def test_round_trip_detects_a_changed_cell(tmp_path) -> None:  # noqa: ANN001
     ]
 
 
-def test_missing_folder_is_reported(tmp_path) -> None:  # noqa: ANN001
+def test_missing_folder_is_reported(tmp_path) -> None:
     problems = round_trip_problems(TABLES_IN, tmp_path, "AR-RFP-1403-99")
     assert len(problems) == len(TABLES) and problems[0].startswith("rfp_requirements: ")
 

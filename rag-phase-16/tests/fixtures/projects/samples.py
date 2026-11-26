@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import copy
-from functools import lru_cache
 import json
+from functools import lru_cache
 from pathlib import Path
 
+from rag_core.prioritization.domain.model import Caps, IssueSignal, Weights
 from rag_core.projects.domain.model import (
     Project,
     ProjectRegistry,
@@ -14,7 +15,6 @@ from rag_core.projects.domain.model import (
     TrackRecord,
 )
 from rag_core.projects.domain.validation import IssueFacts
-from rag_core.prioritization.domain.model import Caps, IssueSignal, Weights
 from rag_core.research_gaps.domain.model import (
     DimensionView,
     GapInputs,
@@ -48,20 +48,20 @@ ISSUES = {
 
 
 def project(**changes: object) -> Project:
-    base: dict[str, object] = dict(
-        project_id="PRJ-AZP-118",
-        name_en="Azarpakhsh warehouse system",
-        name_fa="سامانه انبار آذرپخش",
-        owner_node="N-CEO",
-        progress_percent=62,
-        status="at_risk",
-        nodes=("N-HW-REP", "N-SW-WEB"),
-        contract_value_mtoman=2180,
-        remaining_mtoman=1240,
-        primary_issue="AR-ISS-024",
-        issues=("AR-ISS-024",),
-        evidence=("AR-TRN-026", "AR-FIN-008"),
-    )
+    base: dict[str, object] = {
+        "project_id": "PRJ-AZP-118",
+        "name_en": "Azarpakhsh warehouse system",
+        "name_fa": "سامانه انبار آذرپخش",
+        "owner_node": "N-CEO",
+        "progress_percent": 62,
+        "status": "at_risk",
+        "nodes": ("N-HW-REP", "N-SW-WEB"),
+        "contract_value_mtoman": 2180,
+        "remaining_mtoman": 1240,
+        "primary_issue": "AR-ISS-024",
+        "issues": ("AR-ISS-024",),
+        "evidence": ("AR-TRN-026", "AR-FIN-008"),
+    }
     base.update(changes)
     return Project(**base)  # type: ignore[arg-type]
 
@@ -69,18 +69,18 @@ def project(**changes: object) -> Project:
 def record(
     record_id: str = "ACH-IKE-PATH", kind: str = "achievement", **changes: object
 ) -> TrackRecord:
-    base: dict[str, object] = dict(
-        record_id=record_id,
-        kind=kind,
-        state="recorded",
-        title_en="Explicit path",
-        title_fa="مسیر صریح",
-        statement_en="The cycle created a path for AR-ISS-024.",
-        statement_fa="این چرخه برای AR-ISS-024 مسیر ساخت.",
-        conditions="Recorded for one case only.",
-        nodes=("N-LIB",),
-        evidence=("AR-TRN-026",),
-    )
+    base: dict[str, object] = {
+        "record_id": record_id,
+        "kind": kind,
+        "state": "recorded",
+        "title_en": "Explicit path",
+        "title_fa": "مسیر صریح",
+        "statement_en": "The cycle created a path for AR-ISS-024.",
+        "statement_fa": "این چرخه برای AR-ISS-024 مسیر ساخت.",
+        "conditions": "Recorded for one case only.",
+        "nodes": ("N-LIB",),
+        "evidence": ("AR-TRN-026",),
+    }
     if kind == "research":
         base.update(
             state="open",
@@ -124,23 +124,23 @@ def _raw() -> dict:
 
 
 def signal(issue_id: str = "AR-ISS-024", **changes: object) -> IssueSignal:
-    base: dict[str, object] = dict(
-        issue_id=issue_id,
-        title_en=f"Issue {issue_id}",
-        title_fa="مسئله",
-        status="in_progress",
-        priority="P2",
-        severity="high",
-        urgency=8,
-        risk=8,
-        dependents=4,
-        exposure_mtoman=1240,
-        subissues=4,
-        blocked_subissues=2,
-        gaps=4,
-        affected_nodes=7,
-        progress=62,
-    )
+    base: dict[str, object] = {
+        "issue_id": issue_id,
+        "title_en": f"Issue {issue_id}",
+        "title_fa": "مسئله",
+        "status": "in_progress",
+        "priority": "P2",
+        "severity": "high",
+        "urgency": 8,
+        "risk": 8,
+        "dependents": 4,
+        "exposure_mtoman": 1240,
+        "subissues": 4,
+        "blocked_subissues": 2,
+        "gaps": 4,
+        "affected_nodes": 7,
+        "progress": 62,
+    }
     base.update(changes)
     return IssueSignal(**base)  # type: ignore[arg-type]
 
@@ -252,16 +252,16 @@ def caps() -> Caps:
 
 
 def sub(item_id: str, status: str = "in_progress", **changes: object) -> SubIssueView:
-    base: dict[str, object] = dict(
-        item_id=item_id,
-        issue_id=item_id.split("/")[0],
-        title_en=f"Work {item_id}",
-        title_fa="کار",
-        status=status,
-        owner_node="N-HW-REP",
-        executors=("Saeed Akbari",),
-        lead="EX-SAEED-AKBARI",
-    )
+    base: dict[str, object] = {
+        "item_id": item_id,
+        "issue_id": item_id.split("/")[0],
+        "title_en": f"Work {item_id}",
+        "title_fa": "کار",
+        "status": status,
+        "owner_node": "N-HW-REP",
+        "executors": ("Saeed Akbari",),
+        "lead": "EX-SAEED-AKBARI",
+    }
     base.update(changes)
     return SubIssueView(**base)  # type: ignore[arg-type]
 
@@ -269,27 +269,27 @@ def sub(item_id: str, status: str = "in_progress", **changes: object) -> SubIssu
 def rec_view(
     record_id: str, kind: str, state: str = "open", **changes: object
 ) -> RecordView:
-    base: dict[str, object] = dict(
-        record_id=record_id,
-        kind=kind,
-        state=state,
-        title_en=f"Record {record_id}",
-        title_fa="رکورد",
-        evidence=("AR-TRN-026",),
-    )
+    base: dict[str, object] = {
+        "record_id": record_id,
+        "kind": kind,
+        "state": state,
+        "title_en": f"Record {record_id}",
+        "title_fa": "رکورد",
+        "evidence": ("AR-TRN-026",),
+    }
     base.update(changes)
     return RecordView(**base)  # type: ignore[arg-type]
 
 
 def gap_inputs(**changes: object) -> GapInputs:
-    base: dict[str, object] = dict(
-        records=(
+    base: dict[str, object] = {
+        "records": (
             rec_view("RES-PHOTO-TRIAGE", "research"),
             rec_view("CHL-KEY-CAPACITY", "challenge"),
             rec_view("CHL-JOINT-SCHED", "challenge", issues=("AR-ISS-024",)),
             rec_view("UNS-AZP-DELAY", "unsolved_issue", issues=("AR-ISS-024",)),
         ),
-        subissues=(
+        "subissues": (
             sub("AR-ISS-024/HW", lacks=("AR-HW-013",)),
             sub(
                 "AR-ISS-024/WIN",
@@ -299,11 +299,11 @@ def gap_inputs(**changes: object) -> GapInputs:
             ),
             sub("AR-ISS-024/WEB"),
         ),
-        issues=(
+        "issues": (
             IssueStateView("AR-ISS-024", "in_progress"),
             IssueStateView("AR-ISS-034", "closed"),
         ),
-        scorecard=(
+        "scorecard": (
             DimensionView("SC-REF", "Referral coverage", "پوشش ارجاع", "recorded"),
             DimensionView("SC-CAP", "Capacity control", "کنترل ظرفیت", "conditional"),
             DimensionView(
@@ -314,6 +314,6 @@ def gap_inputs(**changes: object) -> GapInputs:
                 research="RES-RETRIEVAL-EVAL",
             ),
         ),
-    )
+    }
     base.update(changes)
     return GapInputs(**base)  # type: ignore[arg-type]

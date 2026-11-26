@@ -22,7 +22,7 @@ from tests.fixtures.tuning.samples import (
 pytestmark = [pytest.mark.tuning, pytest.mark.eval_gold]
 
 
-def codes(items) -> set[str]:  # noqa: ANN001
+def codes(items) -> set[str]:
     return {p.code for p in validate_gold(items, simple_found, simple_language)}
 
 

@@ -151,12 +151,7 @@ class SearchFilters:
             return False
         if self.layers and record.layer not in self.layers:
             return False
-        if (
-            self.knowledge_classes
-            and record.knowledge_class not in self.knowledge_classes
-        ):
-            return False
-        return True
+        return not (self.knowledge_classes and record.knowledge_class not in self.knowledge_classes)
 
     def to_dict(self) -> dict[str, Any]:
         return {

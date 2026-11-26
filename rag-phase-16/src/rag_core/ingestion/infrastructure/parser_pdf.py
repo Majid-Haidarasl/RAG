@@ -17,9 +17,8 @@ visual order and Phase 4 counted that as success. Now:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from rag_core.ingestion.domain.errors import (
     POPPLER_INSTALL,
@@ -174,7 +173,7 @@ def parse_pdf_detailed(
                 else:
                     try:
                         raw = page.extract_text() or ""
-                    except Exception as exc:  # noqa: BLE001
+                    except Exception as exc:
                         raise ParseFailedError(
                             str(path), f"page {number}: {exc}"
                         ) from exc
@@ -186,7 +185,7 @@ def parse_pdf_detailed(
                 tables_by_page[number] = _tables_as_blocks(page, number, 0)
     except ParseFailedError:
         raise
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise ParseFailedError(str(path), str(exc)) from exc
 
     blocks: list[ContentBlock] = []

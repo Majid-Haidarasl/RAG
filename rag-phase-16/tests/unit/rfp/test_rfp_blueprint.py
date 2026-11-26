@@ -1,8 +1,8 @@
 """Phase 13 RFP blueprint: the shipped blueprint and the model invariants."""
 
+import re
 from dataclasses import replace
 from decimal import Decimal
-import re
 
 import pytest
 
@@ -39,7 +39,7 @@ def test_shipped_blueprint_shape() -> None:
 
 def test_weights_add_up_to_one_as_60_40() -> None:
     bp = shipped_blueprint()
-    assert bp.weight_total == Decimal("1")
+    assert bp.weight_total == Decimal(1)
     assert [c.percent for c in bp.criteria] == [60, 40]
     assert [c.criterion_id for c in bp.criteria] == ["CRT-TECH", "CRT-FIN"]
 

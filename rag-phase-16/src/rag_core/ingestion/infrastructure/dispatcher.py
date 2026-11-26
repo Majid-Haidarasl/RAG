@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from dataclasses import dataclass
+from pathlib import Path
 
 from rag_core.ingestion.domain.errors import ParseFailedError, UnsupportedFormatError
 from rag_core.ingestion.domain.model import ContentBlock, FileFormat
@@ -12,7 +11,6 @@ from rag_core.ingestion.infrastructure.parser_doc import parse_doc
 from rag_core.ingestion.infrastructure.parser_docx import parse_docx
 from rag_core.ingestion.infrastructure.parser_pdf import parse_pdf_detailed
 from rag_core.knowledge.domain.ports import DocumentParserPort, ParsedDocument
-from rag_core.shared_kernel.language import LanguageCode
 
 
 @dataclass(frozen=True)

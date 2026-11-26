@@ -9,10 +9,10 @@ RFP and the template feedback never change.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from dataclasses import dataclass, field
 import json
 import re
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 from typing import Any
 
 from rag_core.shared_kernel.errors import InvariantError

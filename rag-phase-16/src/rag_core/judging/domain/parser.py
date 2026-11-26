@@ -27,20 +27,20 @@ mismatch is reported as a warning.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
 import math
 import re
+from dataclasses import dataclass, field
 from typing import Any
 
 from rag_core.judging.domain.model import JudgeParseError
 from rag_core.judging.domain.rubric import Rubric
 from rag_core.shared_kernel.numerals import normalize_digits
 
-_THINK_RE = re.compile(r"<think>.*?</think>", re.S | re.I)
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
 _FENCE_RE = re.compile(r"```[a-zA-Z]*")
 _NUMBER_RE = re.compile(
-    r"^\s*([-+]?\d+(?:\.\d+)?)\s*(?:(?:/|out of|of)\s*(\d+(?:\.\d+)?))?", re.I
+    r"^\s*([-+]?\d+(?:\.\d+)?)\s*(?:(?:/|out of|of)\s*(\d+(?:\.\d+)?))?", re.IGNORECASE
 )
 _CONTAINER_KEYS = ("scores", "criteria", "rubric", "evaluation", "ratings")
 _VALUE_KEYS = ("score", "points", "value", "rating")
@@ -149,7 +149,7 @@ def repair_json(candidate: str) -> str:
 
 
 def round_half_up(value: float) -> int:
-    return int(math.floor(value + 0.5))
+    return math.floor(value + 0.5)
 
 
 class JudgeOutputParser:
@@ -235,7 +235,7 @@ class JudgeOutputParser:
             pattern = re.compile(
                 rf"(?<![A-Za-z])(?:{names})(?![A-Za-z])[\"'*\s]*[:=]\s*[\"'*]*\s*"
                 rf"([-+]?\d+(?:\.\d+)?(?:\s*(?:/|out of)\s*\d+(?:\.\d+)?)?)",
-                re.I,
+                re.IGNORECASE,
             )
             m = pattern.search(text)
             if m:

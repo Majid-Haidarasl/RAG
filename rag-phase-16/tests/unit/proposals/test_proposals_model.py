@@ -21,17 +21,17 @@ def test_shipped_registry() -> None:
     a, b = reg.get("PRP-A"), reg.get("PRP-B")
     assert a is not None and b is not None and reg.get("PRP-Z") is None
     assert (a.price_mtoman, a.duration_weeks, a.published_weighted) == (
-        Decimal("285"),
+        Decimal(285),
         7,
         Decimal("78.8"),
     )
     assert (b.price_mtoman, b.duration_weeks, b.published_weighted) == (
-        Decimal("240"),
+        Decimal(240),
         5,
         Decimal("75.2"),
     )
-    assert a.scores == {"CRT-TECH": Decimal("82"), "CRT-FIN": Decimal("74")}
-    assert b.scores == {"CRT-TECH": Decimal("68"), "CRT-FIN": Decimal("86")}
+    assert a.scores == {"CRT-TECH": Decimal(82), "CRT-FIN": Decimal(74)}
+    assert b.scores == {"CRT-TECH": Decimal(68), "CRT-FIN": Decimal(86)}
     assert reg.decision is not None and reg.decision.selected == "PRP-A"
 
 
@@ -54,7 +54,7 @@ def test_language_accessors() -> None:
 
 
 def test_label_falls_back_to_the_id() -> None:
-    p = ProposalRecord("PRP-X", "Vendor", "فروشنده", Decimal("1"), 1, {})
+    p = ProposalRecord("PRP-X", "Vendor", "فروشنده", Decimal(1), 1, {})
     assert p.label("en") == "PRP-X" and p.published_weighted is None
 
 
@@ -62,14 +62,14 @@ def test_record_invariants() -> None:
     for changes, message in [
         ({"proposal_id": ""}, "proposal id"),
         ({"vendor_fa": " "}, "vendor_fa"),
-        ({"price_mtoman": Decimal("0")}, "price"),
+        ({"price_mtoman": Decimal(0)}, "price"),
         ({"duration_weeks": 0}, "duration"),
     ]:
         args = {
             "proposal_id": "PRP-X",
             "vendor_en": "V",
             "vendor_fa": "و",
-            "price_mtoman": Decimal("10"),
+            "price_mtoman": Decimal(10),
             "duration_weeks": 2,
             "scores": {},
             **changes,

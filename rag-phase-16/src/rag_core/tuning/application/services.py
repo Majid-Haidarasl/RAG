@@ -3,9 +3,9 @@ so the services run the same way offline (tests, BM25) and live (Ollama)."""
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-import time
 from typing import Any
 
 from rag_core.judging.domain.cases import JudgeCase

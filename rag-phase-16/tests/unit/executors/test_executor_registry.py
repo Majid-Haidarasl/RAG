@@ -18,7 +18,7 @@ from tests.fixtures.executors.registry import (
 pytestmark = [pytest.mark.executors, pytest.mark.matching]
 
 
-def _validate(records: list[dict]):  # noqa: ANN202
+def _validate(records: list[dict]):
     return ExecutorRegistryValidator(team_directory(), corpus_document_ids()).validate(
         records
     )

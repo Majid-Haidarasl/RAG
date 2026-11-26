@@ -62,7 +62,7 @@ def test_ground_flags_invented_number_and_id() -> None:
 
 
 class RejectingJudge:
-    def judge_package(self, draft, language, text=None):  # noqa: ANN001, ANN201
+    def judge_package(self, draft, language, text=None):
         return [JudgeVerdict("strict", language, 10, 20, False)]
 
 

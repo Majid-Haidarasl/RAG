@@ -29,7 +29,7 @@ def _service() -> ExecutorMatchingService:
     return ExecutorMatchingService(InMemoryExecutorRepository(shipped_executors()))
 
 
-def _plans():  # noqa: ANN202
+def _plans():
     return {
         p.request.item_id: p for p in _service().plans(referral_requests(azarpakhsh()))
     }

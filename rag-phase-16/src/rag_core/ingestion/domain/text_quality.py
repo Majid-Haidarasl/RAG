@@ -14,8 +14,8 @@ Verdicts
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
 import re
+from dataclasses import asdict, dataclass, field
 
 CID_RE = re.compile(r"\(cid:\d+\)")
 _ARABIC_LETTER = re.compile(r"[\u0620-\u064a\u066e-\u06d3\u06fa-\u06ff]")
@@ -48,9 +48,7 @@ MIN_ARABIC_TOKENS = 30
 SINGLE_LETTER_WORDS = frozenset({"و"})
 # Real Persian words of one or two letters (closed class + frequent nouns/verbs).
 COMMON_SHORT_WORDS = frozenset(
-    "و را به از در یا با که تا هر آن نه بر پس یک دو هم چه کل او سه خط حق حل شد طی جا حد ده "
-    "سی وب کد صف رخ گم شش من تو ما شما اپ کف رد دل سر پا جز نو بد گل دم کم ای اش ام اند ها "
-    "می نمی بی بی‌ ای‌ آب ای".split()
+    ["و", "را", "به", "از", "در", "یا", "با", "که", "تا", "هر", "آن", "نه", "بر", "پس", "یک", "دو", "هم", "چه", "کل", "او", "سه", "خط", "حق", "حل", "شد", "طی", "جا", "حد", "ده", "سی", "وب", "کد", "صف", "رخ", "گم", "شش", "من", "تو", "ما", "شما", "اپ", "کف", "رد", "دل", "سر", "پا", "جز", "نو", "بد", "گل", "دم", "کم", "ای", "اش", "ام", "اند", "ها", "می", "نمی", "بی", "بی\u200c", "ای\u200c", "آب", "ای"]
 )
 
 
@@ -136,8 +134,8 @@ def assess_text_quality(text: str) -> TextQuality:
         return TextQuality(
             "fragmented",
             (
-                f"{metrics['fragment_ratio']:.1%} of Persian tokens are 1-2 letter fragments "
-                "(spurious intra-word spaces)",
+                (f"{metrics['fragment_ratio']:.1%} of Persian tokens are 1-2 letter fragments "
+                "(spurious intra-word spaces)"),
             ),
             metrics,
         )

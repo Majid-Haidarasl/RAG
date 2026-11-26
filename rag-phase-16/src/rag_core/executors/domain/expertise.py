@@ -14,18 +14,14 @@ are not expertise and are left out on purpose.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
-from typing import Iterable
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 from rag_core.executors.domain.model import Executor
 
 STOPWORDS = frozenset(
-    """
-    a an the and or of in on at to for from by with within without as is are be been
-    not no non versus vs per via into onto its it this that these those their his her
-    after before than then other any all each such only also
-    """.split()
+    ["a", "an", "the", "and", "or", "of", "in", "on", "at", "to", "for", "from", "by", "with", "within", "without", "as", "is", "are", "be", "been", "not", "no", "non", "versus", "vs", "per", "via", "into", "onto", "its", "it", "this", "that", "these", "those", "their", "his", "her", "after", "before", "than", "then", "other", "any", "all", "each", "such", "only", "also"]
 )
 
 _TOKEN_RE = re.compile(r"[a-z0-9\u0600-\u06ff]+")

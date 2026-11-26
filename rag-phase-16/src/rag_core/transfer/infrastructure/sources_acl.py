@@ -43,8 +43,8 @@ def document_versions(records: Iterable[object]) -> dict[str, str]:
             or getattr(r, "status", "active") != "active"
         ):
             continue
-        doc = str(getattr(r, "document_id"))
-        version = str(getattr(r, "version"))
+        doc = str(r.document_id)
+        version = str(r.version)
         current = out.get(doc)
         if current is None or _version_key(version) > _version_key(current):
             out[doc] = version

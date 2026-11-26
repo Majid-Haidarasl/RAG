@@ -10,8 +10,8 @@ block of that document was given (granularity "document").
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
 from rag_core.rag.domain.context import AssembledContext, ContextBlock
 from rag_core.shared_kernel.numerals import normalize_digits
@@ -94,9 +94,7 @@ def _matches(block: ContextBlock, cit: ParsedCitation) -> bool:
         return False
     if cit.order is not None and rec.order != cit.order:
         return False
-    if cit.language is not None and rec.language != cit.language:
-        return False
-    return True
+    return not (cit.language is not None and rec.language != cit.language)
 
 
 def verify_citations(

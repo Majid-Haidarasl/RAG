@@ -8,10 +8,10 @@ duplicates.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-import time
 
 from rag_core.hierarchy.application.workflows import catalog_index, load_and_validate
 from rag_core.hierarchy.domain.validation import normalize_confidentiality

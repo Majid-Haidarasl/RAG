@@ -12,35 +12,35 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
-from datetime import date, datetime, timezone
 import json
-from pathlib import Path
 import shutil
 import sys
 import tempfile
 import time
+from collections import Counter
+from datetime import UTC, date, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from docx import Document  # noqa: E402
+from docx import Document
 
-from rag_core import __version__  # noqa: E402
-from rag_core.ingestion.application.pipeline import ingest_file  # noqa: E402
-from rag_core.ingestion.domain.model import IngestedDocument  # noqa: E402
-from rag_core.knowledge.application.lifecycle import KnowledgeLifecycleService  # noqa: E402
+from rag_core import __version__
+from rag_core.ingestion.application.pipeline import ingest_file
+from rag_core.ingestion.domain.model import IngestedDocument
+from rag_core.knowledge.application.lifecycle import KnowledgeLifecycleService
 from rag_core.knowledge.domain.dedup import (
     DedupConfig,
     DedupReport,
     DuplicateFinder,
     TextRecord,
-)  # noqa: E402
-from rag_core.knowledge.domain.fingerprint import guess_language  # noqa: E402
-from rag_core.knowledge.domain.model import ChunkStatus, VersionStatus  # noqa: E402
-from rag_core.shared_kernel.identifiers import DocumentId  # noqa: E402
+)
+from rag_core.knowledge.domain.fingerprint import guess_language
+from rag_core.knowledge.domain.model import ChunkStatus, VersionStatus
+from rag_core.shared_kernel.identifiers import DocumentId
 
 KIT = f"rag-core {__version__} (phase 5 lifecycle + dedup)"
 FORMATS = (".docx", ".doc", ".pdf")
@@ -259,7 +259,7 @@ def main() -> int:
     corpus = root / "corpus"
     out_dir = args.out or (root / "results" / "phase-05")
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     out_json = out_dir / f"dedup-{stamp}.json"
     timings: dict[str, float] = {}
     failures: list[dict[str, str]] = []
@@ -335,7 +335,7 @@ def main() -> int:
 
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "files": {
             "official": len(official_paths),

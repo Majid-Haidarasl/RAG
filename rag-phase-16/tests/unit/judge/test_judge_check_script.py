@@ -1,9 +1,9 @@
 """scripts/run_judge_check.py: offline checks always, the LLM judge only with Ollama."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import yaml
@@ -18,8 +18,8 @@ SCRIPT = ROOT / "scripts" / "run_judge_check.py"
 
 P9_FACTS = [
     "issue AR-ISS-024: Azarpakhsh delivery delay | owner N-LIB | status in_progress | progress 40%",
-    "sub-issue AR-ISS-024/HW: Hardware | owner N-HW-REP | status in_progress | lead Saeed Akbari | "
-    "collaborators none | knowledge AR-HW-012 | depends on none | acceptance team_owner:N-HW-REP",
+    ("sub-issue AR-ISS-024/HW: Hardware | owner N-HW-REP | status in_progress | lead Saeed Akbari | "
+    "collaborators none | knowledge AR-HW-012 | depends on none | acceptance team_owner:N-HW-REP"),
 ]
 
 

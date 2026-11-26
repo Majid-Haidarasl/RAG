@@ -12,8 +12,8 @@ These primitives are stable and are already needed by value objects.
 
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation
 import re
+from decimal import Decimal, InvalidOperation
 
 PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹"
 ARABIC_INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"

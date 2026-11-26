@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from rag_core.rag.domain.records import ChunkRecord
 from rag_core.shared_kernel.errors import InvariantError, NotFoundError

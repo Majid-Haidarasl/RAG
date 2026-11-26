@@ -15,7 +15,7 @@ from tests.fixtures.rag.fakes import rec
 pytestmark = [pytest.mark.qa]
 
 
-def ctx(*records):  # noqa: ANN002, ANN201
+def ctx(*records):
     return ContextAssembler().assemble(
         [Hit(r, i + 1, 1.0) for i, r in enumerate(records)]
     )

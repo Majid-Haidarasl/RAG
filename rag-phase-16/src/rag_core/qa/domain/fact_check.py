@@ -18,8 +18,8 @@ are out of scope here (Phase 10).
 
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation
 import re
+from decimal import Decimal, InvalidOperation
 
 from rag_core.knowledge.domain.fingerprint import tokens as normalized_tokens
 from rag_core.shared_kernel.fact_ports import (

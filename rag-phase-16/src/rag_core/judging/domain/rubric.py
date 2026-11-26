@@ -9,9 +9,9 @@ initial acceptance bar of the project plan (18/20).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-import re
 
 from rag_core.judging.domain.model import JudgeThreshold
 from rag_core.shared_kernel.errors import InvariantError

@@ -16,7 +16,7 @@ from tests.fixtures.transfer.samples import (
 pytestmark = [pytest.mark.transfer, pytest.mark.transfer_pkg]
 
 
-def sw_children():  # noqa: ANN201
+def sw_children():
     return [built(team_win(), "N-SW", 2), built(team_mob(), "N-SW", 2)]
 
 

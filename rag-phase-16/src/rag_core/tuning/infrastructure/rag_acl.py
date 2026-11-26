@@ -7,9 +7,9 @@ against the real corpus (quotes, numbers, ids) and the Phase 6 scope.
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, replace
-import time
 from typing import Any
 
 from rag_core.knowledge.domain.fingerprint import tokens as normalized_tokens

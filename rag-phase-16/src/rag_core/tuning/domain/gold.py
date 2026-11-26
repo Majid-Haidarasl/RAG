@@ -14,9 +14,9 @@ stays free of other contexts.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-import re
 
 from rag_core.shared_kernel.errors import InvariantError
 

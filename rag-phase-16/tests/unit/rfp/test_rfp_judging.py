@@ -33,7 +33,7 @@ def judge(max_chars: int = 6000) -> RuleBasedJudge:
     )
 
 
-def case(language: str):  # noqa: ANN201
+def case(language: str):
     bp = shipped_blueprint()
     cands = select_candidates(key_views(), [bp], ("procurement",), TARGETS)
     d = build_rfp(

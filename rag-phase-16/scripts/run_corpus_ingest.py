@@ -5,11 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter
-from datetime import datetime, timezone
-from pathlib import Path
 import shutil
 import sys
+from collections import Counter
+from datetime import UTC, datetime
+from pathlib import Path
 
 # Allow running without installation when needed.
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
@@ -17,11 +17,10 @@ src = ROOT_CANDIDATE / "src"
 if src.is_dir() and str(src) not in sys.path:
     sys.path.insert(0, str(src))
 
-from rag_core import __version__  # noqa: E402
-from rag_core.ingestion.application.pipeline import ingest_file  # noqa: E402
-from rag_core.ingestion.domain.catalog import PERSIAN_DIGIT_ID_DOCUMENTS  # noqa: E402
-from rag_core.ingestion.domain.errors import IngestionError  # noqa: E402
-from rag_core.ingestion.domain.model import IngestedDocument  # noqa: E402
+from rag_core import __version__
+from rag_core.ingestion.application.pipeline import ingest_file
+from rag_core.ingestion.domain.catalog import PERSIAN_DIGIT_ID_DOCUMENTS
+from rag_core.ingestion.domain.model import IngestedDocument
 
 KIT = f"rag-core {__version__} (phase 4 ingest)"
 
@@ -68,7 +67,7 @@ def main() -> int:
     files = collect_files(corpus)
     out_dir = args.out or (root / "results" / "phase-04")
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     out_json = out_dir / f"ingest-{stamp}.json"
 
     by_format: Counter[str] = Counter()
@@ -122,7 +121,7 @@ def main() -> int:
 
     payload = {
         "kit": KIT,
-        "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ingested_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "corpus": str(corpus),
         "files_found": len(files),
         "by_format": dict(by_format),

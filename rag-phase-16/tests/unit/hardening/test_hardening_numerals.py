@@ -31,10 +31,10 @@ def test_strip_thousands_separators(text: str) -> None:
 @pytest.mark.parametrize(
     ("text", "value"),
     [
-        ("2 180", Decimal("2180")),
+        ("2 180", Decimal(2180)),
         ("1,234.5", Decimal("1234.5")),
         ("\u0667\u0668\u066b\u0668", Decimal("78.8")),
-        ("-5", Decimal("-5")),
+        ("-5", Decimal(-5)),
     ],
 )
 def test_parse_decimal_accepts(text: str, value: Decimal) -> None:
@@ -50,7 +50,7 @@ def test_parse_decimal_rejects(text: str) -> None:
 def test_extract_numbers_keeps_spans_and_values() -> None:
     found = extract_numbers("امتیاز ۷۸٫۸ و 62 درصد")
     assert [span for span, _ in found] == ["۷۸٫۸", "62"]
-    assert [value for _, value in found] == [Decimal("78.8"), Decimal("62")]
+    assert [value for _, value in found] == [Decimal("78.8"), Decimal(62)]
 
 
 def test_extract_numbers_without_digits() -> None:

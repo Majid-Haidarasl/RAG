@@ -1,9 +1,9 @@
 """Phase 15 quality config, Phase 14 defaults re-check, readiness and scripts/run_quality_check.py."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 

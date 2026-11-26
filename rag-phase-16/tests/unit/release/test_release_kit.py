@@ -44,7 +44,7 @@ def test_versions_agree() -> None:
 
 
 @pytest.mark.parametrize("req", RSET.docs, ids=[d.path for d in RSET.docs])
-def test_release_document_complete(req) -> None:  # noqa: ANN001
+def test_release_document_complete(req) -> None:
     result = check_doc(req, read_text(ROOT, req.path))
     assert result.ok, result.reason
 

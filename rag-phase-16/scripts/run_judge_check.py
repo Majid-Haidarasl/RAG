@@ -30,68 +30,69 @@ Prints the ``PHASE 10 SUMMARY`` block and writes
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+import contextlib
 import json
-from pathlib import Path
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT_CANDIDATE = Path(__file__).resolve().parents[1]
 _src = ROOT_CANDIDATE / "src"
 if _src.is_dir() and str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from rag_core import __version__  # noqa: E402
+from rag_core import __version__
 from rag_core.executors.application.services import (
     ExecutorMatchingService,
     load_executor_registry,
-)  # noqa: E402
-from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory  # noqa: E402
-from rag_core.executors.infrastructure.issues_acl import referral_requests  # noqa: E402
-from rag_core.ike.application.services import IkeService, IkeSummaryService  # noqa: E402
-from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item  # noqa: E402
-from rag_core.ike.infrastructure.issues_acl import issue_view  # noqa: E402
-from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch  # noqa: E402
-from rag_core.issues.application.services import load_issue_registry  # noqa: E402
-from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory  # noqa: E402
-from rag_core.judging.application.services import LlmJudge, judge_all  # noqa: E402
-from rag_core.judging.domain.cases import JudgeCase  # noqa: E402
+)
+from rag_core.executors.infrastructure.hierarchy_acl import HierarchyTeamDirectory
+from rag_core.executors.infrastructure.issues_acl import referral_requests
+from rag_core.ike.application.services import IkeService, IkeSummaryService
+from rag_core.ike.infrastructure.executors_acl import executor_names, referrals_by_item
+from rag_core.ike.infrastructure.issues_acl import issue_view
+from rag_core.ike.infrastructure.retrieval_acl import RetrieverKnowledgeSearch
+from rag_core.issues.application.services import load_issue_registry
+from rag_core.issues.infrastructure.hierarchy_acl import HierarchyOrgDirectory
+from rag_core.judging.application.services import LlmJudge, judge_all
+from rag_core.judging.domain.cases import JudgeCase
 from rag_core.judging.domain.metrics import (
     acceptance,
     agreement,
     gold_metrics,
     rejection_rate,
-)  # noqa: E402
-from rag_core.judging.domain.model import JudgeParseError  # noqa: E402
-from rag_core.judging.domain.negative import negative_controls  # noqa: E402
-from rag_core.judging.domain.parser import JudgeOutputParser  # noqa: E402
-from rag_core.judging.domain.results import JudgeResult  # noqa: E402
-from rag_core.judging.domain.rubric import Rubric, default_rubric  # noqa: E402
-from rag_core.judging.domain.rule_judge import RuleBasedJudge  # noqa: E402
+)
+from rag_core.judging.domain.model import JudgeParseError
+from rag_core.judging.domain.negative import negative_controls
+from rag_core.judging.domain.parser import JudgeOutputParser
+from rag_core.judging.domain.results import JudgeResult
+from rag_core.judging.domain.rubric import Rubric, default_rubric
+from rag_core.judging.domain.rule_judge import RuleBasedJudge
 from rag_core.judging.infrastructure.calibration_json import (
     load_calibration,
     load_parser_cases,
-)  # noqa: E402
-from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings  # noqa: E402
-from rag_core.judging.infrastructure.ike_acl import summary_case  # noqa: E402
-from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric  # noqa: E402
+)
+from rag_core.judging.infrastructure.config import JudgeSettings, load_judge_settings
+from rag_core.judging.infrastructure.ike_acl import summary_case
+from rag_core.judging.infrastructure.prompt_yaml import load_judge_prompts, load_rubric
 from rag_core.judging.infrastructure.qa_acl import (
     chunk_texts,
     phase8_cases,
     samples_by_id,
-)  # noqa: E402
-from rag_core.judging.infrastructure.results_files import latest_result, read_json  # noqa: E402
-from rag_core.qa.domain.fact_check import CitedFactValidator  # noqa: E402
-from rag_core.rag.application.corpus import build_corpus_records  # noqa: E402
-from rag_core.rag.application.indexing import build_retriever  # noqa: E402
-from rag_core.rag.infrastructure.config import RagSettings, load_settings  # noqa: E402
+)
+from rag_core.judging.infrastructure.results_files import latest_result, read_json
+from rag_core.qa.domain.fact_check import CitedFactValidator
+from rag_core.rag.application.corpus import build_corpus_records
+from rag_core.rag.application.indexing import build_retriever
+from rag_core.rag.infrastructure.config import RagSettings, load_settings
 from rag_core.rag.infrastructure.ollama import (
     OllamaChatModel,
     OllamaClient,
     OllamaError,
-)  # noqa: E402
-from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore  # noqa: E402
+)
+from rag_core.rag.infrastructure.sqlite_store import SqliteIndexStore
 
 KIT = f"rag-core {__version__} (phase 10 llm-as-judge)"
 SEPARATOR_START = "======== PHASE 10 SUMMARY ========"
@@ -133,7 +134,7 @@ def rubric_matches_default(rubric: Rubric) -> bool:
     )
 
 
-def run_parser_cases(parser: JudgeOutputParser, cases: list[dict]) -> list[dict]:  # noqa: ANN001
+def run_parser_cases(parser: JudgeOutputParser, cases: list[dict]) -> list[dict]:
     rows = []
     for c in cases:
         expect = c["expect"]
@@ -157,14 +158,14 @@ def run_parser_cases(parser: JudgeOutputParser, cases: list[dict]) -> list[dict]
     return rows
 
 
-def mode_counts(rows: list[dict]) -> dict[str, int]:  # noqa: ANN001
+def mode_counts(rows: list[dict]) -> dict[str, int]:
     out: dict[str, int] = {}
     for r in rows:
         out[str(r["mode"])] = out.get(str(r["mode"]), 0) + 1
     return out
 
 
-def ike_material(root: Path, settings: RagSettings, corpus) -> dict:  # noqa: ANN001
+def ike_material(root: Path, settings: RagSettings, corpus) -> dict:
     """Phase 9 offline IKE graph of AR-ISS-024 → facts, names and template summaries."""
     teams = HierarchyTeamDirectory.from_registry(root / "data" / "registry")
     org = HierarchyOrgDirectory.from_registry(root / "data" / "registry")
@@ -196,17 +197,15 @@ def ike_material(root: Path, settings: RagSettings, corpus) -> dict:  # noqa: AN
     return {"facts": facts, "names": names, "templates": templates}
 
 
-def source_records(root: Path, settings: RagSettings, corpus) -> tuple[list, str]:  # noqa: ANN001
+def source_records(root: Path, settings: RagSettings, corpus) -> tuple[list, str]:
     """Chunk records for source text: the Phase 8 index if it exists, else the corpus build."""
     index_path = root / settings.index.path
     if index_path.is_file():
-        try:
+        with contextlib.suppress(Exception):
             with SqliteIndexStore(index_path) as store:
                 records = store.records()
             if records:
                 return records, f"index:{settings.index.path}"
-        except Exception:  # noqa: BLE001 - fall back to the corpus build
-            pass
     return list(corpus.records), "corpus"
 
 
@@ -235,7 +234,7 @@ def p95(values: list[float]) -> float | None:
         return None
     ordered = sorted(values)
     return round(
-        ordered[min(len(ordered) - 1, int(round(0.95 * (len(ordered) - 1))))], 3
+        ordered[min(len(ordered) - 1, round(0.95 * (len(ordered) - 1)))], 3
     )
 
 
@@ -243,7 +242,7 @@ def by_id(results: list[JudgeResult]) -> dict[str, JudgeResult]:
     return {r.case_id: r for r in results}
 
 
-def main() -> int:  # noqa: C901 - one linear report
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Phase 10 LLM-as-judge and quality control."
     )
@@ -275,7 +274,7 @@ def main() -> int:  # noqa: C901 - one linear report
     )
     out_dir = args.out or root / "results" / "phase-10"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_json = out_dir / f"judge-check-{stamp}.json"
     t0 = time.perf_counter()
 
@@ -456,7 +455,7 @@ def main() -> int:  # noqa: C901 - one linear report
 
     payload = {
         "kit": KIT,
-        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "status": status,
         "checks": checks,
         "python": args.python_version,

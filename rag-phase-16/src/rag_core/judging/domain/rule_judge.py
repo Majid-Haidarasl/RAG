@@ -24,8 +24,8 @@ case tagged ``rule_blind_spot``). That is what the LLM judge is for.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 
 from rag_core.judging.domain.cases import (
     NOT_FOUND_STATUSES,

@@ -76,7 +76,6 @@ ET
 
 def _minimal_text_pdf(stream: bytes) -> bytes:
     # One-page PDF 1.4 with Helvetica and the given content stream.
-    objects = []
 
     def obj(n: int, body: str) -> bytes:
         return f"{n} 0 obj\n{body}\nendobj\n".encode("latin-1")
@@ -100,7 +99,7 @@ def _minimal_text_pdf(stream: bytes) -> bytes:
         obj(5, font),
     ]
     # xref
-    buf = b"".join(parts)
+    b"".join(parts)
     # rebuild with offsets
     header = b"%PDF-1.4\n"
     bodies = [
@@ -116,7 +115,7 @@ def _minimal_text_pdf(stream: bytes) -> bytes:
         offsets.append(len(out))
         out += body
     xref_pos = len(out)
-    xref = f"xref\n0 6\n0000000000 65535 f \n"
+    xref = "xref\n0 6\n0000000000 65535 f \n"
     for off in offsets[1:]:
         xref += f"{off:010d} 00000 n \n"
     start = xref + f"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n"

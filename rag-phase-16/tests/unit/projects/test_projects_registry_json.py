@@ -17,7 +17,7 @@ from tests.fixtures.projects.samples import PROJECTS_DIR, raw_registry
 pytestmark = [pytest.mark.projects]
 
 
-def shipped():  # noqa: ANN201
+def shipped():
     return JsonProjectRegistry(PROJECTS_DIR).load()
 
 

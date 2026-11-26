@@ -14,7 +14,7 @@ from tests.fixtures.rag.fakes import FakeEmbedder, rec, sample_records, sample_s
 pytestmark = [pytest.mark.rag, pytest.mark.retrieval]
 
 
-def hybrid(records=None, scope=None, config=None):  # noqa: ANN001, ANN201
+def hybrid(records=None, scope=None, config=None):
     records = records if records is not None else sample_records()
     emb = FakeEmbedder()
     vectors = InMemoryVectorIndex()

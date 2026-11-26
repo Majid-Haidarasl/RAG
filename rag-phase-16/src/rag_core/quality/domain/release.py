@@ -6,9 +6,9 @@ layer; nothing reads files.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-import re
 
 from rag_core.shared_kernel.errors import InvariantError
 

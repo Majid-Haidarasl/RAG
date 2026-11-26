@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 import re
+from pathlib import Path
 
 from rag_core.shared_kernel.numerals import normalize_digits
-
 
 _DOC_ID_IN_NAME = re.compile(
     r"(AR-[A-Z]{2,5}-[0-9\u06F0-\u06F9\u0660-\u0669]{3})",

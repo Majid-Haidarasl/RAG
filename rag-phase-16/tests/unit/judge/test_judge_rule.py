@@ -37,7 +37,7 @@ def _judge(config: RuleJudgeConfig | None = None) -> RuleBasedJudge:
     return RuleBasedJudge(default_rubric(), CitedFactValidator(), config)
 
 
-def _template_case(language: str):  # noqa: ANN202
+def _template_case(language: str):
     issue = sample_issue()
     graph = IkeService().build(issue, sample_referrals())
     facts = facts_lines(digest(issue, graph), NAMES)
@@ -58,7 +58,7 @@ def _template_case(language: str):  # noqa: ANN202
 
 
 @pytest.mark.parametrize("case", [qa_fa(), qa_en()], ids=["fa", "en"])
-def test_grounded_cited_answer_gets_full_marks(case) -> None:  # noqa: ANN001
+def test_grounded_cited_answer_gets_full_marks(case) -> None:
     result = _judge().judge(case)
     assert result.scores == FULL, result.notes
     assert result.accepted and result.total == 20 and result.parse_mode == "rules"

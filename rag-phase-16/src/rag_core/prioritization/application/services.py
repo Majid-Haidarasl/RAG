@@ -88,7 +88,7 @@ class PrioritizationService:
         )
 
 
-def explain(scored, language: str = "en", n: int = 3) -> str:  # noqa: ANN001
+def explain(scored, language: str = "en", n: int = 3) -> str:
     """``risk 12.0, urgency 12.0, priority 11.25`` (points out of 100) for one scored issue."""
     labels = FACTOR_LABELS_FA if language == "fa" else FACTOR_LABELS_EN
     return ", ".join(f"{labels[k]} {v:g}" for k, v in scored.top_factors(n))

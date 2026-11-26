@@ -15,7 +15,7 @@ from tests.fixtures.rfp.samples import (
 pytestmark = [pytest.mark.proposals]
 
 
-def bundle(bp=None, nodes=NODES, executors=EXECUTORS):  # noqa: ANN001, ANN201
+def bundle(bp=None, nodes=NODES, executors=EXECUTORS):
     bp = bp or shipped_blueprint()
     reg = shipped_registry()
     return link_knowledge(bp, reg, evaluate(bp, reg), frozenset(nodes), executors)

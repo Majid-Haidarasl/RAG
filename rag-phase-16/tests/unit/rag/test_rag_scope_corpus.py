@@ -12,11 +12,11 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 @pytest.fixture(scope="module")
-def scope():  # noqa: ANN201
+def scope():
     return load_scope(ROOT / "data" / "registry")
 
 
-def test_web_team_cannot_see_hr_policy(scope) -> None:  # noqa: ANN001
+def test_web_team_cannot_see_hr_policy(scope) -> None:
     visible = scope.visible_documents("N-SW-WEB")
     assert (
         "AR-HR-005" not in visible
@@ -25,11 +25,11 @@ def test_web_team_cannot_see_hr_policy(scope) -> None:  # noqa: ANN001
     )
 
 
-def test_ceo_sees_all_documents(scope) -> None:  # noqa: ANN001
+def test_ceo_sees_all_documents(scope) -> None:
     assert len(scope.visible_documents("N-CEO")) == 26
 
 
-def test_escalation_uses_lowest_common_ancestor(scope) -> None:  # noqa: ANN001
+def test_escalation_uses_lowest_common_ancestor(scope) -> None:
     route = scope.route("N-SW-WEB", ["N-ADM-HR"])
     assert route.action == "escalate" and route.target == "N-CEO"
     sibling = scope.route("N-SW-WEB", ["N-SW-WIN"])
@@ -37,7 +37,7 @@ def test_escalation_uses_lowest_common_ancestor(scope) -> None:  # noqa: ANN001
     assert scope.route("N-SW-WEB", ["N-SW-WEB"]).action == "answer"
 
 
-def test_owner_layer_and_existence(scope) -> None:  # noqa: ANN001
+def test_owner_layer_and_existence(scope) -> None:
     assert scope.owner_of("AR-HR-005") == "N-ADM-HR"
     assert scope.layer_of("N-LIB") == 4 and scope.layer_of("N-NOPE") is None
     assert (
@@ -47,7 +47,7 @@ def test_owner_layer_and_existence(scope) -> None:  # noqa: ANN001
     )
 
 
-def test_visible_documents_cached(scope) -> None:  # noqa: ANN001
+def test_visible_documents_cached(scope) -> None:
     assert scope.visible_documents("N-HW-REP") is scope.visible_documents("N-HW-REP")
 
 
