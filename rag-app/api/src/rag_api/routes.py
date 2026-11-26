@@ -1,14 +1,22 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated, Literal
 
 import rag_core
 from fastapi import APIRouter, Depends, Request
+from rag_core.qa.domain.model import QaRequest
+from rag_core.rag.infrastructure.ollama import OllamaError, OllamaUnavailable
+from rag_core.shared_kernel.errors import InvariantError
 
 from rag_api import __version__ as api_version
+from rag_api.errors import ApiError
 from rag_api.holder import RuntimeHolder
+from rag_api.mapping import to_ask_response
 from rag_api.runtime import RagRuntime
 from rag_api.schemas import (
+    AskRequest,
+    AskResponse,
     HealthResponse,
     IndexInfo,
     ModelInfo,
@@ -16,6 +24,8 @@ from rag_api.schemas import (
     NodesResponse,
     OllamaInfo,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api")
 
@@ -137,3 +147,30 @@ def nodes(holder: HolderDep) -> NodesResponse:
             for node in active
         ],
     )
+
+
+@router.post("/ask", response_model=AskResponse)
+def ask(body: AskRequest, holder: HolderDep) -> AskResponse:
+    runtime = holder.require()
+    if not runtime.scope.exists(body.node_id):
+        raise ApiError(404, "unknown_node", f"unknown node {body.node_id}")
+    try:
+        answer = holder.ask(
+            QaRequest(body.question, body.node_id, top_k=body.top_k)
+        )
+    except ApiError:
+        raise
+    except OllamaUnavailable as exc:
+        raise ApiError(503, "model_unavailable", str(exc)) from exc
+    except OllamaError as exc:
+        raise ApiError(502, "model_error", str(exc)) from exc
+    except InvariantError as exc:
+        raise ApiError(422, "validation_error", str(exc)) from exc
+
+    logger.info(
+        "ask node=%s status=%s total_s=%.3f",
+        body.node_id,
+        answer.status.value,
+        answer.timings_s.get("total", 0.0),
+    )
+    return to_ask_response(answer, runtime)
